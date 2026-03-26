@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–7 + 7b.1–7b.4 abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–7, 7b.1–7b.4 + Projekt-KPIs abgeschlossen)
 
 ---
 
@@ -149,6 +149,8 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7 + 7b.1–7b.4 abgeschlosse
 | 7.9 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | ✅ Erledigt |
 | 7.10 | E-Mail-Versand für Einladungen (Resend, bedingt via `RESEND_API_KEY`) | ✅ Erledigt |
 | 7.11 | „How to"-Popup in Navigation (6-Schritte-Tour mit UI-Mockups) | ✅ Erledigt |
+| 7.12 | Projekt-KPIs: offen/in Bearbeitung/abgeschlossen, % fertig, Ø Bearbeitungszeit | ✅ Erledigt |
+| 7.13 | Feedback-Route resilient (DB-Fallback) + GitHub-Speicherung in `feedback.md` | ✅ Erledigt |
 
 ### Meilenstein 7b: Rechtliches & Compliance
 

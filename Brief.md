@@ -248,8 +248,10 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Branding-Settings: Logo-Upload (Supabase Storage) + Akzentfarbe
 - API-Key-Verwaltung UI + öffentliche REST API (`/api/v1/`)
 - Projektspezifische Mitgliedschaft (`project_members`-Tabelle)
-- Feedback-Button (unten links, Kategorie-Auswahl, in DB gespeichert)
-- „How to"-Popup in Navigation (6-Schritte-Tour)
+- Feedback-Button (unten links, Kategorie-Auswahl, DB + GitHub `feedback.md`)
+- „How to"-Popup in Navigation (6-Schritte-Tour mit UI-Mockups)
+- Datensicherheits-Popup + AGB + Datenschutzerklärung (DSGVO-konform, im Popup)
+- Projekt-KPIs: offen / in Bearbeitung / abgeschlossen · % fertig · Ø Bearbeitungszeit
 - Vercel-Deployment + Single-Domain-Fixes
 
 ### Phase 2 – SaaS-Features (nächste Schritte)

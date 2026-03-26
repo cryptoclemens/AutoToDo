@@ -64,7 +64,7 @@ function AgbContent() {
 
       <Section title="§ 1 Geltungsbereich">
         <p>Diese Allgemeinen Geschäftsbedingungen gelten für die Nutzung der SaaS-Plattform AutoToDo
-          (nachfolgend „Dienst"), betrieben unter autotodo.app. Der Dienst richtet sich
+          (nachfolgend &bdquo;Dienst&ldquo;), betrieben unter autotodo.app. Der Dienst richtet sich
           ausschließlich an Unternehmen und gewerbliche Nutzer (B2B). Verbraucher im Sinne von § 13 BGB
           sind von der Nutzung ausgeschlossen.</p>
       </Section>
@@ -238,7 +238,7 @@ function DatenschutzContent() {
         <ul>
           <li><strong>Auskunft</strong> (Art. 15) über gespeicherte Daten</li>
           <li><strong>Berichtigung</strong> (Art. 16) unrichtiger Daten</li>
-          <li><strong>Löschung</strong> (Art. 17) – „Recht auf Vergessenwerden"</li>
+          <li><strong>Löschung</strong> (Art. 17) &ndash; &bdquo;Recht auf Vergessenwerden&ldquo;</li>
           <li><strong>Einschränkung</strong> (Art. 18) der Verarbeitung</li>
           <li><strong>Datenportabilität</strong> (Art. 20) – Export als XLSX oder JSON auf Anfrage</li>
           <li><strong>Widerspruch</strong> (Art. 21) gegen Verarbeitungen auf Basis berechtigter Interessen</li>
