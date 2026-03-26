@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
 
 // AUTO-UPDATED by scripts/bump-version.sh
-const APP_VERSION = '0.1.27'
+const APP_VERSION = '0.1.28'
 
 export default function LandingPage() {
   return (
