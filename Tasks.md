@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–5 abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–6 abgeschlossen, Phase 1 komplett)
 
 ---
 
@@ -80,10 +80,10 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–5 abgeschlossen)
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 6.1 | XLSX-Export (SheetJS) | 🔲 Offen |
-| 6.2 | Akzentfarbe CSS Custom Property (`--brand`) | 🔲 Offen |
-| 6.3 | BrandProvider Komponente | 🔲 Offen |
-| 6.4 | LLM-Einstellungen UI (`/settings/llm`) | 🔲 Offen |
+| 6.1 | XLSX-Export (SheetJS) | ✅ Erledigt |
+| 6.2 | Akzentfarbe CSS Custom Property (`--brand`) | ✅ Erledigt |
+| 6.3 | BrandProvider Komponente | ✅ Erledigt |
+| 6.4 | LLM-Einstellungen UI (`/settings/llm`) | ✅ Erledigt |
 
 ---
 
