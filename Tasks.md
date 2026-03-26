@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–4 abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–5 abgeschlossen)
 
 ---
 
@@ -65,16 +65,16 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–4 abgeschlossen)
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 5.1 | Transkript-Upload UI (.txt) | 🔲 Offen |
-| 5.2 | Supabase Storage: verschlüsselter Upload | 🔲 Offen |
-| 5.3 | LLM-Abstraktionsschicht (types, factory) | 🔲 Offen |
-| 5.4 | Anthropic-Integration | 🔲 Offen |
-| 5.5 | OpenAI-Integration | 🔲 Offen |
-| 5.6 | BYOK: LLM-Key speichern/abrufen (verschlüsselt) | 🔲 Offen |
-| 5.7 | Verarbeitungs-Pipeline (processTranscript) | 🔲 Offen |
-| 5.8 | Konfidenz-Schwellwert-System | 🔲 Offen |
-| 5.9 | KI-Vorschläge Review-Flow (ReviewBanner) | 🔲 Offen |
-| 5.10 | Fehlerbehandlung & Retry-Logik | 🔲 Offen |
+| 5.1 | Transkript-Upload UI (.txt) | ✅ Erledigt |
+| 5.2 | Supabase Storage: verschlüsselter Upload | ✅ Erledigt |
+| 5.3 | LLM-Abstraktionsschicht (types, factory) | ✅ Erledigt |
+| 5.4 | Anthropic-Integration | ✅ Erledigt |
+| 5.5 | OpenAI-Integration | ✅ Erledigt |
+| 5.6 | BYOK: LLM-Key speichern/abrufen (verschlüsselt) | ✅ Erledigt |
+| 5.7 | Verarbeitungs-Pipeline (processTranscript) | ✅ Erledigt |
+| 5.8 | Konfidenz-Schwellwert-System | ✅ Erledigt |
+| 5.9 | KI-Vorschläge Review-Flow (ReviewBanner) | ✅ Erledigt |
+| 5.10 | Fehlerbehandlung & Retry-Logik | ✅ Erledigt |
 
 ### Meilenstein 6: Export & Basis-Branding
 

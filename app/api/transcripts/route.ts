@@ -1,0 +1,109 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
+import { encrypt } from '@/lib/encryption'
+
+const MAX_FILE_SIZE = 500 * 1024 // 500 KB
+
+export async function POST(req: NextRequest) {
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const headersList = headers()
+  const slug = headersList.get('x-workspace-slug') ?? ''
+
+  const { data: workspace } = await supabase
+    .from('workspaces').select('id').eq('slug', slug).single() as {
+      data: { id: string } | null
+    }
+  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+
+  const { data: member } = await supabase
+    .from('workspace_members').select('role')
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
+      data: { role: string } | null
+    }
+  if (!member || member.role === 'viewer') {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  const formData = await req.formData()
+  const file = formData.get('file') as File | null
+  const projectId = formData.get('projectId') as string | null
+  const meetingDate = formData.get('meetingDate') as string | null
+
+  if (!file || !projectId) {
+    return NextResponse.json({ error: 'file und projectId sind erforderlich.' }, { status: 400 })
+  }
+  if (!file.name.endsWith('.txt')) {
+    return NextResponse.json({ error: 'Nur .txt-Dateien erlaubt.' }, { status: 400 })
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json({ error: 'Datei zu groß (max. 500 KB).' }, { status: 400 })
+  }
+
+  // Verify project belongs to workspace
+  const { data: project } = await supabase
+    .from('projects').select('id').eq('id', projectId).eq('workspace_id', workspace.id).single() as {
+      data: { id: string } | null
+    }
+  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+
+  // Read and encrypt transcript content
+  const text = await file.text()
+  const encryptedContent = encrypt(text)
+
+  // Store encrypted content in Supabase Storage
+  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${file.name}`
+  const { error: storageError } = await supabase.storage
+    .from('transcripts')
+    .upload(storagePath, Buffer.from(encryptedContent, 'utf8'), {
+      contentType: 'text/plain',
+      upsert: false,
+    })
+
+  if (storageError) {
+    // Fallback: store without storage (just DB record with encrypted content)
+    console.error('Storage upload failed:', storageError.message)
+  }
+
+  // Create transcript record
+  const { data: transcript, error: dbError } = await supabase
+    .from('transcripts')
+    .insert({
+      project_id: projectId,
+      workspace_id: workspace.id,
+      original_filename: file.name,
+      file_path: storageError ? '' : storagePath,
+      storage_path: storageError ? null : storagePath,
+      encrypted_content: storageError ? encryptedContent : null,
+      meeting_date: meetingDate || null,
+      processing_status: 'pending',
+      uploaded_by: user.id,
+    })
+    .select('id')
+    .single() as { data: { id: string } | null; error: unknown }
+
+  if (dbError || !transcript) {
+    return NextResponse.json({ error: 'Fehler beim Speichern.' }, { status: 500 })
+  }
+
+  // Trigger async processing (fire-and-forget)
+  const baseUrl = req.nextUrl.origin
+  fetch(`${baseUrl}/api/transcripts/${transcript.id}/process`, {
+    method: 'POST',
+    headers: {
+      'x-workspace-slug': slug,
+      'x-internal-secret': process.env.INTERNAL_API_SECRET ?? '',
+    },
+  }).catch(() => {/* Processing will be retried manually */})
+
+  return NextResponse.json({ id: transcript.id, status: 'pending' }, { status: 201 })
+}

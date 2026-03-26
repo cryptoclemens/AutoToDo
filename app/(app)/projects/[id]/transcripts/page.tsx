@@ -2,8 +2,11 @@ import { redirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { TranscriptUploadForm } from '@/components/transcripts/TranscriptUploadForm'
+import TranscriptsRefresher from './TranscriptsRefresher'
 
 interface Props {
   params: { id: string }
@@ -24,12 +27,17 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default async function TranscriptsPage({ params }: Props) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
 
   const headersList = headers()
   const slug = headersList.get('x-workspace-slug') ?? ''
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const { data: workspace } = await supabase
     .from('workspaces').select('id').eq('slug', slug).single() as {
@@ -43,16 +51,26 @@ export default async function TranscriptsPage({ params }: Props) {
     }
   if (!project) notFound()
 
+  const { data: member } = await supabase
+    .from('workspace_members').select('role')
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
+      data: { role: string } | null
+    }
+  const canUpload = member?.role !== 'viewer'
+
   const { data: transcripts } = await supabase
     .from('transcripts')
-    .select('id, original_filename, meeting_date, processing_status, items_created, items_updated, created_at')
+    .select('id, original_filename, meeting_date, processing_status, items_created, items_updated, llm_summary, processing_error, error_message, created_at')
     .eq('project_id', project.id)
     .order('created_at', { ascending: false }) as {
       data: Array<{
         id: string; original_filename: string | null; meeting_date: string | null
-        processing_status: string; items_created: number; items_updated: number; created_at: string
+        processing_status: string; items_created: number; items_updated: number
+        llm_summary: string | null; processing_error: string | null; error_message: string | null; created_at: string
       }> | null
     }
+
+  const hasPending = transcripts?.some(t => t.processing_status === 'pending' || t.processing_status === 'processing')
 
   return (
     <div>
@@ -66,41 +84,54 @@ export default async function TranscriptsPage({ params }: Props) {
 
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Transkripte</h1>
-        {/* Upload-Button wird in Meilenstein 5 implementiert */}
-        <div className="text-sm text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-lg px-4 py-2">
-          Upload kommt in Meilenstein 5
-        </div>
+        {canUpload && (
+          <TranscriptUploadForm projectId={project.id} onUploaded={() => {}} />
+        )}
       </div>
+
+      {/* Auto-refresh when processing */}
+      {hasPending && <TranscriptsRefresher />}
 
       {!transcripts || transcripts.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
-            <p className="text-gray-400 text-sm">Noch keine Transkripte hochgeladen.</p>
+            <p className="text-gray-400 text-sm mb-2">Noch keine Transkripte hochgeladen.</p>
+            {canUpload && (
+              <p className="text-xs text-gray-300">Klicken Sie oben auf &quot;Transkript hochladen&quot;, um zu starten.</p>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
           {transcripts.map(t => (
             <Card key={t.id}>
-              <CardContent className="py-3 px-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {t.original_filename ?? 'Unbenannte Datei'}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {t.meeting_date
-                      ? new Date(t.meeting_date).toLocaleDateString('de-DE')
-                      : new Date(t.created_at).toLocaleDateString('de-DE')}
-                    {t.processing_status === 'done' && (
-                      <span className="ml-2">
-                        · {t.items_created} neu · {t.items_updated} aktualisiert
-                      </span>
+              <CardContent className="py-3 px-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {t.original_filename ?? 'Unbenannte Datei'}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {t.meeting_date
+                        ? new Date(t.meeting_date).toLocaleDateString('de-DE')
+                        : new Date(t.created_at).toLocaleDateString('de-DE')}
+                      {t.processing_status === 'done' && (
+                        <span className="ml-2 text-green-600">
+                          · {t.items_created} neu · {t.items_updated} aktualisiert
+                        </span>
+                      )}
+                    </p>
+                    {t.llm_summary && (
+                      <p className="text-xs text-gray-500 mt-1 italic">{t.llm_summary}</p>
                     )}
-                  </p>
+                    {(t.processing_error || t.error_message) && (
+                      <p className="text-xs text-red-500 mt-1">{t.processing_error ?? t.error_message}</p>
+                    )}
+                  </div>
+                  <Badge className={`text-xs shrink-0 ${STATUS_COLORS[t.processing_status] ?? ''}`}>
+                    {STATUS_LABELS[t.processing_status] ?? t.processing_status}
+                  </Badge>
                 </div>
-                <Badge className={`text-xs ${STATUS_COLORS[t.processing_status] ?? ''}`}>
-                  {STATUS_LABELS[t.processing_status] ?? t.processing_status}
-                </Badge>
               </CardContent>
             </Card>
           ))}
