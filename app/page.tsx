@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
 
 // AUTO-UPDATED by scripts/bump-version.sh
 const APP_VERSION = '0.1.25'
@@ -116,10 +117,11 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Datensicherheit */}
+      <LandingSecuritySection />
+
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 text-center text-sm text-gray-400">
-        © 2026 AutoToDo · Alle Rechte vorbehalten
-      </footer>
+      <LandingLegalFooter />
 
       {/* Versions-Badge */}
       <div className="fixed bottom-4 right-4 z-50">

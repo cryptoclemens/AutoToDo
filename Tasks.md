@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen, inkl. How-to-Guide)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–7 + 7b.1–7b.4 abgeschlossen)
 
 ---
 
@@ -149,6 +149,20 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen, inkl. How-t
 | 7.9 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | ✅ Erledigt |
 | 7.10 | E-Mail-Versand für Einladungen (Resend, bedingt via `RESEND_API_KEY`) | ✅ Erledigt |
 | 7.11 | „How to"-Popup in Navigation (6-Schritte-Tour mit UI-Mockups) | ✅ Erledigt |
+
+### Meilenstein 7b: Rechtliches & Compliance
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 7b.1 | Datensicherheits-Popup in Navigation + Landing Page | ✅ Erledigt |
+| 7b.2 | AGB-Text (rechtssicher, DSGVO-konform, im Popup lesbar) | ✅ Erledigt |
+| 7b.3 | Datenschutzerklärung (DSGVO Art. 13/14, TDDDG, im Popup lesbar) | ✅ Erledigt |
+| 7b.4 | AGB + Datenschutz in Footer der Landing Page | ✅ Erledigt |
+| 7b.5 | Pflichtakzeptanz AGB + Datenschutz bei Registrierung (Checkbox + Popup-Links) | 🔲 Offen |
+| 7b.6 | Akzeptanz-Zeitstempel in DB speichern (`legal_accepted_at`, `legal_version`) | 🔲 Offen |
+| 7b.7 | Auftragsverarbeitungsvertrag (AVV) als Download/PDF | 🔲 Offen |
+| 7b.8 | Cookie-Hinweis / Consent-Banner (§ 25 TDDDG, nur bei Bedarf) | 🔲 Offen |
+| 7b.9 | Impressum-Seite (`/impressum`) | 🔲 Offen |
 
 ### Meilenstein 8: Webhooks & Audit
 

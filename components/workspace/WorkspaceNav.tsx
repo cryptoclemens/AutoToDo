@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import HowToModal from '@/components/HowToModal'
+import SecurityModal from '@/components/SecurityModal'
 
 interface Props {
   workspace: { id: string; name: string; slug: string; brand_color: string; logo_url: string | null }
@@ -80,6 +81,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
 
         {/* How-to + Nutzer-Menü */}
         <div className="flex items-center gap-1">
+        <SecurityModal />
         <HowToModal />
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50">

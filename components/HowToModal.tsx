@@ -65,7 +65,6 @@ export default function HowToModal() {
         onClick={() => setOpen(true)}
         className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
       >
-        <span className="text-base leading-none">?</span>
         <span>How to</span>
       </button>
 
