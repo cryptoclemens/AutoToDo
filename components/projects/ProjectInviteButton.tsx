@@ -20,10 +20,11 @@ interface InviteLink {
 
 interface Props {
   workspaceId: string
+  projectId: string
   projectName: string
 }
 
-export default function ProjectInviteButton({ workspaceId, projectName }: Props) {
+export default function ProjectInviteButton({ workspaceId, projectId, projectName }: Props) {
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('editor')
@@ -47,7 +48,7 @@ export default function ProjectInviteButton({ workspaceId, projectName }: Props)
       const res = await fetch('/api/invitations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, emails, role }),
+        body: JSON.stringify({ workspaceId, projectId, emails, role }),
       })
       const data = await res.json() as {
         ok?: boolean
@@ -94,8 +95,7 @@ export default function ProjectInviteButton({ workspaceId, projectName }: Props)
       </div>
 
       <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-700">
-        Die eingeladene Person erhält Zugang zum gesamten Workspace.
-        Projektspezifische Berechtigungen (nur ein Projekt) sind in Phase 2 geplant.
+        Die eingeladene Person erhält Zugang zu diesem Projekt und dem Workspace.
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">

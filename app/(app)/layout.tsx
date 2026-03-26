@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
 import WorkspaceNav from '@/components/workspace/WorkspaceNav'
+import FeedbackButton from '@/components/FeedbackButton'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -38,6 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main className="max-w-7xl mx-auto px-4 py-8">
           {children}
         </main>
+        <FeedbackButton />
       </div>
     </>
   )

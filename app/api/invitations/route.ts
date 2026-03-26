@@ -8,6 +8,7 @@ const schema = z.object({
   workspaceId: z.string().uuid(),
   emails: z.array(z.string().email()).min(1).max(20),
   role: z.enum(['editor', 'viewer', 'project_admin', 'workspace_admin']),
+  projectId: z.string().uuid().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
   }
 
-  const { workspaceId, emails, role } = parsed.data
+  const { workspaceId, emails, role, projectId } = parsed.data
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,12 +41,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 
+  // If projectId provided, validate project belongs to workspace
+  if (projectId) {
+    const { data: project } = await supabase
+      .from('projects').select('id')
+      .eq('id', projectId).eq('workspace_id', workspaceId).single()
+    if (!project) {
+      return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+    }
+  }
+
   const invitations = emails.map(email => ({
     workspace_id: workspaceId,
     email,
     role,
     token: randomUUID(),
     invited_by: user.id,
+    project_id: projectId ?? null,
   }))
 
   const { data: inserted, error } = await supabase
@@ -56,7 +68,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Einladungen konnten nicht gespeichert werden.' }, { status: 500 })
   }
 
-  // TODO: E-Mails via Resend senden (Phase 2, Meilenstein 3.4)
+  // E-Mail-Versand via Resend (optional, wenn RESEND_API_KEY gesetzt)
+  if (process.env.RESEND_API_KEY) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.app'
+    for (const inv of inserted) {
+      const inviteUrl = `${appUrl}/invite/${inv.token}`
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@autotodo.app>',
+          to: [inv.email],
+          subject: 'Du wurdest zu AutoToDo eingeladen',
+          html: `<p>Hallo,</p>
+<p>Du wurdest eingeladen, AutoToDo beizutreten.</p>
+<p><a href="${inviteUrl}" style="background:#2563EB;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">Einladung annehmen</a></p>
+<p style="color:#666;font-size:12px">Dieser Link ist 7 Tage gültig.</p>`,
+        }),
+      }).catch(() => { /* E-Mail-Fehler nicht als kritisch behandeln */ })
+    }
+  }
 
   return NextResponse.json({
     ok: true,

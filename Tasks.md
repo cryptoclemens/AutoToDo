@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–6d abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen)
 
 ---
 
@@ -138,16 +138,16 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–6d abgeschlossen)
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 7.1 | Logo-Upload (Supabase Storage) | 🔲 Offen |
-| 7.2 | XLSX-Export mit Workspace-Branding | 🔲 Offen |
-| 7.3 | API-Key-Verwaltung UI | 🔲 Offen |
-| 7.4 | API-Key-Validierung (Middleware) | 🔲 Offen |
-| 7.5 | Öffentliche REST API: `/v1/projects` | 🔲 Offen |
-| 7.6 | Öffentliche REST API: `/v1/lop` | 🔲 Offen |
-| 7.7 | Öffentliche REST API: `/v1/transcripts` | 🔲 Offen |
-| 7.8 | Feedback-Button (unten links, für Feedback & Feature-Wünsche) | 🔲 Offen |
-| 7.9 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle, RLS) | 🔲 Offen |
-| 7.10 | E-Mail-Versand für Einladungen (Resend) | 🔲 Offen |
+| 7.1 | Logo-Upload (Supabase Storage) | ✅ Erledigt |
+| 7.2 | XLSX-Export mit Workspace-Branding | ✅ Erledigt |
+| 7.3 | API-Key-Verwaltung UI | ✅ Erledigt |
+| 7.4 | API-Key-Validierung (`lib/apiKeyAuth.ts`, SHA-256) | ✅ Erledigt |
+| 7.5 | Öffentliche REST API: `/api/v1/projects` | ✅ Erledigt |
+| 7.6 | Öffentliche REST API: `/api/v1/lop` | ✅ Erledigt |
+| 7.7 | Öffentliche REST API: `/api/v1/transcripts` | ✅ Erledigt |
+| 7.8 | Feedback-Button (unten links, mit Kategorie-Auswahl) | ✅ Erledigt |
+| 7.9 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | ✅ Erledigt |
+| 7.10 | E-Mail-Versand für Einladungen (Resend, bedingt via `RESEND_API_KEY`) | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
 

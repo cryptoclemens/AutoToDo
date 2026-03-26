@@ -121,6 +121,7 @@ export default async function ProjectPage({ params }: Props) {
         <div className="mb-6">
           <ProjectInviteButton
             workspaceId={workspace.id}
+            projectId={project.id}
             projectName={project.name}
           />
         </div>

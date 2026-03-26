@@ -35,17 +35,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Einladung ungültig oder abgelaufen.' }, { status: 404 })
   }
 
-  await supabase.from('workspace_members').insert({
+  // Workspace-Mitgliedschaft eintragen (ignoriert Duplikat)
+  await supabase.from('workspace_members').upsert({
     workspace_id: invitation.workspace_id,
     user_id: user.id,
     role: invitation.role,
     invited_by: invitation.invited_by,
-  })
+  }, { onConflict: 'workspace_id,user_id', ignoreDuplicates: true })
+
+  // Projektspezifische Mitgliedschaft eintragen (falls projektbezogene Einladung)
+  if (invitation.project_id) {
+    const projectRole = ['workspace_admin', 'workspace_owner'].includes(invitation.role)
+      ? 'project_admin'
+      : invitation.role as 'project_admin' | 'editor' | 'viewer'
+    await supabase.from('project_members').upsert({
+      project_id: invitation.project_id,
+      user_id: user.id,
+      role: projectRole,
+      invited_by: invitation.invited_by,
+    }, { onConflict: 'project_id,user_id', ignoreDuplicates: true })
+  }
 
   await supabase
     .from('invitations')
     .update({ accepted_at: new Date().toISOString() })
     .eq('id', invitation.id)
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, workspaceId: invitation.workspace_id })
 }
