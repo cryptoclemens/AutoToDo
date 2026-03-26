@@ -54,7 +54,7 @@ export default async function ProjectPage({ params }: Props) {
   // LOP-Punkte laden
   const { data: lopItems } = await supabase
     .from('lop_items')
-    .select('id, title, description, responsible, due_date, priority, status, result, requires_review, ai_confidence, source_quote')
+    .select('id, title, description, responsible, due_date, priority, status, result, requires_review, ai_confidence, source_quote, created_at, updated_at')
     .eq('project_id', project.id)
     .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false }) as {
@@ -65,11 +65,24 @@ export default async function ProjectPage({ params }: Props) {
         status: 'offen' | 'in_bearbeitung' | 'abgeschlossen'
         result: string | null; requires_review: boolean
         ai_confidence: number | null; source_quote: string | null
+        created_at: string; updated_at: string
       }> | null
     }
 
-  const openCount = lopItems?.filter(i => i.status !== 'abgeschlossen').length ?? 0
+  const strictOpenCount = lopItems?.filter(i => i.status === 'offen').length ?? 0
+  const inProgressCount = lopItems?.filter(i => i.status === 'in_bearbeitung').length ?? 0
+  const doneCount = lopItems?.filter(i => i.status === 'abgeschlossen').length ?? 0
   const totalCount = lopItems?.length ?? 0
+
+  // Durchschnittliche Bearbeitungszeit für abgeschlossene Punkte (updated_at - created_at)
+  const doneTimes = (lopItems ?? [])
+    .filter(i => i.status === 'abgeschlossen')
+    .map(i => (new Date(i.updated_at).getTime() - new Date(i.created_at).getTime()) / 86_400_000)
+    .filter(d => d > 0)
+  const avgDays = doneTimes.length > 0
+    ? Math.round(doneTimes.reduce((a, b) => a + b, 0) / doneTimes.length)
+    : null
+  const completionPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
   return (
     <div>
@@ -91,9 +104,27 @@ export default async function ProjectPage({ params }: Props) {
           {project.description && (
             <p className="text-sm text-gray-500 mt-1">{project.description}</p>
           )}
-          <p className="text-xs text-gray-400 mt-1">
-            {openCount} offen · {totalCount} gesamt
-          </p>
+          {/* KPI-Zeile */}
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            <span className="text-xs text-gray-500">
+              <span className="font-medium text-orange-600">{strictOpenCount}</span> offen
+              {inProgressCount > 0 && (
+                <> · <span className="font-medium text-blue-600">{inProgressCount}</span> in Bearbeitung</>
+              )}
+              {' '}· <span className="font-medium text-green-600">{doneCount}</span> abgeschlossen
+              {' '}· <span className="text-gray-400">{totalCount} gesamt</span>
+            </span>
+            {totalCount > 0 && (
+              <span className="text-xs bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5 font-medium">
+                🎯 {completionPct} % fertig
+              </span>
+            )}
+            {avgDays !== null && (
+              <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5 font-medium">
+                ⏱ Ø {avgDays} {avgDays === 1 ? 'Tag' : 'Tage'} Bearbeitungszeit
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <Link href={`/projects/${project.id}/transcripts`}>

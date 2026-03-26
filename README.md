@@ -137,6 +137,8 @@ INTERNAL_API_SECRET         # beliebiger Secret-String
 RESEND_API_KEY              # aktiviert automatischen E-Mail-Versand für Einladungen
 RESEND_FROM                 # z.B. "AutoToDo <noreply@autotodo.app>"
 NEXT_PUBLIC_APP_URL         # Basis-URL für Einladungslinks (z.B. https://autotodo.app)
+GITHUB_FEEDBACK_TOKEN       # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
+GITHUB_FEEDBACK_BRANCH      # Branch für feedback.md (default: claude/github-automated-access-WVPL6)
 ```
 
 Supabase Auth → URL Configuration:

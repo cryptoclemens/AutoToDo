@@ -10,6 +10,13 @@ const schema = z.object({
   category: z.enum(['general', 'bug', 'feature', 'other']).default('general'),
 })
 
+const CATEGORY_LABELS: Record<string, string> = {
+  general: '💬 Allgemein',
+  bug: '🐛 Fehler',
+  feature: '✨ Feature-Wunsch',
+  other: '📝 Sonstiges',
+}
+
 export async function POST(request: NextRequest) {
   const authClient = createClient()
   const { data: { user } } = await authClient.auth.getUser()
@@ -29,16 +36,102 @@ export async function POST(request: NextRequest) {
   const slug = headers().get('x-workspace-slug') ?? ''
   const workspace = await resolveWorkspace(supabase, user.id, slug)
 
-  const { error } = await supabase.from('feedback').insert({
-    workspace_id: workspace?.id ?? null,
-    user_id: user.id,
-    message: parsed.data.message,
-    category: parsed.data.category,
-  })
+  // DB-Speicherung (resilient – schlägt fehl wenn Migration 007 noch nicht angewendet)
+  let savedToDb = false
+  try {
+    const { error } = await supabase.from('feedback').insert({
+      workspace_id: workspace?.id ?? null,
+      user_id: user.id,
+      message: parsed.data.message,
+      category: parsed.data.category,
+    })
+    if (!error) savedToDb = true
+  } catch {
+    // Tabelle existiert noch nicht – ignorieren, GitHub-Fallback greift
+  }
 
-  if (error) {
-    return NextResponse.json({ error: 'Feedback konnte nicht gespeichert werden.' }, { status: 500 })
+  // GitHub-Speicherung (wenn GITHUB_FEEDBACK_TOKEN gesetzt)
+  let savedToGitHub = false
+  try {
+    savedToGitHub = await appendFeedbackToGitHub({
+      message: parsed.data.message,
+      category: parsed.data.category,
+      userEmail: user.email ?? 'unbekannt',
+      workspaceName: workspace?.name ?? 'unbekannt',
+    })
+  } catch {
+    // GitHub nicht erreichbar oder Token fehlt – ignorieren
+  }
+
+  if (!savedToDb && !savedToGitHub) {
+    return NextResponse.json({
+      error: 'Feedback konnte nicht gespeichert werden. Bitte versuche es später erneut.',
+    }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })
+}
+
+async function appendFeedbackToGitHub(entry: {
+  message: string
+  category: string
+  userEmail: string
+  workspaceName: string
+}): Promise<boolean> {
+  const token = process.env.GITHUB_FEEDBACK_TOKEN
+  if (!token) return false
+
+  const repo = 'cryptoclemens/AutoToDo'
+  const path = 'feedback.md'
+  const branch = process.env.GITHUB_FEEDBACK_BRANCH ?? 'claude/github-automated-access-WVPL6'
+  const apiBase = `https://api.github.com/repos/${repo}/contents/${path}`
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Content-Type': 'application/json',
+  }
+
+  // Aktuelle Datei lesen (für SHA)
+  let currentContent = ''
+  let sha: string | undefined
+  const getRes = await fetch(`${apiBase}?ref=${branch}`, { headers: authHeaders })
+  if (getRes.ok) {
+    const data = await getRes.json() as { sha: string; content: string }
+    sha = data.sha
+    currentContent = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf-8')
+  } else {
+    currentContent = '# AutoToDo – Feedback\n\n> Nutzerfeedback und Feature-Wünsche\n\n---\n\n'
+  }
+
+  const ts = new Date().toISOString().replace('T', ' ').slice(0, 19)
+  const label = CATEGORY_LABELS[entry.category] ?? entry.category
+  const newEntry = [
+    `## ${ts} | ${label}`,
+    `**Workspace:** ${entry.workspaceName}`,
+    `**Nutzer:** ${entry.userEmail}`,
+    ``,
+    entry.message,
+    ``,
+    `---`,
+    ``,
+  ].join('\n')
+
+  const updatedContent = currentContent + newEntry
+  const encodedContent = Buffer.from(updatedContent).toString('base64')
+
+  const putBody: Record<string, unknown> = {
+    message: `feedback: ${label} (${ts})`,
+    content: encodedContent,
+    branch,
+  }
+  if (sha) putBody.sha = sha
+
+  const putRes = await fetch(apiBase, {
+    method: 'PUT',
+    headers: authHeaders,
+    body: JSON.stringify(putBody),
+  })
+
+  return putRes.ok || putRes.status === 201
 }
