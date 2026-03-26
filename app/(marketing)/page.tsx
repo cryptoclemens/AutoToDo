@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 // AUTO-UPDATED by scripts/bump-version.sh
 const APP_VERSION = '0.1.3'
 
