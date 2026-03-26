@@ -92,7 +92,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     let result
     try {
       result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [])
-    } catch (_err) {
+    } catch {
       // Single retry with a simplified context
       await new Promise(r => setTimeout(r, 1500))
       result = await processTranscriptWithLlm(config, transcriptText, [])
