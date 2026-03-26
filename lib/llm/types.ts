@@ -1,11 +1,12 @@
 // LLM abstraction layer – types and interfaces
 
-export type LlmProvider = 'anthropic' | 'openai'
+export type LlmProvider = 'anthropic' | 'openai' | 'azure_openai'
 
 export interface LlmConfig {
   provider: LlmProvider
   apiKey: string
   model: string
+  endpoint?: string
 }
 
 export interface LopAction {

@@ -15,6 +15,7 @@ const PROVIDERS = [
       { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (empfohlen)' },
       { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (schnell & günstig)' },
     ],
+    needsEndpoint: false,
   },
   {
     id: 'openai',
@@ -23,6 +24,17 @@ const PROVIDERS = [
       { id: 'gpt-4o', label: 'GPT-4o (empfohlen)' },
       { id: 'gpt-4o-mini', label: 'GPT-4o mini (günstig)' },
     ],
+    needsEndpoint: false,
+  },
+  {
+    id: 'azure_openai',
+    label: 'Azure OpenAI (Microsoft Copilot)',
+    models: [
+      { id: 'gpt-4o', label: 'gpt-4o' },
+      { id: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+      { id: 'gpt-4-turbo', label: 'gpt-4-turbo' },
+    ],
+    needsEndpoint: true,
   },
 ]
 
@@ -31,6 +43,7 @@ interface Props {
     configured: boolean
     provider?: string
     model?: string
+    endpoint?: string
     apiKeyMasked?: string
   }
 }
@@ -38,22 +51,37 @@ interface Props {
 export function LlmSettingsForm({ initial }: Props) {
   const [provider, setProvider] = useState(initial.provider ?? 'anthropic')
   const [model, setModel] = useState(initial.model ?? PROVIDERS[0].models[0].id)
+  const [customModel, setCustomModel] = useState('')
+  const [endpoint, setEndpoint] = useState(initial.endpoint ?? '')
   const [apiKey, setApiKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [removing, setRemoving] = useState(false)
 
   const providerData = PROVIDERS.find(p => p.id === provider) ?? PROVIDERS[0]
+  const isAzure = provider === 'azure_openai'
+
+  // For Azure: effective model is customModel if set, otherwise selected model
+  const effectiveModel = isAzure && customModel.trim() ? customModel.trim() : model
 
   const handleProviderChange = (v: string | null) => {
     const p = v ?? 'anthropic'
     setProvider(p)
     const pd = PROVIDERS.find(x => x.id === p) ?? PROVIDERS[0]
     setModel(pd.models[0].id)
+    setCustomModel('')
   }
 
   const handleSave = async () => {
-    if (!apiKey) {
+    if (!apiKey && !initial.configured) {
       toast.error('Bitte API-Key eingeben.')
+      return
+    }
+    if (isAzure && !endpoint.trim()) {
+      toast.error('Bitte Endpoint-URL eingeben.')
+      return
+    }
+    if (!apiKey && initial.configured) {
+      toast.error('Bitte neuen API-Key eingeben.')
       return
     }
     setSaving(true)
@@ -61,7 +89,12 @@ export function LlmSettingsForm({ initial }: Props) {
       const res = await fetch('/api/settings/llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, model, apiKey }),
+        body: JSON.stringify({
+          provider,
+          model: effectiveModel,
+          apiKey,
+          endpoint: isAzure ? endpoint.trim() : undefined,
+        }),
       })
       if (!res.ok) {
         const d = await res.json() as { error?: string }
@@ -82,6 +115,7 @@ export function LlmSettingsForm({ initial }: Props) {
       await fetch('/api/settings/llm', { method: 'DELETE' })
       toast.success('LLM-Konfiguration entfernt.')
       setApiKey('')
+      setEndpoint('')
     } catch {
       toast.error('Fehler beim Entfernen.')
     } finally {
@@ -95,6 +129,7 @@ export function LlmSettingsForm({ initial }: Props) {
         <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
           <span className="text-green-600 text-sm font-medium">
             LLM konfiguriert: {initial.provider} / {initial.model}
+            {initial.endpoint && <span className="text-green-500 font-normal"> · {initial.endpoint}</span>}
           </span>
           <span className="text-gray-400 text-xs font-mono ml-auto">{initial.apiKeyMasked}</span>
         </div>
@@ -115,9 +150,25 @@ export function LlmSettingsForm({ initial }: Props) {
           </Select>
         </div>
 
+        {/* Endpoint nur für Azure */}
+        {isAzure && (
+          <div className="space-y-1.5">
+            <Label>Endpoint-URL</Label>
+            <Input
+              placeholder="https://mein-resource.openai.azure.com"
+              value={endpoint}
+              onChange={e => setEndpoint(e.target.value)}
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-gray-400">
+              Zu finden im Azure Portal unter: Azure OpenAI → Ihr Resource → Schlüssel und Endpunkt
+            </p>
+          </div>
+        )}
+
         <div className="space-y-1.5">
-          <Label>Modell</Label>
-          <Select value={model} onValueChange={v => setModel(v ?? providerData.models[0].id)}>
+          <Label>{isAzure ? 'Deployment-Name' : 'Modell'}</Label>
+          <Select value={model} onValueChange={v => { setModel(v ?? providerData.models[0].id); setCustomModel('') }}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -127,13 +178,24 @@ export function LlmSettingsForm({ initial }: Props) {
               ))}
             </SelectContent>
           </Select>
+          {isAzure && (
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400">Oder eigenen Deployment-Namen eingeben:</p>
+              <Input
+                placeholder="z.B. mein-gpt4o-deployment"
+                value={customModel}
+                onChange={e => setCustomModel(e.target.value)}
+                className="text-sm"
+              />
+            </div>
+          )}
         </div>
 
         <div className="space-y-1.5">
           <Label>API-Key</Label>
           <Input
             type="password"
-            placeholder={initial.configured ? 'Neuen Key eingeben (leer = unverändert)' : 'sk-ant-... oder sk-...'}
+            placeholder={initial.configured ? 'Neuen Key eingeben (leer = unverändert)' : 'sk-ant-... oder sk-... oder Azure-Key'}
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
             className="font-mono text-sm"

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
 import LopTable from '@/components/lop/LopTable'
+import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -81,7 +82,11 @@ export default async function ProjectPage({ params }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
+          <ProjectTitleEditor
+            projectId={project.id}
+            initialName={project.name}
+            canEdit={canEdit}
+          />
           {project.description && (
             <p className="text-sm text-gray-500 mt-1">{project.description}</p>
           )}

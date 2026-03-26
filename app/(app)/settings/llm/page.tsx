@@ -30,12 +30,12 @@ export default async function LlmSettingsPage() {
 
   const { data: llmConfig } = await supabase
     .from('workspace_llm_config')
-    .select('provider, model')
+    .select('provider, model, endpoint')
     .eq('workspace_id', workspace.id)
-    .single() as { data: { provider: string; model: string } | null }
+    .single() as { data: { provider: string; model: string; endpoint: string | null } | null }
 
   const initial = llmConfig
-    ? { configured: true, provider: llmConfig.provider, model: llmConfig.model, apiKeyMasked: '••••••••' }
+    ? { configured: true, provider: llmConfig.provider, model: llmConfig.model, endpoint: llmConfig.endpoint ?? undefined, apiKeyMasked: '••••••••' }
     : { configured: false }
 
   return (

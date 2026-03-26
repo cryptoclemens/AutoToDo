@@ -12,7 +12,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 |---|---|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
-| KI | Anthropic Claude / OpenAI GPT (BYOK – Bring Your Own Key) |
+| KI | Anthropic Claude / OpenAI GPT / Azure OpenAI (BYOK – Bring Your Own Key) |
 | Deployment | Vercel |
 | E-Mail | Resend (geplant) |
 | Billing | Stripe (geplant) |
@@ -61,6 +61,7 @@ supabase/migrations/002_rls_policies.sql
 supabase/migrations/003_indexes.sql
 supabase/migrations/004_lop_extensions.sql
 supabase/migrations/005_fix_rls_recursion.sql
+supabase/migrations/006_llm_endpoint.sql
 ```
 
 ### 4. Entwicklungsserver starten
@@ -108,8 +109,9 @@ autotodo/
 
 - **Workspace-Auflösung:** `resolveWorkspace()` löst den Workspace via Slug (Subdomain) oder Membership-Fallback auf – funktioniert auf Single-Domain und Subdomain-Deployments
 - **Row-Level Security:** Vollständige Datenisolation zwischen Workspaces auf DB-Ebene
-- **BYOK:** LLM-API-Keys werden AES-256-GCM verschlüsselt gespeichert (`ENCRYPTION_SECRET` erforderlich)
-- **Transkripte:** verschlüsselt in Supabase Storage abgelegt
+- **BYOK:** API-Keys für Anthropic, OpenAI und Azure OpenAI werden AES-256-GCM verschlüsselt gespeichert
+- **Azure OpenAI:** Endpoint-URL + Deployment-Name konfigurierbar (Microsoft Copilot Enterprise)
+- **Transkripte:** Copy & Paste oder Datei (.txt/.rtf), verschlüsselt in Supabase Storage
 - **Service-Role-Client:** Verwendet serverseitig, um RLS-Rekursionsprobleme zu umgehen
 
 ---

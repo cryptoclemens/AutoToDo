@@ -38,9 +38,9 @@ export async function GET() {
   const supabase = supabaseAdmin()
   const { data } = await supabase
     .from('workspace_llm_config')
-    .select('provider, model, encrypted_api_key')
+    .select('provider, model, encrypted_api_key, endpoint')
     .eq('workspace_id', ctx.workspaceId)
-    .single() as { data: { provider: string; model: string; encrypted_api_key: string } | null }
+    .single() as { data: { provider: string; model: string; encrypted_api_key: string; endpoint: string | null } | null }
 
   if (!data) return NextResponse.json({ configured: false })
 
@@ -48,7 +48,7 @@ export async function GET() {
     configured: true,
     provider: data.provider,
     model: data.model,
-    // Return masked key for display
+    endpoint: data.endpoint ?? undefined,
     apiKeyMasked: '••••••••' + decrypt(data.encrypted_api_key).slice(-4),
   })
 }
@@ -62,9 +62,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 
-  const body = await req.json() as { provider: string; model: string; apiKey: string }
+  const body = await req.json() as { provider: string; model: string; apiKey: string; endpoint?: string }
   if (!body.provider || !body.model || !body.apiKey) {
     return NextResponse.json({ error: 'provider, model und apiKey sind erforderlich.' }, { status: 400 })
+  }
+  if (body.provider === 'azure_openai' && !body.endpoint) {
+    return NextResponse.json({ error: 'Endpoint-URL ist für Azure OpenAI erforderlich.' }, { status: 400 })
   }
 
   const encrypted = encrypt(body.apiKey)
@@ -77,6 +80,7 @@ export async function POST(req: NextRequest) {
       provider: body.provider,
       model: body.model,
       encrypted_api_key: encrypted,
+      endpoint: body.endpoint ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'workspace_id' })
 

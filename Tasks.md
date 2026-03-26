@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–6 + Deployment-Fixes abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–6c abgeschlossen)
 
 ---
 
@@ -100,6 +100,23 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–6 + Deployment-Fixes abgesch
 | 6b.9 | `/settings/members` Team-Übersicht angelegt | ✅ Erledigt |
 | 6b.10 | Button "Transkript hochladen" mit Brand-Farbe | ✅ Erledigt |
 | 6b.11 | CLAUDE.md mit Projektregeln & Fallstricken angelegt | ✅ Erledigt |
+
+### Meilenstein 6c: UX-Features & Provider-Erweiterung
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 6c.1 | LOP-Filter nach Verantwortlichem | ✅ Erledigt |
+| 6c.2 | LOP-Detail-Dialog (Titelklick → Popup mit allen Feldern, editierbar) | ✅ Erledigt |
+| 6c.3 | Transkript-Upload: Textarea (Copy & Paste) als primäre Eingabe | ✅ Erledigt |
+| 6c.4 | Transkript-Upload: optionaler Datei-Upload (.txt + .rtf) | ✅ Erledigt |
+| 6c.5 | Azure OpenAI (Microsoft Copilot) als LLM-Provider | ✅ Erledigt |
+| 6c.6 | LLM-Settings: Endpoint-URL-Feld für Azure | ✅ Erledigt |
+| 6c.7 | LLM-Settings: Custom Deployment-Name für Azure | ✅ Erledigt |
+| 6c.8 | Migration 006: `endpoint`-Spalte in `workspace_llm_config` | ✅ Erledigt |
+| 6c.9 | Projekttitel inline editierbar (Stift-Icon bei Hover) | ✅ Erledigt |
+| 6c.10 | PATCH `/api/projects/[id]` – Name & Beschreibung ändern | ✅ Erledigt |
+| 6c.11 | Placeholder im Neues-Projekt-Formular angepasst | ✅ Erledigt |
+| 6c.12 | `/projects`-Seite: redirect auf Dashboard (404 behoben) | ✅ Erledigt |
 
 ---
 

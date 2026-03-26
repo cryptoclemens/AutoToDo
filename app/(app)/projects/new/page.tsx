@@ -62,7 +62,7 @@ export default function NewProjectPage() {
               <Label htmlFor="name">Projektname *</Label>
               <Input
                 id="name"
-                placeholder="z.B. BOWA Geothermie Q2 2026"
+                placeholder="z.B. PMO Automobilzulieferer XYZ"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required

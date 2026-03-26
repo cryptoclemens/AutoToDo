@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.2 (BYOK-Edition) | Stand: März 2026
+**Version:** 2.3 (BYOK-Edition) | Stand: März 2026
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -96,8 +96,9 @@ XLSX-Exports enthalten Workspace-Name in der Kopfzeile.
 
 | Provider | Modell(e) | Status |
 |---|---|---|
-| Anthropic | claude-sonnet-4-6, claude-haiku-4-5 | MVP |
-| OpenAI | gpt-4o, gpt-4o-mini | MVP |
+| Anthropic | claude-sonnet-4-6, claude-haiku-4-5 | ✅ MVP |
+| OpenAI | gpt-4o, gpt-4o-mini | ✅ MVP |
+| Azure OpenAI (Microsoft Copilot) | gpt-4o, gpt-4o-mini + Custom Deployment | ✅ MVP |
 | Google | gemini-1.5-pro, gemini-1.5-flash | Phase 2 |
 | Mistral | mistral-large, mistral-small | Phase 2 |
 | Ollama (lokal) | llama3, mistral, ... | Phase 3 |
@@ -175,6 +176,7 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 | `003_indexes.sql` | Performance-Indexes |
 | `004_lop_extensions.sql` | KI-Metadaten-Felder, Audit-Log |
 | `005_fix_rls_recursion.sql` | Behebt RLS-Rekursion in workspace_members |
+| `006_llm_endpoint.sql` | `endpoint`-Spalte für Azure OpenAI in workspace_llm_config |
 
 ### RLS-Hinweis
 Die `workspace_members`-Tabelle darf sich nicht selbst in einer Policy referenzieren (Rekursion). Policy lautet:
@@ -221,15 +223,17 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 ## Entwicklungsphasen
 
 ### Phase 1 – SaaS-Kern ✅ Abgeschlossen
-- Supabase: Schema + RLS deployen
+- Supabase: Schema + RLS deployen (6 Migrations)
 - Next.js 14 + TypeScript + Tailwind + shadcn/ui
 - Middleware (Auth-Schutz + Workspace-Header)
 - Supabase Auth: Registrierung, Login, Passwort-Reset, E-Mail-Bestätigung
 - Workspace-Erstellung bei Registrierung + Onboarding-Wizard
 - Einladungs-Flow (Token-basiert)
-- Projekt-CRUD
-- LOP-Tabelle (Inline-Edit, Status-Toggle, Filter)
-- Transkript-Upload + Verschlüsselung + LLM-Verarbeitung
+- Projekt-CRUD inkl. Inline-Umbenennung des Projekttitels
+- LOP-Tabelle (Inline-Edit, Status-Toggle, Filter nach Status/Priorität/Verantwortlichem)
+- LOP-Detail-Dialog (Klick auf Titel öffnet vollständiges Edit-Popup)
+- Transkript-Upload: Textarea (Copy & Paste) + Datei-Upload (.txt/.rtf)
+- LLM-Verarbeitung: Anthropic, OpenAI, Azure OpenAI (Microsoft Copilot)
 - KI-Vorschläge Review-Flow
 - XLSX-Export
 - Basis-Branding (Akzentfarbe)
