@@ -6,6 +6,24 @@ import { encrypt } from '@/lib/encryption'
 import { resolveWorkspace } from '@/lib/workspace'
 
 const MAX_FILE_SIZE = 500 * 1024 // 500 KB
+const MAX_TEXT_SIZE = 500 * 1024 // 500 KB as characters
+
+/** Strip basic RTF markup to plain text */
+function stripRtf(rtf: string): string {
+  let text = rtf
+  // Replace paragraph/line breaks with newlines
+  text = text.replace(/\\par[d]?\b\s?/g, '\n')
+  text = text.replace(/\\line\b\s?/g, '\n')
+  // Remove header groups like {\fonttbl ...} {\colortbl ...}
+  text = text.replace(/\{\\[a-z]+[^{}]*\}/g, '')
+  // Remove remaining control words and symbols
+  text = text.replace(/\\[a-z]+[-]?\d*\s?/gi, '')
+  // Remove braces and backslashes
+  text = text.replace(/[{}\\]/g, '')
+  // Collapse excess blank lines
+  text = text.replace(/\n{3,}/g, '\n\n')
+  return text.trim()
+}
 
 export async function POST(req: NextRequest) {
   const authClient = createClient()
@@ -33,18 +51,16 @@ export async function POST(req: NextRequest) {
   }
 
   const formData = await req.formData()
-  const file = formData.get('file') as File | null
   const projectId = formData.get('projectId') as string | null
   const meetingDate = formData.get('meetingDate') as string | null
+  const pastedText = formData.get('text') as string | null
+  const file = formData.get('file') as File | null
 
-  if (!file || !projectId) {
-    return NextResponse.json({ error: 'file und projectId sind erforderlich.' }, { status: 400 })
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId ist erforderlich.' }, { status: 400 })
   }
-  if (!file.name.endsWith('.txt')) {
-    return NextResponse.json({ error: 'Nur .txt-Dateien erlaubt.' }, { status: 400 })
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: 'Datei zu groß (max. 500 KB).' }, { status: 400 })
+  if (!pastedText && !file) {
+    return NextResponse.json({ error: 'Entweder Text oder Datei erforderlich.' }, { status: 400 })
   }
 
   // Verify project belongs to workspace
@@ -54,12 +70,36 @@ export async function POST(req: NextRequest) {
     }
   if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
 
-  // Read and encrypt transcript content
-  const text = await file.text()
+  // Resolve text content from either source
+  let text: string
+  let originalFilename: string
+
+  if (pastedText) {
+    if (pastedText.length > MAX_TEXT_SIZE) {
+      return NextResponse.json({ error: 'Text zu lang (max. 500 KB).' }, { status: 400 })
+    }
+    text = pastedText
+    originalFilename = 'eingefügter-text.txt'
+  } else {
+    // file is guaranteed non-null here since we checked above
+    const f = file!
+    if (f.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'Datei zu groß (max. 500 KB).' }, { status: 400 })
+    }
+    const isRtf = f.name.toLowerCase().endsWith('.rtf')
+    const isTxt = f.name.toLowerCase().endsWith('.txt')
+    if (!isTxt && !isRtf) {
+      return NextResponse.json({ error: 'Nur .txt und .rtf Dateien erlaubt.' }, { status: 400 })
+    }
+    const raw = await f.text()
+    text = isRtf ? stripRtf(raw) : raw
+    originalFilename = f.name
+  }
+
   const encryptedContent = encrypt(text)
 
-  // Store encrypted content in Supabase Storage
-  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${file.name}`
+  // Store in Supabase Storage
+  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${originalFilename}`
   const { error: storageError } = await supabase.storage
     .from('transcripts')
     .upload(storagePath, Buffer.from(encryptedContent, 'utf8'), {
@@ -68,7 +108,6 @@ export async function POST(req: NextRequest) {
     })
 
   if (storageError) {
-    // Fallback: store without storage (just DB record with encrypted content)
     console.error('Storage upload failed:', storageError.message)
   }
 
@@ -78,7 +117,7 @@ export async function POST(req: NextRequest) {
     .insert({
       project_id: projectId,
       workspace_id: workspace.id,
-      original_filename: file.name,
+      original_filename: originalFilename,
       file_path: storageError ? '' : storagePath,
       storage_path: storageError ? null : storagePath,
       encrypted_content: storageError ? encryptedContent : null,

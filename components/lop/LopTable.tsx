@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import LopTableRow from './LopTableRow'
+import LopItemDialog, { type LopItem } from './LopItemDialog'
 import ReviewBanner from './ReviewBanner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,20 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
-
-interface LopItem {
-  id: string
-  title: string
-  description: string | null
-  responsible: string | null
-  due_date: string | null
-  priority: Priority
-  status: Status
-  result: string | null
-  requires_review: boolean
-  ai_confidence: number | null
-  source_quote: string | null
-}
 
 interface Props {
   initialItems: LopItem[]
@@ -34,14 +21,26 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   const [items, setItems] = useState<LopItem[]>(initialItems)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
+  const [filterResponsible, setFilterResponsible] = useState<string>('all')
   const [filterSearch, setFilterSearch] = useState('')
   const [showReviewOnly, setShowReviewOnly] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<LopItem | null>(null)
+
   const reviewCount = items.filter(i => i.requires_review).length
+
+  // Distinct responsible values for filter dropdown
+  const responsibleOptions = useMemo(() => {
+    const values = items
+      .map(i => i.responsible)
+      .filter((r): r is string => !!r)
+    return Array.from(new Set(values)).sort()
+  }, [items])
 
   const filtered = items.filter(item => {
     if (showReviewOnly && !item.requires_review) return false
     if (filterStatus !== 'all' && item.status !== filterStatus) return false
     if (filterPriority !== 'all' && item.priority !== filterPriority) return false
+    if (filterResponsible !== 'all' && item.responsible !== filterResponsible) return false
     if (filterSearch) {
       const q = filterSearch.toLowerCase()
       return (
@@ -54,8 +53,9 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   })
 
   async function handleUpdate(id: string, changes: Partial<LopItem>) {
-    // Optimistisches Update
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i))
+    // Also update selectedItem if it's open
+    setSelectedItem(prev => prev?.id === id ? { ...prev, ...changes } : prev)
 
     const res = await fetch(`/api/lop/${id}`, {
       method: 'PATCH',
@@ -64,7 +64,6 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
     })
 
     if (!res.ok) {
-      // Rollback bei Fehler
       setItems(initialItems)
     }
   }
@@ -72,6 +71,7 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   async function handleDelete(id: string) {
     if (!confirm('Diesen LOP-Punkt wirklich löschen?')) return
     setItems(prev => prev.filter(i => i.id !== id))
+    if (selectedItem?.id === id) setSelectedItem(null)
 
     const res = await fetch(`/api/lop/${id}`, { method: 'DELETE' })
     if (!res.ok) setItems(initialItems)
@@ -94,7 +94,7 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
           placeholder="Suchen…"
           value={filterSearch}
           onChange={e => setFilterSearch(e.target.value)}
-          className="w-48 h-8 text-sm"
+          className="w-44 h-8 text-sm"
         />
         <Select value={filterStatus} onValueChange={v => setFilterStatus(v ?? 'all')}>
           <SelectTrigger className="w-40 h-8 text-sm">
@@ -118,6 +118,19 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
             <SelectItem value="niedrig">Niedrig</SelectItem>
           </SelectContent>
         </Select>
+        {responsibleOptions.length > 0 && (
+          <Select value={filterResponsible} onValueChange={v => setFilterResponsible(v ?? 'all')}>
+            <SelectTrigger className="w-44 h-8 text-sm">
+              <SelectValue placeholder="Verantwortlich" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Personen</SelectItem>
+              {responsibleOptions.map(name => (
+                <SelectItem key={name} value={name}>{name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         {showReviewOnly && (
           <button
             onClick={() => setShowReviewOnly(false)}
@@ -161,8 +174,10 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
                   key={item.id}
                   item={item}
                   index={index}
+                  canEdit={canEdit}
                   onUpdate={handleUpdate}
                   onDelete={handleDelete}
+                  onOpenDetail={() => setSelectedItem(item)}
                 />
               ))
             )}
@@ -174,6 +189,14 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
       {canEdit && (
         <AddLopItemForm projectId={projectId} onAdd={handleNewItem} />
       )}
+
+      {/* Detail-Dialog */}
+      <LopItemDialog
+        item={selectedItem}
+        canEdit={canEdit}
+        onClose={() => setSelectedItem(null)}
+        onUpdate={handleUpdate}
+      />
     </div>
   )
 }
@@ -212,8 +235,8 @@ function AddLopItemForm({
     })
 
     if (!res.ok) {
-      const { error } = await res.json()
-      setError(error ?? 'Fehler beim Erstellen.')
+      const { error: e } = await res.json()
+      setError(e ?? 'Fehler beim Erstellen.')
       setLoading(false)
       return
     }
@@ -280,7 +303,7 @@ function AddLopItemForm({
         <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
           Abbrechen
         </Button>
-        <Button type="submit" size="sm" disabled={loading} style={{ backgroundColor: 'var(--brand)' }}>
+        <Button type="submit" size="sm" disabled={loading} style={{ backgroundColor: 'var(--brand)' }} className="text-white">
           {loading ? 'Wird gespeichert…' : 'Hinzufügen'}
         </Button>
       </div>

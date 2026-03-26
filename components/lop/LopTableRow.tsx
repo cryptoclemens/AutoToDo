@@ -7,36 +7,25 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import type { LopItem } from './LopItemDialog'
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
-interface LopItemRow {
-  id: string
-  title: string
-  description: string | null
-  responsible: string | null
-  due_date: string | null
-  priority: Priority
-  status: Status
-  result: string | null
-  requires_review: boolean
-  ai_confidence: number | null
-  source_quote: string | null
-}
-
 interface Props {
-  item: LopItemRow
+  item: LopItem
   index: number
-  onUpdate: (id: string, changes: Partial<LopItemRow>) => Promise<void>
+  canEdit: boolean
+  onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
   onDelete: (id: string) => void
+  onOpenDetail: () => void
 }
 
 const STATUS_CYCLE: Status[] = ['offen', 'in_bearbeitung', 'abgeschlossen']
 
-export default function LopTableRow({ item, index, onUpdate, onDelete }: Props) {
+export default function LopTableRow({ item, index, canEdit, onUpdate, onDelete, onOpenDetail }: Props) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState<LopItemRow>(item)
+  const [draft, setDraft] = useState<LopItem>(item)
   const [saving, setSaving] = useState(false)
 
   function cycleStatus() {
@@ -142,21 +131,26 @@ export default function LopTableRow({ item, index, onUpdate, onDelete }: Props) 
     <tr className={`border-b hover:bg-gray-50 group ${rowBg}`}>
       <td className="px-3 py-2.5 text-center text-xs text-gray-400">{index + 1}</td>
       <td className="px-3 py-2.5 max-w-[240px]">
-        <div className="font-medium text-sm text-gray-900 truncate" title={item.title}>
-          {item.title}
-        </div>
-        {item.description && (
-          <div className="text-xs text-gray-400 truncate mt-0.5">{item.description}</div>
-        )}
-        {item.requires_review && (
-          <span className="inline-block mt-1 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">
-            KI-Vorschlag
-          </span>
-        )}
+        <button
+          onClick={onOpenDetail}
+          className="text-left w-full"
+          title="Details anzeigen"
+        >
+          <div className="font-medium text-sm text-gray-900 truncate hover:text-blue-600 hover:underline transition-colors">
+            {item.title}
+          </div>
+          {item.description && (
+            <div className="text-xs text-gray-400 truncate mt-0.5">{item.description}</div>
+          )}
+          {item.requires_review && (
+            <span className="inline-block mt-1 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">
+              KI-Vorschlag
+            </span>
+          )}
+        </button>
       </td>
       <td className="px-3 py-2.5">
-        {/* Status-Toggle per Klick */}
-        <button onClick={cycleStatus} title="Klicken zum Wechseln">
+        <button onClick={cycleStatus} title="Klicken zum Wechseln" disabled={!canEdit}>
           <StatusBadge status={item.status} />
         </button>
       </td>
@@ -177,26 +171,28 @@ export default function LopTableRow({ item, index, onUpdate, onDelete }: Props) 
           : <span className="text-gray-300 text-xs">–</span>}
       </td>
       <td className="px-3 py-2.5 text-right">
-        <div className="opacity-0 group-hover:opacity-100 flex gap-1 justify-end transition-opacity">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0 text-gray-400 hover:text-blue-600"
-            onClick={() => setEditing(true)}
-            title="Bearbeiten"
-          >
-            ✏
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
-            onClick={() => onDelete(item.id)}
-            title="Löschen"
-          >
-            🗑
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="opacity-0 group-hover:opacity-100 flex gap-1 justify-end transition-opacity">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 text-gray-400 hover:text-blue-600"
+              onClick={() => { setDraft(item); setEditing(true) }}
+              title="Inline bearbeiten"
+            >
+              ✏
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
+              onClick={() => onDelete(item.id)}
+              title="Löschen"
+            >
+              🗑
+            </Button>
+          </div>
+        )}
       </td>
     </tr>
   )
