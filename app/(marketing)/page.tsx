@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
-const version = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')).version as string
+// AUTO-UPDATED by scripts/bump-version.sh
+const APP_VERSION = '0.1.3'
 
 export default function LandingPage() {
   return (
@@ -149,7 +148,7 @@ export default function LandingPage() {
       {/* Versions-Badge (fixed, unten rechts) */}
       <div className="fixed bottom-4 right-4 z-50">
         <span className="bg-gray-900 text-gray-300 text-xs font-mono px-3 py-1.5 rounded-full shadow-lg border border-gray-700 select-none">
-          v{version}
+          v{APP_VERSION}
         </span>
       </div>
     </div>

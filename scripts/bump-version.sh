@@ -26,6 +26,10 @@ node -e "
 
 echo "Version bumped: ${CURRENT} → ${NEW}"
 
+# APP_VERSION in marketing page aktualisieren
+MARKETING_PAGE="$(git rev-parse --show-toplevel)/app/(marketing)/page.tsx"
+sed -i "s/const APP_VERSION = '[^']*'/const APP_VERSION = '${NEW}'/" "${MARKETING_PAGE}"
+
 # Commit erstellen (ohne Hook-Loop)
-git add "${PACKAGE_JSON}"
+git add "${PACKAGE_JSON}" "${MARKETING_PAGE}"
 git commit --no-verify -m "chore: bump version to ${NEW}"
