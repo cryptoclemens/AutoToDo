@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 // AUTO-UPDATED by scripts/bump-version.sh
-const APP_VERSION = '0.1.16'
+const APP_VERSION = '0.1.17'
 
 export default function LandingPage() {
   return (
