@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { version } from '@/package.json'
+import packageJson from '@/package.json'
+
+const version = packageJson.version
 
 export default function LandingPage() {
   return (
