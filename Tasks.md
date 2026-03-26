@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–6c abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–6d abgeschlossen)
 
 ---
 
@@ -118,6 +118,18 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–6c abgeschlossen)
 | 6c.11 | Placeholder im Neues-Projekt-Formular angepasst | ✅ Erledigt |
 | 6c.12 | `/projects`-Seite: redirect auf Dashboard (404 behoben) | ✅ Erledigt |
 
+### Meilenstein 6d: Einladungssystem
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 6d.1 | Einladungs-UI auf Projektseite (`ProjectInviteButton`) | ✅ Erledigt |
+| 6d.2 | Einladungs-UI auf Team-Seite (`WorkspaceInviteForm`) | ✅ Erledigt |
+| 6d.3 | API gibt Einladungslinks zurück (zum manuellen Kopieren) | ✅ Erledigt |
+| 6d.4 | Mehrere E-Mails per Komma/Leerzeichen trennbar | ✅ Erledigt |
+| 6d.5 | Rollenwahl bei Einladung (Editor, Betrachter, Projekt-Admin, Admin) | ✅ Erledigt |
+| 6d.6 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | 🔲 Offen (Phase 2, M7) |
+| 6d.7 | E-Mail-Versand über Resend | 🔲 Offen (Phase 2) |
+
 ---
 
 ## Phase 2 – SaaS-Features
@@ -133,6 +145,9 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–6c abgeschlossen)
 | 7.5 | Öffentliche REST API: `/v1/projects` | 🔲 Offen |
 | 7.6 | Öffentliche REST API: `/v1/lop` | 🔲 Offen |
 | 7.7 | Öffentliche REST API: `/v1/transcripts` | 🔲 Offen |
+| 7.8 | Feedback-Button (unten links, für Feedback & Feature-Wünsche) | 🔲 Offen |
+| 7.9 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle, RLS) | 🔲 Offen |
+| 7.10 | E-Mail-Versand für Einladungen (Resend) | 🔲 Offen |
 
 ### Meilenstein 8: Webhooks & Audit
 

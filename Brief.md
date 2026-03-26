@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.3 (BYOK-Edition) | Stand: März 2026
+**Version:** 2.4 (BYOK-Edition) | Stand: März 2026
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -71,9 +71,15 @@ Landing Page → Registrierung (E-Mail, Passwort, Workspace-Name)
 
 ### Einladungs-Flow
 ```
-Einladungs-E-Mail (Resend) → /invite/[token] → Registrierung/Login
+Einladungs-Link generieren (Projektseite oder Team-Einstellungen)
+→ Link manuell versenden (Resend-Integration in Phase 2)
+→ Empfänger öffnet /invite/[token] → Registrierung/Login
 → Automatische Workspace-Mitgliedschaft → Redirect zu Dashboard
 ```
+
+**Aktueller Status:** Einladungslinks werden generiert und angezeigt (manuell versenden). E-Mail-Versand via Resend ist für Phase 2 geplant.
+
+**Geplant (Phase 2):** Projektspezifische Mitgliedschaft über separate `project_members`-Tabelle, sodass Eingeladene nur auf bestimmte Projekte – nicht den gesamten Workspace – Zugriff erhalten.
 
 ---
 
@@ -247,6 +253,9 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Webhook-System (Registrierung + Delivery + Retry)
 - Audit-Log UI
 - Rollenverwaltung UI
+- Projektspezifische Mitgliedschaft (`project_members`-Tabelle)
+- E-Mail-Versand für Einladungen (Resend)
+- Feedback-Button (unten links, für Nutzer-Feedback & Feature-Wünsche)
 
 ### Phase 3 – Wachstum (optional)
 - Stripe-Billing (Free/Pro/Enterprise)

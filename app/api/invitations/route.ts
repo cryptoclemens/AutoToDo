@@ -48,12 +48,19 @@ export async function POST(request: NextRequest) {
     invited_by: user.id,
   }))
 
-  const { error } = await supabase.from('invitations').insert(invitations)
-  if (error) {
+  const { data: inserted, error } = await supabase
+    .from('invitations')
+    .insert(invitations)
+    .select('email, token')
+  if (error || !inserted) {
     return NextResponse.json({ error: 'Einladungen konnten nicht gespeichert werden.' }, { status: 500 })
   }
 
-  // TODO: E-Mails via Resend senden (Phase 1, Meilenstein 3.4)
+  // TODO: E-Mails via Resend senden (Phase 2, Meilenstein 3.4)
 
-  return NextResponse.json({ ok: true, count: invitations.length })
+  return NextResponse.json({
+    ok: true,
+    count: inserted.length,
+    tokens: inserted.map((i: { email: string; token: string }) => ({ email: i.email, token: i.token })),
+  })
 }

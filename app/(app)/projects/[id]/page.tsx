@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
 import LopTable from '@/components/lop/LopTable'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
+import ProjectInviteButton from '@/components/projects/ProjectInviteButton'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -112,6 +113,16 @@ export default async function ProjectPage({ params }: Props) {
       {project.archived_at && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 mb-4 text-sm text-yellow-800">
           ⚠ Dieses Projekt ist archiviert.
+        </div>
+      )}
+
+      {/* Mitglied einladen */}
+      {canAdmin && !project.archived_at && (
+        <div className="mb-6">
+          <ProjectInviteButton
+            workspaceId={workspace.id}
+            projectName={project.name}
+          />
         </div>
       )}
 

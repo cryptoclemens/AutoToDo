@@ -5,6 +5,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import WorkspaceInviteForm from './WorkspaceInviteForm'
 
 const ROLE_LABELS: Record<string, string> = {
   workspace_owner: 'Inhaber',
@@ -36,10 +37,25 @@ export default async function MembersPage() {
       data: Array<{ user_id: string; role: string; joined_at: string }> | null
     }
 
+  const { data: myMember } = await supabase
+    .from('workspace_members').select('role')
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
+      data: { role: string } | null
+    }
+
+  const canInvite = ['workspace_owner', 'workspace_admin'].includes(myMember?.role ?? '')
+
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Team</h1>
       <p className="text-sm text-gray-500 mb-6">{members?.length ?? 0} Mitglieder in diesem Workspace</p>
+
+      {/* Einladen */}
+      {canInvite && (
+        <div className="mb-6">
+          <WorkspaceInviteForm workspaceId={workspace.id} />
+        </div>
+      )}
 
       <div className="space-y-2">
         {members?.map(m => (
