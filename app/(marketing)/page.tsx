@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import packageJson from '@/package.json'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
-const version = packageJson.version
+const version = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')).version as string
 
 export default function LandingPage() {
   return (
