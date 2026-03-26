@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ logo_url: logoUrl })
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   const authClient = createClient()
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })

@@ -14,7 +14,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
 | KI | Anthropic Claude / OpenAI GPT / Azure OpenAI (BYOK – Bring Your Own Key) |
 | Deployment | Vercel |
-| E-Mail | Resend (geplant) |
+| E-Mail | Resend (optional, via `RESEND_API_KEY`) |
 | Billing | Stripe (geplant) |
 
 ---
@@ -62,6 +62,7 @@ supabase/migrations/003_indexes.sql
 supabase/migrations/004_lop_extensions.sql
 supabase/migrations/005_fix_rls_recursion.sql
 supabase/migrations/006_llm_endpoint.sql
+supabase/migrations/007_m7.sql
 ```
 
 ### 4. Entwicklungsserver starten
@@ -86,17 +87,21 @@ autotodo/
 │   ├── auth/callback/      # Supabase E-Mail-Bestätigung
 │   └── api/                # API Routes
 ├── components/
-│   ├── lop/                # LOP-Tabelle, Badges, ReviewBanner
+│   ├── lop/                # LOP-Tabelle, Badges, ReviewBanner, LopItemDialog
 │   ├── transcripts/        # TranscriptUploadForm
-│   ├── workspace/          # Nav, BrandProvider
+│   ├── workspace/          # WorkspaceNav
+│   ├── projects/           # ProjectTitleEditor, ProjectInviteButton
+│   ├── FeedbackButton.tsx  # Feedback-Popup (fixed bottom-left)
+│   ├── HowToModal.tsx      # How-to-Tour (6 Schritte)
 │   └── ui/                 # shadcn/ui Komponenten
 ├── lib/
 │   ├── supabase/           # Client, Server, Middleware Helper
 │   ├── llm/                # LLM-Abstraktionsschicht (BYOK)
 │   ├── workspace.ts        # resolveWorkspace() Helper
 │   ├── encryption.ts       # AES-256-GCM
+│   ├── apiKeyAuth.ts       # SHA-256 API-Key-Validierung
 │   └── export.ts           # XLSX-Export (SheetJS)
-├── supabase/migrations/    # SQL Migrations (5 Dateien)
+├── supabase/migrations/    # SQL Migrations (7 Dateien)
 ├── scripts/                # bump-version.sh, install-hooks.sh
 ├── middleware.ts            # Auth-Schutz + Workspace-Header
 ├── CLAUDE.md               # Entwicklungsregeln & Fallstricke
@@ -113,6 +118,8 @@ autotodo/
 - **Azure OpenAI:** Endpoint-URL + Deployment-Name konfigurierbar (Microsoft Copilot Enterprise)
 - **Transkripte:** Copy & Paste oder Datei (.txt/.rtf), verschlüsselt in Supabase Storage
 - **Service-Role-Client:** Verwendet serverseitig, um RLS-Rekursionsprobleme zu umgehen
+- **Public API:** `/api/v1/` Endpunkte via Bearer-Token (SHA-256-gehashte API-Keys)
+- **Projektspezifische Mitgliedschaft:** `project_members`-Tabelle, Einladungen tragen Nutzer projekt-scoped ein
 
 ---
 
@@ -124,8 +131,12 @@ Erforderliche Umgebungsvariablen in Vercel:
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
-ENCRYPTION_SECRET          # openssl rand -hex 32
-INTERNAL_API_SECRET        # beliebiger Secret-String
+ENCRYPTION_SECRET           # openssl rand -hex 32
+INTERNAL_API_SECRET         # beliebiger Secret-String
+# Optional:
+RESEND_API_KEY              # aktiviert automatischen E-Mail-Versand für Einladungen
+RESEND_FROM                 # z.B. "AutoToDo <noreply@autotodo.app>"
+NEXT_PUBLIC_APP_URL         # Basis-URL für Einladungslinks (z.B. https://autotodo.app)
 ```
 
 Supabase Auth → URL Configuration:

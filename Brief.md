@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.4 (BYOK-Edition) | Stand: März 2026
+**Version:** 2.5 (Phase-2-Edition) | Stand: März 2026
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -72,14 +72,14 @@ Landing Page → Registrierung (E-Mail, Passwort, Workspace-Name)
 ### Einladungs-Flow
 ```
 Einladungs-Link generieren (Projektseite oder Team-Einstellungen)
-→ Link manuell versenden (Resend-Integration in Phase 2)
+→ Optional: automatischer E-Mail-Versand via Resend (wenn RESEND_API_KEY gesetzt)
 → Empfänger öffnet /invite/[token] → Registrierung/Login
-→ Automatische Workspace-Mitgliedschaft → Redirect zu Dashboard
+→ Automatische Workspace- und Projekt-Mitgliedschaft → Redirect zu Dashboard
 ```
 
-**Aktueller Status:** Einladungslinks werden generiert und angezeigt (manuell versenden). E-Mail-Versand via Resend ist für Phase 2 geplant.
+**Aktueller Status:** Einladungslinks werden generiert und angezeigt. Wenn `RESEND_API_KEY` als Umgebungsvariable gesetzt ist, werden Einladungs-E-Mails automatisch verschickt.
 
-**Geplant (Phase 2):** Projektspezifische Mitgliedschaft über separate `project_members`-Tabelle, sodass Eingeladene nur auf bestimmte Projekte – nicht den gesamten Workspace – Zugriff erhalten.
+**Projektspezifische Mitgliedschaft:** Über `project_members`-Tabelle – Einladungen von der Projektseite tragen den Nutzer auch in `project_members` ein (nicht nur in `workspace_members`).
 
 ---
 
@@ -121,20 +121,20 @@ XLSX-Exports enthalten Workspace-Name in der Kopfzeile.
 
 ---
 
-## Public API & Webhooks (Phase 2)
+## Public API & Webhooks
 
-### REST API
-Basis-URL: `https://api.autotodo.app/v1`
+### REST API (implementiert ab M7)
+Basis-URL: `https://autotodo.app/api/v1`
 Authentifizierung: `Authorization: Bearer ak_live_...`
 
-**Endpunkte:**
-- `GET/POST /projects`
-- `GET/POST /projects/{id}/lop`
-- `PATCH/DELETE /lop/{id}`
-- `POST /projects/{id}/transcripts`
-- `GET /projects/{id}/export`
+**Implementierte Endpunkte:**
+- `GET/POST /api/v1/projects` – Projekte lesen/anlegen
+- `GET/POST /api/v1/lop?projectId=…` – LOP-Punkte lesen/anlegen
+- `POST /api/v1/transcripts` – Transkript per API hochladen
 
-### Webhooks
+**API-Key-Verwaltung:** `/settings/api` – Keys erstellen (SHA-256-gehashed), Scopes (`read`/`write`), widerrufen.
+
+**Webhooks (Phase 3):**
 
 | Event | Beschreibung |
 |---|---|
@@ -170,9 +170,11 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 - `transcripts` – Meeting-Transkripte (verschlüsselt in Supabase Storage)
 - `lop_items` – LOP-Punkte mit KI-Metadaten
 - `lop_item_history` – Audit-Log
-- `api_keys` – API-Keys (bcrypt-gehashed, Phase 2)
-- `webhook_endpoints` – Webhook-Konfigurationen (Phase 2)
-- `invitations` – Einladungs-Tokens
+- `api_keys` – API-Keys (SHA-256-gehashed)
+- `webhook_endpoints` – Webhook-Konfigurationen (Phase 3)
+- `invitations` – Einladungs-Tokens (inkl. `project_id`)
+- `project_members` – projektspezifische Mitgliedschaften
+- `feedback` – Nutzer-Feedback & Feature-Wünsche
 
 ### Migrations
 | Datei | Inhalt |
@@ -183,6 +185,7 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 | `004_lop_extensions.sql` | KI-Metadaten-Felder, Audit-Log |
 | `005_fix_rls_recursion.sql` | Behebt RLS-Rekursion in workspace_members |
 | `006_llm_endpoint.sql` | `endpoint`-Spalte für Azure OpenAI in workspace_llm_config |
+| `007_m7.sql` | `feedback`, `project_members`, `invitations.project_id`, api_keys RLS |
 
 ### RLS-Hinweis
 Die `workspace_members`-Tabelle darf sich nicht selbst in einer Policy referenzieren (Rekursion). Policy lautet:
@@ -219,7 +222,7 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 | Autorisierung | Postgres RLS |
 | Transkripte | AES-256-GCM |
 | LLM-API-Keys | AES-256-GCM (Envelope Encryption) |
-| API-Keys | bcrypt-gehashed (Phase 2) |
+| API-Keys | SHA-256-gehashed (lib/apiKeyAuth.ts) |
 | Webhooks | HMAC-SHA256 (Phase 2) |
 | Input-Validierung | Zod auf allen API Routes |
 | Tenant-Isolation | workspace_id + RLS + Service-Role-Client |
@@ -229,33 +232,31 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 ## Entwicklungsphasen
 
 ### Phase 1 – SaaS-Kern ✅ Abgeschlossen
-- Supabase: Schema + RLS deployen (6 Migrations)
+- Supabase: Schema + RLS deployen (7 Migrations)
 - Next.js 14 + TypeScript + Tailwind + shadcn/ui
 - Middleware (Auth-Schutz + Workspace-Header)
 - Supabase Auth: Registrierung, Login, Passwort-Reset, E-Mail-Bestätigung
 - Workspace-Erstellung bei Registrierung + Onboarding-Wizard
-- Einladungs-Flow (Token-basiert)
+- Einladungs-Flow (Token-basiert, Resend-E-Mail optional)
 - Projekt-CRUD inkl. Inline-Umbenennung des Projekttitels
 - LOP-Tabelle (Inline-Edit, Status-Toggle, Filter nach Status/Priorität/Verantwortlichem)
 - LOP-Detail-Dialog (Klick auf Titel öffnet vollständiges Edit-Popup)
 - Transkript-Upload: Textarea (Copy & Paste) + Datei-Upload (.txt/.rtf)
 - LLM-Verarbeitung: Anthropic, OpenAI, Azure OpenAI (Microsoft Copilot)
 - KI-Vorschläge Review-Flow
-- XLSX-Export
-- Basis-Branding (Akzentfarbe)
+- XLSX-Export mit Workspace-Branding (Farbe + Name)
+- Branding-Settings: Logo-Upload (Supabase Storage) + Akzentfarbe
+- API-Key-Verwaltung UI + öffentliche REST API (`/api/v1/`)
+- Projektspezifische Mitgliedschaft (`project_members`-Tabelle)
+- Feedback-Button (unten links, Kategorie-Auswahl, in DB gespeichert)
+- „How to"-Popup in Navigation (6-Schritte-Tour)
 - Vercel-Deployment + Single-Domain-Fixes
 
-### Phase 2 – SaaS-Features
-- Custom Branding (Logo-Upload, vollständiges CSS-System)
-- XLSX-Export mit Workspace-Branding
-- API-Key-Verwaltung (UI + Validierung)
-- Öffentliche REST API
-- Webhook-System (Registrierung + Delivery + Retry)
+### Phase 2 – SaaS-Features (nächste Schritte)
+- Webhook-System (Registrierung + Delivery + HMAC-SHA256-Signatur + Retry)
 - Audit-Log UI
 - Rollenverwaltung UI
-- Projektspezifische Mitgliedschaft (`project_members`-Tabelle)
-- E-Mail-Versand für Einladungen (Resend)
-- Feedback-Button (unten links, für Nutzer-Feedback & Feature-Wünsche)
+- Subdomain-Routing (`[slug].autotodo.app`)
 
 ### Phase 3 – Wachstum (optional)
 - Stripe-Billing (Free/Pro/Enterprise)

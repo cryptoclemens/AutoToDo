@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen)
+Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen, inkl. How-to-Guide)
 
 ---
 
@@ -127,8 +127,8 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen)
 | 6d.3 | API gibt Einladungslinks zurück (zum manuellen Kopieren) | ✅ Erledigt |
 | 6d.4 | Mehrere E-Mails per Komma/Leerzeichen trennbar | ✅ Erledigt |
 | 6d.5 | Rollenwahl bei Einladung (Editor, Betrachter, Projekt-Admin, Admin) | ✅ Erledigt |
-| 6d.6 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | 🔲 Offen (Phase 2, M7) |
-| 6d.7 | E-Mail-Versand über Resend | 🔲 Offen (Phase 2) |
+| 6d.6 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | ✅ Erledigt (M7.9) |
+| 6d.7 | E-Mail-Versand über Resend | ✅ Erledigt (M7.10, bedingt via `RESEND_API_KEY`) |
 
 ---
 
@@ -148,6 +148,7 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7 abgeschlossen)
 | 7.8 | Feedback-Button (unten links, mit Kategorie-Auswahl) | ✅ Erledigt |
 | 7.9 | Projektspezifische Mitgliedschaft (`project_members`-Tabelle) | ✅ Erledigt |
 | 7.10 | E-Mail-Versand für Einladungen (Resend, bedingt via `RESEND_API_KEY`) | ✅ Erledigt |
+| 7.11 | „How to"-Popup in Navigation (6-Schritte-Tour mit UI-Mockups) | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
 

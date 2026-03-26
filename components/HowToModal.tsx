@@ -136,7 +136,7 @@ export default function HowToModal() {
                   style={{ backgroundColor: 'var(--brand, #2563EB)' }}
                   className="text-white"
                 >
-                  Los geht's ✓
+                  Los geht&apos;s ✓
                 </Button>
               )}
             </div>
