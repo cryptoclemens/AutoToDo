@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,7 +13,7 @@ interface Props {
   onDone: (projectId: string) => void
 }
 
-export default function Step2Project({ workspaceId, userId, onDone }: Props) {
+export default function Step2Project({ workspaceId, userId: _userId, onDone }: Props) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)

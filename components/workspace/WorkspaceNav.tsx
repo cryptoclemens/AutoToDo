@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +21,7 @@ interface Props {
 const isAdmin = (role: string) =>
   ['workspace_owner', 'workspace_admin'].includes(role)
 
-export default function WorkspaceNav({ workspace, userRole, userId }: Props) {
+export default function WorkspaceNav({ workspace, userRole, userId: _userId }: Props) {
   const pathname = usePathname()
   const router = useRouter()
 

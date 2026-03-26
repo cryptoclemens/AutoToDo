@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,7 +24,6 @@ export default function Step1Workspace({ workspace, onDone }: Props) {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
     const res = await fetch('/api/workspaces/' + workspace.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

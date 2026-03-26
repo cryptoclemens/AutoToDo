@@ -14,7 +14,7 @@ interface Props {
 export default function OnboardingWizard({ workspace, userId }: Props) {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [projectId, setProjectId] = useState<string | null>(null)
+  const [_projectId, setProjectId] = useState<string | null>(null)
 
   function handleStep1Done() {
     setStep(2)

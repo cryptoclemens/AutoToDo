@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import LopTableRow from './LopTableRow'
 import ReviewBanner from './ReviewBanner'
 import { Button } from '@/components/ui/button'
@@ -36,8 +36,6 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [filterSearch, setFilterSearch] = useState('')
   const [showReviewOnly, setShowReviewOnly] = useState(false)
-  const [isPending, startTransition] = useTransition()
-
   const reviewCount = items.filter(i => i.requires_review).length
 
   const filtered = items.filter(item => {
