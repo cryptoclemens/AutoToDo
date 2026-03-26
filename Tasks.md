@@ -52,6 +52,15 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–4 abgeschlossen)
 | 4.5 | LOP-Punkt manuell anlegen | ✅ Erledigt |
 | 4.6 | StatusBadge & PriorityBadge Komponenten | ✅ Erledigt |
 
+### Meilenstein 4b: Versions-Management
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 4b.1 | Versions-Badge (fixed, unten rechts) auf Landing Page | ✅ Erledigt |
+| 4b.2 | `scripts/bump-version.sh` – automatischer Patch-Bump | ✅ Erledigt |
+| 4b.3 | `scripts/install-hooks.sh` – pre-push Hook Installation | ✅ Erledigt |
+| 4b.4 | `resolveJsonModule: true` in tsconfig (Import von package.json) | ✅ Erledigt |
+
 ### Meilenstein 5: Transkript-Verarbeitung
 
 | # | Aufgabe | Status |

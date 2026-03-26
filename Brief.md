@@ -141,6 +141,19 @@ Delivery: 3 Retries (exponential backoff), HMAC-SHA256-Signatur
 
 ---
 
+## Versionsverwaltung
+
+### Versions-Badge (Landing Page)
+Die Landing Page zeigt unten rechts ein fixiertes Badge mit der aktuellen Applikationsversion (aus `package.json`).
+
+### Automatischer Versions-Bump
+Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Version in `package.json` und erstellt einen Commit:
+- `scripts/bump-version.sh` – liest aktuelle Version, erhöht Patch-Zahl, schreibt `package.json`, committed mit `--no-verify`
+- `scripts/install-hooks.sh` – einmalig nach dem Klonen ausführen, um den Hook zu installieren
+- Versionsformat: SemVer `MAJOR.MINOR.PATCH` (z.B. `0.1.0` → `0.1.1`)
+
+---
+
 ## Datenbankschema (Multi-Tenant)
 
 ### Tabellen

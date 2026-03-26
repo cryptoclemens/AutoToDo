@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { version } from '@/package.json'
 
 export default function LandingPage() {
   return (
@@ -141,6 +142,13 @@ export default function LandingPage() {
       <footer className="border-t border-gray-100 py-8 text-center text-sm text-gray-400">
         © 2026 AutoToDo · Alle Rechte vorbehalten
       </footer>
+
+      {/* Versions-Badge (fixed, unten rechts) */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <span className="bg-gray-900 text-gray-300 text-xs font-mono px-3 py-1.5 rounded-full shadow-lg border border-gray-700 select-none">
+          v{version}
+        </span>
+      </div>
     </div>
   )
 }
