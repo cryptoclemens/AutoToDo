@@ -36,5 +36,5 @@ export async function resolveWorkspace(
     .limit(1)
     .maybeSingle()
 
-  return (data?.workspaces as WorkspaceRow | null) ?? null
+  return (data?.workspaces as unknown as WorkspaceRow | null) ?? null
 }
