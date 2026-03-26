@@ -13,9 +13,9 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
 | KI | Anthropic Claude / OpenAI GPT (BYOK – Bring Your Own Key) |
-| Deployment | Vercel (Wildcard Domains `*.autotodo.app`) |
-| Billing | Stripe |
-| E-Mail | Resend |
+| Deployment | Vercel |
+| E-Mail | Resend (geplant) |
+| Billing | Stripe (geplant) |
 
 ---
 
@@ -59,6 +59,8 @@ Migrations in Supabase SQL Editor ausführen (in dieser Reihenfolge):
 supabase/migrations/001_initial_schema.sql
 supabase/migrations/002_rls_policies.sql
 supabase/migrations/003_indexes.sql
+supabase/migrations/004_lop_extensions.sql
+supabase/migrations/005_fix_rls_recursion.sql
 ```
 
 ### 4. Entwicklungsserver starten
@@ -76,46 +78,57 @@ App läuft auf [http://localhost:3000](http://localhost:3000)
 ```
 autotodo/
 ├── app/                    # Next.js App Router
-│   ├── (marketing)/        # Landing Page
-│   ├── (auth)/             # Login, Register, Invite
-│   ├── (onboarding)/       # 3-Schritt-Wizard
+│   ├── page.tsx            # Landing Page (direkt in app/, kein Route-Group)
+│   ├── (auth)/             # Login, Register, Passwort-Reset
+│   ├── (onboarding)/       # Onboarding-Wizard
 │   ├── (app)/              # Workspace-App (auth-geschützt)
-│   └── api/                # API Routes + öffentliche API /v1
+│   ├── auth/callback/      # Supabase E-Mail-Bestätigung
+│   └── api/                # API Routes
 ├── components/
 │   ├── lop/                # LOP-Tabelle, Badges, ReviewBanner
-│   ├── workspace/          # Nav, BrandProvider, InviteModal
+│   ├── transcripts/        # TranscriptUploadForm
+│   ├── workspace/          # Nav, BrandProvider
 │   └── ui/                 # shadcn/ui Komponenten
 ├── lib/
 │   ├── supabase/           # Client, Server, Middleware Helper
 │   ├── llm/                # LLM-Abstraktionsschicht (BYOK)
+│   ├── workspace.ts        # resolveWorkspace() Helper
 │   ├── encryption.ts       # AES-256-GCM
 │   └── export.ts           # XLSX-Export (SheetJS)
-├── supabase/migrations/    # SQL Migrations (Schema, RLS, Indexes)
-├── types/database.ts       # Generierte Supabase-Typen
-├── middleware.ts            # Subdomain-Routing + Auth
-└── .env.local.example      # Umgebungsvariablen-Vorlage
+├── supabase/migrations/    # SQL Migrations (5 Dateien)
+├── scripts/                # bump-version.sh, install-hooks.sh
+├── middleware.ts            # Auth-Schutz + Workspace-Header
+├── CLAUDE.md               # Entwicklungsregeln & Fallstricke
+└── Tasks.md                # Meilenstein-Tracking
 ```
 
 ---
 
 ## Multi-Tenancy & Sicherheit
 
-- **Subdomain-Routing:** Jeder Workspace erhält `[slug].autotodo.app`
+- **Workspace-Auflösung:** `resolveWorkspace()` löst den Workspace via Slug (Subdomain) oder Membership-Fallback auf – funktioniert auf Single-Domain und Subdomain-Deployments
 - **Row-Level Security:** Vollständige Datenisolation zwischen Workspaces auf DB-Ebene
-- **BYOK:** LLM-API-Keys werden AES-256-GCM verschlüsselt gespeichert
-- **API-Keys:** bcrypt-gehashed, nur Präfix sichtbar
-- **Webhooks:** HMAC-SHA256-Signatur
+- **BYOK:** LLM-API-Keys werden AES-256-GCM verschlüsselt gespeichert (`ENCRYPTION_SECRET` erforderlich)
+- **Transkripte:** verschlüsselt in Supabase Storage abgelegt
+- **Service-Role-Client:** Verwendet serverseitig, um RLS-Rekursionsprobleme zu umgehen
 
 ---
 
-## Pricing
+## Deployment (Vercel)
 
-| Tier | Preis | LLM-Key |
-|---|---|---|
-| Free | $0 | Nicht erforderlich (Betreiber-Fallback, 10 Transkripte/Monat) |
-| Starter | $19/Monat | BYOK erforderlich |
-| Pro | $49/Monat | BYOK erforderlich |
-| Enterprise | ab $199/Monat | BYOK oder Managed |
+Erforderliche Umgebungsvariablen in Vercel:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+ENCRYPTION_SECRET          # openssl rand -hex 32
+INTERNAL_API_SECRET        # beliebiger Secret-String
+```
+
+Supabase Auth → URL Configuration:
+- Site URL: `https://deine-app.vercel.app`
+- Redirect URLs: `https://deine-app.vercel.app/auth/callback`
 
 ---
 
@@ -123,6 +136,7 @@ autotodo/
 
 Siehe [Tasks.md](./Tasks.md) für den aktuellen Bearbeitungsstand nach Meilensteinen.
 Siehe [Brief.md](./Brief.md) für die vollständige Produktspezifikation.
+Siehe [CLAUDE.md](./CLAUDE.md) für Entwicklungsregeln und bekannte Fallstricke.
 
 ---
 

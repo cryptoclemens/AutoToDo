@@ -1,7 +1,7 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.1 (BYOK-Edition) | Stand: März 2026
-**Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe
+**Version:** 2.2 (BYOK-Edition) | Stand: März 2026
+**Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
 ---
@@ -32,18 +32,16 @@ Workspace (= Tenant / Organisation)
   └── Mitglieder (n pro Workspace, mit Rollen)
   └── Branding (Logo, Akzentfarbe)
   └── LLM-Konfiguration (BYOK: Provider + API-Key + Modell)
-  └── AutoToDo-API-Keys (für Webhook/API-Zugang)
+  └── AutoToDo-API-Keys (für Webhook/API-Zugang, Phase 2)
 ```
 
-### Subdomain-Routing
+### Workspace-Auflösung
 
-Jeder Workspace bekommt eine Subdomain:
-- `acme-consulting.autotodo.app`
-- `bowa-geothermie.autotodo.app`
+Die App läuft aktuell auf Single-Domain (Vercel). Workspace-Auflösung erfolgt über `resolveWorkspace()`:
+1. Wenn ein `x-workspace-slug`-Header gesetzt ist (Subdomain-Routing): Workspace per Slug suchen
+2. Fallback: ersten Workspace des eingeloggten Nutzers per Membership ermitteln
 
-Technisch: Vercel Wildcard Domain (`*.autotodo.app`) + Next.js Middleware
-
-Phase 2: Custom Domain (`lop.bowa-geothermie.de`) via CNAME-Eintrag
+Ziel: Subdomain-Routing mit `[slug].autotodo.app` über Vercel Wildcard Domain (Phase 2).
 
 ### Rollenmodell
 
@@ -61,14 +59,14 @@ Phase 2: Custom Domain (`lop.bowa-geothermie.de`) via CNAME-Eintrag
 
 ### Selbst-Registrierung (Self-Service)
 ```
-Landing Page → Registrierung (Name, E-Mail, Passwort, Workspace-Name, Subdomain)
-→ E-Mail-Bestätigung (Supabase Auth)
-→ Redirect zu [workspace].autotodo.app/onboarding
+Landing Page → Registrierung (E-Mail, Passwort, Workspace-Name)
+→ E-Mail-Bestätigung (Supabase Auth → /auth/callback)
+→ Redirect zu /onboarding
 ```
 
 ### Onboarding-Wizard (3 Schritte)
-1. **Workspace einrichten** – Name, Logo (optional), Akzentfarbe
-2. **Erstes Projekt anlegen** – Name, Beschreibung, optionales Transkript
+1. **Workspace einrichten** – Name, Akzentfarbe
+2. **Erstes Projekt anlegen** – Name, Beschreibung
 3. **Team einladen** – E-Mail-Adressen, Rolle
 
 ### Einladungs-Flow
@@ -88,7 +86,7 @@ Einladungs-E-Mail (Resend) → /invite/[token] → Registrierung/Login
 | Workspace-Name | Navigation, E-Mails, Exports |
 | E-Mail-Absender-Name | "Acme Consulting via AutoToDo" |
 
-XLSX-Exports enthalten Workspace-Name und Logo in der Kopfzeile.
+XLSX-Exports enthalten Workspace-Name in der Kopfzeile.
 
 ---
 
@@ -98,14 +96,15 @@ XLSX-Exports enthalten Workspace-Name und Logo in der Kopfzeile.
 
 | Provider | Modell(e) | Status |
 |---|---|---|
-| Anthropic | claude-sonnet-4, claude-haiku-4 | MVP |
+| Anthropic | claude-sonnet-4-6, claude-haiku-4-5 | MVP |
 | OpenAI | gpt-4o, gpt-4o-mini | MVP |
 | Google | gemini-1.5-pro, gemini-1.5-flash | Phase 2 |
 | Mistral | mistral-large, mistral-small | Phase 2 |
 | Ollama (lokal) | llama3, mistral, ... | Phase 3 |
 
 ### Sicherheit
-- API-Keys werden AES-256-GCM verschlüsselt gespeichert (Envelope Encryption)
+- API-Keys werden AES-256-GCM verschlüsselt in `workspace_llm_config` gespeichert
+- `ENCRYPTION_SECRET` (64-Hex-Zeichen) zwingend als Umgebungsvariable erforderlich
 - Kein direkter Client-Zugriff – ausschließlich über Server-Side API Routes
 - Kein Logging des entschlüsselten Keys
 
@@ -115,7 +114,7 @@ XLSX-Exports enthalten Workspace-Name und Logo in der Kopfzeile.
 
 ---
 
-## Public API & Webhooks
+## Public API & Webhooks (Phase 2)
 
 ### REST API
 Basis-URL: `https://api.autotodo.app/v1`
@@ -144,13 +143,13 @@ Delivery: 3 Retries (exponential backoff), HMAC-SHA256-Signatur
 ## Versionsverwaltung
 
 ### Versions-Badge (Landing Page)
-Die Landing Page zeigt unten rechts ein fixiertes Badge mit der aktuellen Applikationsversion (aus `package.json`).
+Die Landing Page zeigt unten rechts ein fixiertes Badge mit der aktuellen Applikationsversion.
 
 ### Automatischer Versions-Bump
-Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Version in `package.json` und erstellt einen Commit:
-- `scripts/bump-version.sh` – liest aktuelle Version, erhöht Patch-Zahl, schreibt `package.json`, committed mit `--no-verify`
-- `scripts/install-hooks.sh` – einmalig nach dem Klonen ausführen, um den Hook zu installieren
-- Versionsformat: SemVer `MAJOR.MINOR.PATCH` (z.B. `0.1.0` → `0.1.1`)
+Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Version in `package.json`:
+- `scripts/bump-version.sh` – liest aktuelle Version, erhöht Patch-Zahl, committed mit `--no-verify`
+- `scripts/install-hooks.sh` – einmalig nach dem Klonen ausführen
+- Versionsformat: SemVer `MAJOR.MINOR.PATCH` (z.B. `0.1.15` → `0.1.16`)
 
 ---
 
@@ -164,14 +163,25 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 - `transcripts` – Meeting-Transkripte (verschlüsselt in Supabase Storage)
 - `lop_items` – LOP-Punkte mit KI-Metadaten
 - `lop_item_history` – Audit-Log
-- `api_keys` – API-Keys (bcrypt-gehashed)
-- `webhook_endpoints` – Webhook-Konfigurationen
+- `api_keys` – API-Keys (bcrypt-gehashed, Phase 2)
+- `webhook_endpoints` – Webhook-Konfigurationen (Phase 2)
 - `invitations` – Einladungs-Tokens
 
-### Sicherheit
-- Row-Level Security auf allen Tabellen
-- workspace_id als Isolationsschlüssel in jeder Query
-- Kein Cross-Tenant-Datenzugriff technisch möglich
+### Migrations
+| Datei | Inhalt |
+|---|---|
+| `001_initial_schema.sql` | Grundschema aller Tabellen |
+| `002_rls_policies.sql` | Row-Level Security Policies |
+| `003_indexes.sql` | Performance-Indexes |
+| `004_lop_extensions.sql` | KI-Metadaten-Felder, Audit-Log |
+| `005_fix_rls_recursion.sql` | Behebt RLS-Rekursion in workspace_members |
+
+### RLS-Hinweis
+Die `workspace_members`-Tabelle darf sich nicht selbst in einer Policy referenzieren (Rekursion). Policy lautet:
+```sql
+CREATE POLICY "workspace_members_read" ON workspace_members
+  FOR SELECT USING (user_id = auth.uid());
+```
 
 ---
 
@@ -200,39 +210,39 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 | Authentifizierung | Supabase Auth (JWT) |
 | Autorisierung | Postgres RLS |
 | Transkripte | AES-256-GCM |
-| API-Keys | bcrypt-gehashed |
-| Webhooks | HMAC-SHA256 |
+| LLM-API-Keys | AES-256-GCM (Envelope Encryption) |
+| API-Keys | bcrypt-gehashed (Phase 2) |
+| Webhooks | HMAC-SHA256 (Phase 2) |
 | Input-Validierung | Zod auf allen API Routes |
-| Rate Limiting | Vercel Edge Middleware |
-| Tenant-Isolation | workspace_id + RLS |
+| Tenant-Isolation | workspace_id + RLS + Service-Role-Client |
 
 ---
 
 ## Entwicklungsphasen
 
-### Phase 1 – SaaS-Kern (4–5 Wochen)
+### Phase 1 – SaaS-Kern ✅ Abgeschlossen
 - Supabase: Schema + RLS deployen
 - Next.js 14 + TypeScript + Tailwind + shadcn/ui
-- Subdomain-Routing (Middleware)
-- Supabase Auth: Registrierung, Login, Passwort-Reset
-- Workspace-Erstellung bei Registrierung
-- Onboarding-Wizard (3 Schritte)
-- Einladungs-Flow (Token-basiert, Resend)
+- Middleware (Auth-Schutz + Workspace-Header)
+- Supabase Auth: Registrierung, Login, Passwort-Reset, E-Mail-Bestätigung
+- Workspace-Erstellung bei Registrierung + Onboarding-Wizard
+- Einladungs-Flow (Token-basiert)
 - Projekt-CRUD
 - LOP-Tabelle (Inline-Edit, Status-Toggle, Filter)
 - Transkript-Upload + Verschlüsselung + LLM-Verarbeitung
 - KI-Vorschläge Review-Flow
-- XLSX-Export (ohne Branding)
+- XLSX-Export
 - Basis-Branding (Akzentfarbe)
+- Vercel-Deployment + Single-Domain-Fixes
 
-### Phase 2 – SaaS-Features (2–3 Wochen)
+### Phase 2 – SaaS-Features
 - Custom Branding (Logo-Upload, vollständiges CSS-System)
 - XLSX-Export mit Workspace-Branding
 - API-Key-Verwaltung (UI + Validierung)
 - Öffentliche REST API
 - Webhook-System (Registrierung + Delivery + Retry)
 - Audit-Log UI
-- Rollenverwaltung (granulare Berechtigungen)
+- Rollenverwaltung UI
 
 ### Phase 3 – Wachstum (optional)
 - Stripe-Billing (Free/Pro/Enterprise)
@@ -241,6 +251,13 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 - Slack/Teams-Integration via Webhook
 - Mehrsprachigkeit (DE/EN)
 - SSO (SAML für Enterprise)
+
+### Phase 4 – UX-Polish & Legal
+- Landing Page: Hero, Features, Pricing
+- App-Layout: Sidebar, Mobile-Ansicht, Dark Mode
+- Dashboard: Statistik-Karten
+- LOP-Tabelle: visuelles Redesign
+- Impressum, Datenschutzerklärung, Cookie-Consent
 
 ---
 
@@ -270,4 +287,4 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 
 ---
 
-*Dieser Brief wird automatisch aktualisiert, wenn Ergänzungen oder Korrekturen an der Spezifikation vorgenommen werden.*
+*Dieser Brief wird aktualisiert, wenn Ergänzungen oder Korrekturen an der Spezifikation vorgenommen werden.*
