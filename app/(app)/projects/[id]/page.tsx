@@ -91,7 +91,9 @@ export default async function ProjectPage({ params }: Props) {
         </div>
         <div className="flex gap-2">
           <Link href={`/projects/${project.id}/transcripts`}>
-            <Button variant="outline" size="sm">Transkripte</Button>
+            <Button size="sm" style={{ backgroundColor: 'var(--brand)' }} className="text-white">
+              ↑ Transkript hochladen
+            </Button>
           </Link>
           <a href={`/api/lop/export?projectId=${project.id}`}>
             <Button variant="outline" size="sm">↓ XLSX</Button>

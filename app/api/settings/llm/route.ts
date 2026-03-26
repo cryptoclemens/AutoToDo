@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { encrypt, decrypt } from '@/lib/encryption'
+import { resolveWorkspace } from '@/lib/workspace'
 
 const supabaseAdmin = () => createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,14 +15,10 @@ async function getWorkspaceAndUser() {
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return null
 
-  const headersList = headers()
-  const slug = headersList.get('x-workspace-slug') ?? ''
+  const slug = headers().get('x-workspace-slug') ?? ''
   const supabase = supabaseAdmin()
 
-  const { data: workspace } = await supabase
-    .from('workspaces').select('id').eq('slug', slug).single() as {
-      data: { id: string } | null
-    }
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return null
 
   const { data: member } = await supabase
