@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { resolveWorkspace } from '@/lib/workspace'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TranscriptUploadForm } from '@/components/transcripts/TranscriptUploadForm'
@@ -31,19 +32,15 @@ export default async function TranscriptsPage({ params }: Props) {
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
 
-  const headersList = headers()
-  const slug = headersList.get('x-workspace-slug') ?? ''
+  const slug = headers().get('x-workspace-slug') ?? ''
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data: workspace } = await supabase
-    .from('workspaces').select('id').eq('slug', slug).single() as {
-      data: { id: string } | null
-    }
-  if (!workspace) redirect('/login')
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspace) redirect('/onboarding')
 
   const { data: project } = await supabase
     .from('projects').select('id, name').eq('id', params.id).eq('workspace_id', workspace.id).single() as {

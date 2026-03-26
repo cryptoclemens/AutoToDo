@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { resolveWorkspace } from '@/lib/workspace'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,16 +12,9 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const headersList = headers()
-  const slug = headersList.get('x-workspace-slug') ?? ''
-
-  const { data: workspace } = await supabase
-    .from('workspaces')
-    .select('id, name')
-    .eq('slug', slug)
-    .single() as { data: { id: string; name: string } | null }
-
-  if (!workspace) redirect('/login')
+  const slug = headers().get('x-workspace-slug') ?? ''
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspace) redirect('/onboarding')
 
   const { data: projects } = await supabase
     .from('projects')

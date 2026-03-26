@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { resolveWorkspace } from '@/lib/workspace'
 import LopTable from '@/components/lop/LopTable'
 import { Button } from '@/components/ui/button'
 
@@ -14,14 +15,9 @@ export default async function ProjectPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const headersList = headers()
-  const slug = headersList.get('x-workspace-slug') ?? ''
-
-  const { data: workspace } = await supabase
-    .from('workspaces').select('id, name').eq('slug', slug).single() as {
-      data: { id: string; name: string } | null
-    }
-  if (!workspace) redirect('/login')
+  const slug = headers().get('x-workspace-slug') ?? ''
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspace) redirect('/onboarding')
 
   // Projekt laden
   const { data: project } = await supabase
