@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
+import { resolveWorkspace } from '@/lib/workspace'
 
 export async function GET(request: NextRequest) {
   const authClient = createClient()
@@ -18,8 +19,12 @@ export async function GET(request: NextRequest) {
 
   const headersList = headers()
   const slug = headersList.get('x-workspace-slug') ?? ''
+  const workspaceBase = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspaceBase) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+
+  // Fetch additional fields needed for export
   const { data: workspace } = await supabase
-    .from('workspaces').select('id, name, brand_color').eq('slug', slug).single() as {
+    .from('workspaces').select('id, name, brand_color').eq('id', workspaceBase.id).single() as {
       data: { id: string; name: string; brand_color: string } | null
     }
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })

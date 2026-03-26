@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
+import { resolveWorkspace } from '@/lib/workspace'
 
 export async function POST(
   _request: NextRequest,
@@ -18,11 +19,10 @@ export async function POST(
 
   const headersList = headers()
   const slug = headersList.get('x-workspace-slug') ?? ''
-  const { data: workspace } = await supabase
-    .from('workspaces').select('id').eq('slug', slug).single()
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.redirect(new URL('/dashboard', _request.url))
 
-  const workspaceId = (workspace as { id: string }).id
+  const workspaceId = workspace.id
 
   const { data: member } = await supabase
     .from('workspace_members').select('role')

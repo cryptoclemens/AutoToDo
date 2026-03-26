@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { z } from 'zod'
+import { resolveWorkspace } from '@/lib/workspace'
 
 const createSchema = z.object({
   projectId: z.string().uuid(),
@@ -29,14 +30,10 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  // Workspace aus Subdomain-Header
-  const headersList = headers()
-  const slug = headersList.get('x-workspace-slug') ?? ''
-  const { data: workspace } = await supabase
-    .from('workspaces').select('id').eq('slug', slug).single()
+  const slug = headers().get('x-workspace-slug') ?? ''
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  const workspaceId = (workspace as { id: string }).id
+  const workspaceId = workspace.id
 
   // Berechtigung prüfen
   const { data: member } = await supabase

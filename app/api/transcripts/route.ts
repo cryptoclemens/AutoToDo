@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { encrypt } from '@/lib/encryption'
+import { resolveWorkspace } from '@/lib/workspace'
 
 const MAX_FILE_SIZE = 500 * 1024 // 500 KB
 
@@ -19,10 +20,7 @@ export async function POST(req: NextRequest) {
   const headersList = headers()
   const slug = headersList.get('x-workspace-slug') ?? ''
 
-  const { data: workspace } = await supabase
-    .from('workspaces').select('id').eq('slug', slug).single() as {
-      data: { id: string } | null
-    }
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
   const { data: member } = await supabase

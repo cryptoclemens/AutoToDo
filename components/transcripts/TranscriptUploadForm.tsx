@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,10 +9,10 @@ import { toast } from 'sonner'
 
 interface Props {
   projectId: string
-  onUploaded: () => void
 }
 
-export function TranscriptUploadForm({ projectId, onUploaded }: Props) {
+export function TranscriptUploadForm({ projectId }: Props) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [meetingDate, setMeetingDate] = useState('')
@@ -39,7 +40,7 @@ export function TranscriptUploadForm({ projectId, onUploaded }: Props) {
       setMeetingDate('')
       setOpen(false)
       if (fileRef.current) fileRef.current.value = ''
-      onUploaded()
+      router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Fehler beim Upload')
     } finally {
