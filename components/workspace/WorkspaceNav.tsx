@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -45,7 +46,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="flex items-center gap-2">
             {workspace.logo_url ? (
-              <img src={workspace.logo_url} alt={workspace.name} className="h-7 w-auto" />
+              <Image src={workspace.logo_url} alt={workspace.name} width={28} height={28} className="h-7 w-auto object-contain" />
             ) : (
               <span
                 className="text-sm font-bold px-2 py-1 rounded text-white"
