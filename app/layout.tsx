@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap', preload: false })
 
 export const metadata: Metadata = {
   title: 'AutoToDo – KI-gestütztes LOP-Management',
