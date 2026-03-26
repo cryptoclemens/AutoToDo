@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
+import { z } from 'zod'
+
+const schema = z.object({
+  workspaceId: z.string().uuid(),
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).nullable().optional(),
+})
+
+export async function POST(request: NextRequest) {
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const body = await request.json()
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
+  }
+
+  const { workspaceId, name, description } = parsed.data
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  // Berechtigung prüfen
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', user.id)
+    .single()
+
+  const allowedRoles = ['workspace_owner', 'workspace_admin', 'project_admin']
+  if (!member || !allowedRoles.includes(member.role as string)) {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .insert({ workspace_id: workspaceId, name, description, created_by: user.id })
+    .select('id')
+    .single()
+
+  if (error || !data) {
+    return NextResponse.json({ error: 'Projekt konnte nicht erstellt werden.' }, { status: 500 })
+  }
+
+  return NextResponse.json({ id: (data as { id: string }).id }, { status: 201 })
+}
