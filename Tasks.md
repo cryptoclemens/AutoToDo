@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026
+Letzte Aktualisierung: März 2026 (Meilensteine 1–4 abgeschlossen)
 
 ---
 
@@ -25,32 +25,32 @@ Letzte Aktualisierung: März 2026
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 2.1 | Supabase Auth: Registrierung-Page + Workspace-Erstellung | 🔲 Offen |
-| 2.2 | Supabase Auth: Login-Page | 🔲 Offen |
-| 2.3 | Supabase Auth: Passwort-Reset | 🔲 Offen |
-| 2.4 | Auth-Callback Route (`/auth/callback`) | 🔲 Offen |
-| 2.5 | Encryption-Modul (AES-256-GCM) | 🔲 Offen |
+| 2.1 | Supabase Auth: Registrierung-Page + Workspace-Erstellung | ✅ Erledigt |
+| 2.2 | Supabase Auth: Login-Page | ✅ Erledigt |
+| 2.3 | Supabase Auth: Passwort-Reset | ✅ Erledigt |
+| 2.4 | Auth-Callback Route (`/auth/callback`) | ✅ Erledigt |
+| 2.5 | Encryption-Modul (AES-256-GCM) | ✅ Erledigt |
 
 ### Meilenstein 3: Onboarding
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 3.1 | Onboarding-Wizard Schritt 1: Workspace einrichten | 🔲 Offen |
-| 3.2 | Onboarding-Wizard Schritt 2: Erstes Projekt anlegen | 🔲 Offen |
-| 3.3 | Onboarding-Wizard Schritt 3: Team einladen | 🔲 Offen |
-| 3.4 | Einladungs-Flow: Token-Generierung + E-Mail (Resend) | 🔲 Offen |
-| 3.5 | Einladungs-Flow: `/invite/[token]` Seite | 🔲 Offen |
+| 3.1 | Onboarding-Wizard Schritt 1: Workspace einrichten | ✅ Erledigt |
+| 3.2 | Onboarding-Wizard Schritt 2: Erstes Projekt anlegen | ✅ Erledigt |
+| 3.3 | Onboarding-Wizard Schritt 3: Team einladen | ✅ Erledigt |
+| 3.4 | Einladungs-Flow: Token-Generierung + E-Mail (Resend) | 🔄 Offen (Token-Generierung ✅, Resend-Versand in M5) |
+| 3.5 | Einladungs-Flow: `/invite/[token]` Seite | ✅ Erledigt |
 
 ### Meilenstein 4: Kern-App
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 4.1 | Dashboard: Projekt-Übersicht | 🔲 Offen |
-| 4.2 | Projekt-CRUD (anlegen, archivieren) | 🔲 Offen |
-| 4.3 | LOP-Tabelle (Inline-Edit, Status-Toggle) | 🔲 Offen |
-| 4.4 | LOP-Filter (Status, Priorität, Verantwortlicher) | 🔲 Offen |
-| 4.5 | LOP-Punkt manuell anlegen | 🔲 Offen |
-| 4.6 | StatusBadge & PriorityBadge Komponenten | 🔲 Offen |
+| 4.1 | Dashboard: Projekt-Übersicht | ✅ Erledigt |
+| 4.2 | Projekt-CRUD (anlegen, archivieren) | ✅ Erledigt |
+| 4.3 | LOP-Tabelle (Inline-Edit, Status-Toggle) | ✅ Erledigt |
+| 4.4 | LOP-Filter (Status, Priorität, Suche) | ✅ Erledigt |
+| 4.5 | LOP-Punkt manuell anlegen | ✅ Erledigt |
+| 4.6 | StatusBadge & PriorityBadge Komponenten | ✅ Erledigt |
 
 ### Meilenstein 5: Transkript-Verarbeitung
 
