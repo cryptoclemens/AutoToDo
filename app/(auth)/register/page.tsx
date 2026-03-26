@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -21,6 +21,18 @@ function slugify(text: string) {
 export default function RegisterPage() {
   const router = useRouter()
   const [step, setStep] = useState<'account' | 'workspace'>('account')
+  const [existingUserId, setExistingUserId] = useState<string | null>(null)
+
+  // If already logged in, skip account creation and go straight to workspace setup
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setExistingUserId(data.user.id)
+        setStep('workspace')
+      }
+    })
+  }, [])
 
   // Account-Felder
   const [name, setName] = useState('')
@@ -60,37 +72,41 @@ export default function RegisterPage() {
     setLoading(true)
 
     const supabase = createClient()
+    let userId = existingUserId
 
-    // 1. Nutzer registrieren
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    // Nur registrieren wenn kein bestehender Account
+    if (!userId) {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
 
-    if (authError) {
-      setError(authError.message)
-      setLoading(false)
-      return
+      if (authError) {
+        setError(authError.message)
+        setLoading(false)
+        return
+      }
+
+      if (!authData.user) {
+        setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.')
+        setLoading(false)
+        return
+      }
+      userId = authData.user.id
     }
 
-    if (!authData.user) {
-      setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.')
-      setLoading(false)
-      return
-    }
-
-    // 2. Workspace anlegen (via API Route, da service_role benötigt)
+    // Workspace anlegen (via API Route, da service_role benötigt)
     const res = await fetch('/api/workspaces', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: workspaceName,
         slug,
-        userId: authData.user.id,
+        userId,
       }),
     })
 
