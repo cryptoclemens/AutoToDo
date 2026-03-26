@@ -5,6 +5,13 @@
 
 set -e
 
+# Nicht erneut laufen, wenn der letzte Commit bereits ein Version-Bump ist
+LAST_MSG=$(git log -1 --pretty=%s 2>/dev/null || true)
+if [[ "$LAST_MSG" == chore:\ bump\ version\ to\ * ]]; then
+  echo "Version already bumped in last commit, skipping."
+  exit 0
+fi
+
 PACKAGE_JSON="$(git rev-parse --show-toplevel)/package.json"
 
 # Aktuelle Version auslesen
