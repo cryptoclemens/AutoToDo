@@ -1,13 +1,19 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import OnboardingWizard from '@/components/onboarding/OnboardingWizard'
 
 export default async function OnboardingPage() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
 
-  // Workspace des Nutzers laden
+  // Use service role to bypass self-referential RLS on workspace_members
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const { data: member } = await supabase
     .from('workspace_members')
     .select('workspace_id, role, workspaces(id, name, slug)')
