@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 
 // AUTO-UPDATED by scripts/bump-version.sh
 const APP_VERSION = '0.1.3'
@@ -11,13 +10,13 @@ export default function LandingPage() {
       <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <span className="font-bold text-gray-900 text-lg">AutoToDo</span>
         <div className="flex gap-3">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">Anmelden</Button>
+          <Link href="/login"
+            className="px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+            Anmelden
           </Link>
-          <Link href="/register">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-              Kostenlos starten
-            </Button>
+          <Link href="/register"
+            className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+            Kostenlos starten
           </Link>
         </div>
       </nav>
@@ -33,15 +32,13 @@ export default function LandingPage() {
           Liste offener Punkte – vollautomatisch per KI. Exportierbar als XLSX.
         </p>
         <div className="flex gap-4 justify-center">
-          <Link href="/register">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-              Jetzt kostenlos testen
-            </Button>
+          <Link href="/register"
+            className="px-8 py-3 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
+            Jetzt kostenlos testen
           </Link>
-          <Link href="#features">
-            <Button size="lg" variant="outline" className="px-8">
-              Mehr erfahren
-            </Button>
+          <Link href="#features"
+            className="px-8 py-3 text-base border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md font-medium transition-colors">
+            Mehr erfahren
           </Link>
         </div>
       </section>
@@ -106,9 +103,9 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Preise</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: 'Free', price: '$0', features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer'] },
+              { name: 'Free', price: '$0', features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer'], highlight: false },
               { name: 'Starter', price: '$19/Monat', features: ['5 Projekte', 'Unbegrenzte Transkripte', '5 Nutzer', 'API-Zugang'], highlight: true },
-              { name: 'Pro', price: '$49/Monat', features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Webhooks'] },
+              { name: 'Pro', price: '$49/Monat', features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Webhooks'], highlight: false },
             ].map(plan => (
               <div key={plan.name}
                 className={`bg-white rounded-xl border p-6 ${plan.highlight ? 'border-blue-500 shadow-md' : 'border-gray-200'}`}>
@@ -126,13 +123,12 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/register">
-                  <Button
-                    className={`w-full ${plan.highlight ? 'bg-blue-600 hover:bg-blue-700 text-white' : ''}`}
-                    variant={plan.highlight ? 'default' : 'outline'}
-                  >
-                    Starten
-                  </Button>
+                <Link href="/register"
+                  className={`block w-full text-center py-2 rounded-md text-sm font-medium transition-colors
+                    ${plan.highlight
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'border border-gray-300 hover:bg-gray-50 text-gray-700'}`}>
+                  Starten
                 </Link>
               </div>
             ))}
