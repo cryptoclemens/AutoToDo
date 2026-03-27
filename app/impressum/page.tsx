@@ -36,14 +36,11 @@ export default function ImpressumPage() {
           Amtsgericht München
         </Row>
         <Row label="USt-IdNr.">
-          <span className="text-amber-600 font-medium">DE [TODO – USt-IdNr. eintragen]</span><br />
+          DE367131457<br />
           <span className="text-xs text-gray-400">gemäß § 27a UStG</span>
         </Row>
         <Row label="E-Mail">
           <a href="mailto:hello@vencly.com" className="text-blue-600 hover:underline">hello@vencly.com</a>
-        </Row>
-        <Row label="Telefon">
-          <span className="text-amber-600 font-medium">[TODO – Telefonnummer eintragen]</span>
         </Row>
         <Row label="Website">
           <a href="https://www.vencly.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.vencly.com</a>

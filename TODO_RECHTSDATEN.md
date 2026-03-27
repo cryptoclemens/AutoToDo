@@ -4,8 +4,8 @@
 
 | Feld                     | Status        | Wo einzutragen                                      |
 |--------------------------|---------------|------------------------------------------------------|
-| Telefonnummer            | ❌ TODO       | `app/impressum/page.tsx`, `app/datenschutz/page.tsx` |
-| USt-IdNr. (DE...)        | ❌ TODO       | `app/impressum/page.tsx`                             |
+| Telefonnummer            | ✅ entfernt   | Kein Telefon angegeben                               |
+| USt-IdNr. (DE...)        | ✅ DE367131457 | `app/impressum/page.tsx` – eingetragen              |
 | Starter-Preis in EUR     | ❌ TODO       | `app/agb/page.tsx`, `app/page.tsx` (Pricing)         |
 | Pro-Preis in EUR         | ❌ TODO       | `app/agb/page.tsx`, `app/page.tsx` (Pricing)         |
 | Supabase Serverstandort  | ✅ Frankfurt  | `app/datenschutz/page.tsx` – bereits eingetragen     |

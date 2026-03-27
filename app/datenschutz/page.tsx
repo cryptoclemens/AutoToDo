@@ -27,7 +27,6 @@ export default function DatenschutzPage() {
           Leopoldstraße 31<br />
           80802 München<br />
           E-Mail: <a href="mailto:datenschutz@vencly.com" className="text-blue-600 hover:underline">datenschutz@vencly.com</a><br />
-          Tel.: <strong>[TODO – Telefonnummer ergänzen]</strong><br />
           Geschäftsführer: Clemens Eugen Theodor Pompeÿ<br />
           HRB 290524, Amtsgericht München
         </p>
