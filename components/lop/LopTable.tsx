@@ -25,6 +25,7 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   const [filterSearch, setFilterSearch] = useState('')
   const [showReviewPanel, setShowReviewPanel] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LopItem | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
 
   const reviewItems = items.filter(i => i.requires_review)
   const reviewCount = reviewItems.length
@@ -156,6 +157,16 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
         <span className="text-xs text-gray-400 ml-auto">
           {filtered.length} von {items.length} Punkte{items.length !== 1 ? 'n' : ''}
         </span>
+        {canEdit && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs shrink-0"
+            onClick={() => setShowAddForm(v => !v)}
+          >
+            + LOP-Punkt
+          </Button>
+        )}
       </div>
 
       {/* Tabelle */}
@@ -201,7 +212,12 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
 
       {/* Neuer LOP-Punkt */}
       {canEdit && (
-        <AddLopItemForm projectId={projectId} onAdd={handleNewItem} />
+        <AddLopItemForm
+          projectId={projectId}
+          onAdd={handleNewItem}
+          open={showAddForm}
+          onOpenChange={setShowAddForm}
+        />
       )}
 
       {/* Detail-Dialog */}
@@ -219,11 +235,14 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
 function AddLopItemForm({
   projectId,
   onAdd,
+  open,
+  onOpenChange,
 }: {
   projectId: string
   onAdd: (item: LopItem) => void
+  open: boolean
+  onOpenChange: (v: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [responsible, setResponsible] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -261,20 +280,11 @@ function AddLopItemForm({
     setResponsible('')
     setDueDate('')
     setPriority('mittel')
-    setOpen(false)
+    onOpenChange(false)
     setLoading(false)
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="mt-3 w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
-      >
-        + LOP-Punkt hinzufügen
-      </button>
-    )
-  }
+  if (!open) return null
 
   return (
     <form onSubmit={handleSubmit} className="mt-3 bg-white border border-blue-200 rounded-lg p-4 space-y-3">
@@ -314,7 +324,7 @@ function AddLopItemForm({
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
+        <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
           Abbrechen
         </Button>
         <Button type="submit" size="sm" disabled={loading} style={{ backgroundColor: 'var(--brand)' }} className="text-white">
