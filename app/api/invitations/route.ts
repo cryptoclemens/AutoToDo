@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createAuthClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { randomUUID } from 'crypto'
+import { randomBytes } from 'crypto'
 
 const schema = z.object({
   workspaceId: z.string().uuid(),
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     workspace_id: workspaceId,
     email,
     role,
-    token: randomUUID(),
+    token: randomBytes(32).toString('hex'),
     invited_by: user.id,
     project_id: projectId ?? null,
   }))

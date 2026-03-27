@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
   if (!auth) {
     return NextResponse.json({ error: 'Ungültiger oder fehlender API-Key.' }, { status: 401 })
   }
+  if (!auth.scope.includes('read')) {
+    return NextResponse.json({ error: 'Lesezugriff erforderlich.' }, { status: 403 })
+  }
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

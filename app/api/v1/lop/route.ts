@@ -18,10 +18,14 @@ export async function GET(request: NextRequest) {
   if (!auth) {
     return NextResponse.json({ error: 'Ungültiger oder fehlender API-Key.' }, { status: 401 })
   }
+  if (!auth.scope.includes('read')) {
+    return NextResponse.json({ error: 'Lesezugriff erforderlich.' }, { status: 403 })
+  }
 
   const projectId = request.nextUrl.searchParams.get('projectId')
-  if (!projectId) {
-    return NextResponse.json({ error: 'projectId ist erforderlich.' }, { status: 400 })
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!projectId || !uuidRegex.test(projectId)) {
+    return NextResponse.json({ error: 'projectId ist erforderlich und muss eine gültige UUID sein.' }, { status: 400 })
   }
 
   const supabase = createServiceClient(

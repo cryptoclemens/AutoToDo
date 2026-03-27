@@ -25,8 +25,20 @@ export function encrypt(plaintext: string): string {
 
 export function decrypt(payload: string): string {
   const key = getKey()
-  const { iv, data, tag } = JSON.parse(payload)
-  const decipher = createDecipheriv(ALGO, key, Buffer.from(iv, 'hex'))
-  decipher.setAuthTag(Buffer.from(tag, 'hex'))
-  return decipher.update(Buffer.from(data, 'hex')) + decipher.final('utf8')
+  let parsed: { iv: string; data: string; tag: string }
+  try {
+    parsed = JSON.parse(payload)
+  } catch {
+    throw new Error('Ungültiges verschlüsseltes Datenformat.')
+  }
+  if (!parsed.iv || !parsed.data || !parsed.tag) {
+    throw new Error('Fehlende Verschlüsselungsfelder.')
+  }
+  try {
+    const decipher = createDecipheriv(ALGO, key, Buffer.from(parsed.iv, 'hex'))
+    decipher.setAuthTag(Buffer.from(parsed.tag, 'hex'))
+    return decipher.update(Buffer.from(parsed.data, 'hex'), undefined, 'utf8') + decipher.final('utf8')
+  } catch {
+    throw new Error('Entschlüsselung fehlgeschlagen. Daten beschädigt oder falscher Schlüssel.')
+  }
 }
