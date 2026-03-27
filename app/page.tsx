@@ -4,7 +4,7 @@ import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing
 import CookieBanner from '@/components/CookieBanner'
 
 // AUTO-UPDATED by scripts/bump-version.sh
-const APP_VERSION = '0.1.51'
+const APP_VERSION = '0.1.52'
 
 export default function LandingPage() {
   return (
