@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 · Version 0.1.35 · Meilensteine 1–7d abgeschlossen
+Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abgeschlossen
 
 ---
 
@@ -166,7 +166,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.35 · Meilensteine 1–7d abges
 | 7b.6 | Akzeptanz-Zeitstempel in DB speichern (`legal_accepted_at`, `legal_version`) | 🔲 Offen |
 | 7b.7 | Auftragsverarbeitungsvertrag (AVV) als Download/PDF | 🔲 Offen |
 | 7b.8 | Cookie-Hinweis / Consent-Banner (§ 25 TDDDG, nur bei Bedarf) | 🔲 Offen |
-| 7b.9 | Impressum-Seite (`/impressum`) | 🔲 Offen |
+| 7b.9 | Impressum-Seite (`/impressum`) | ✅ Erledigt |
 
 ### Meilenstein 7c: KI-Review-Panel & Sicherheits-Härtung
 
@@ -202,6 +202,23 @@ Letzte Aktualisierung: März 2026 · Version 0.1.35 · Meilensteine 1–7d abges
 | 7d.11 | WorkspaceNav: Dropdown auf einzelnen „Einstellungen"-Link konsolidiert | ✅ Erledigt |
 | 7d.12 | Registrierung Schritt 3 (optional): KI-Anbieter + API-Key beim Onboarding | ✅ Erledigt |
 | 7d.13 | Registrierung: Fortschrittsbalken (1/3, 2/3, 3/3) | ✅ Erledigt |
+
+### Meilenstein 7e: E-Mail-Digest & Verantwortlichen-Verknüpfung
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 7e.1 | Migration: `lop_items.responsible_user_id` (FK → `workspace_members`) neben bisherigem Freitext | 🔲 Offen |
+| 7e.2 | API: Workspace-Mitglieder mit E-Mail-Adresse für Responsible-Dropdown laden | 🔲 Offen |
+| 7e.3 | LOP-Tabelle & Detail-Dialog: Verantwortlich-Auswahl aus eingeladenen Mitgliedern (Dropdown statt Freitext) | 🔲 Offen |
+| 7e.4 | Freitext-Fallback: bestehende Einträge ohne `responsible_user_id` weiterhin anzeigen | 🔲 Offen |
+| 7e.5 | Täglicher Digest-Cron Job (`/api/cron/daily-digest`, Vercel Cron) | 🔲 Offen |
+| 7e.6 | Digest-Logik: offene & überfällige LOP-Punkte je Verantwortlichem aggregieren | 🔲 Offen |
+| 7e.7 | Digest-E-Mail via Resend: Liste der eigenen offenen Punkte + Fälligkeitsdatum | 🔲 Offen |
+| 7e.8 | Digest-E-Mail: Direktlink zur jeweiligen Projektseite | 🔲 Offen |
+| 7e.9 | Resend-HTML-Template für Digest (responsiv, Branding) | 🔲 Offen |
+| 7e.10 | Digest-Einstellung: pro Workspace aktivierbar/deaktivierbar (Settings-Tab) | 🔲 Offen |
+| 7e.11 | Projektitel: Zeilenumbrüche via `Shift+Enter` (Textarea statt Input, `whitespace-pre-line`) | ✅ Erledigt |
+| 7e.12 | LOP-Button „+ LOP-Punkt manuell hinzufügen" neben „+ Mitglied einladen" im Header | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
 

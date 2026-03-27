@@ -1,6 +1,6 @@
 # AutoToDo
 
-**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.32
+**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.41
 
 AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
 
@@ -102,7 +102,7 @@ autotodo/
 │   │                       # ReviewBanner, AiReviewPanel, StatusBadge, PriorityBadge
 │   ├── transcripts/        # TranscriptUploadForm, RetryButton
 │   ├── workspace/          # WorkspaceNav
-│   ├── projects/           # ProjectTitleEditor, ProjectInviteButton
+│   ├── projects/           # ProjectTitleEditor, ProjectInviteButton, ProjectPageClient
 │   ├── landing/            # LandingSecuritySection, LandingLegalFooter
 │   ├── legal/              # LegalModal (AGB + Datenschutzerklärung)
 │   ├── FeedbackButton.tsx  # Feedback-Popup (fixed bottom-left)
@@ -154,11 +154,12 @@ SUPABASE_SERVICE_ROLE_KEY
 ENCRYPTION_SECRET           # openssl rand -hex 32  (64 Hex-Zeichen)
 INTERNAL_API_SECRET         # beliebiger Secret-String
 # Optional:
-RESEND_API_KEY              # aktiviert automatischen E-Mail-Versand für Einladungen
+RESEND_API_KEY              # aktiviert E-Mail-Versand (Einladungen + täglicher Digest)
 RESEND_FROM                 # z.B. "AutoToDo <noreply@autotodo.app>"
-NEXT_PUBLIC_APP_URL         # Basis-URL für Einladungslinks (z.B. https://autotodo.app)
+NEXT_PUBLIC_APP_URL         # Basis-URL für Links in E-Mails (z.B. https://autotodo.app)
 GITHUB_FEEDBACK_TOKEN       # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
 GITHUB_FEEDBACK_BRANCH      # Branch für feedback.md (default: main)
+CRON_SECRET                 # Secret für Vercel Cron Job Authorization (täglicher Digest)
 ```
 
 Supabase Auth → URL Configuration:
@@ -170,6 +171,14 @@ Supabase Storage:
 - `transcripts`-Bucket: **privat** (verschlüsselte Transkript-Inhalte)
 
 ---
+
+## Roadmap (nächste Meilensteine)
+
+| Meilenstein | Inhalt |
+|---|---|
+| **M7e** | E-Mail-Digest: tägliche Zusammenfassung offener Punkte je Verantwortlichem; Verantwortliche aus eingeladenen Mitgliedern auswählen (Dropdown mit E-Mail) |
+| **M8** | Webhooks (HMAC-SHA256, Retry) + Audit-Log UI |
+| **Phase 3** | Stripe-Billing, Subdomain-Routing, Slack/Teams-Integration |
 
 ## Entwicklungsstand
 

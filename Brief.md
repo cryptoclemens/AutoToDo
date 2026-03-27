@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.7 (Vencly-Branding, Einstellungen-Hub & Onboarding-LLM) | Stand: März 2026 · v0.1.35
+**Version:** 2.8 (E-Mail-Digest & Verantwortlichen-Verknüpfung) | Stand: März 2026 · v0.1.41
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -175,6 +175,39 @@ Die Sub-Seiten (`/settings/branding`, `/settings/llm`, etc.) bleiben als direkte
 
 ---
 
+## E-Mail-Digest & Verantwortlichen-Verknüpfung (M7e)
+
+### Konzept
+
+Täglich wird jedem Verantwortlichen automatisch eine E-Mail mit seinen offenen LOP-Punkten zugeschickt. Dafür müssen Verantwortliche aus den eingeladenen Workspace-Mitgliedern ausgewählt werden (statt Freitext), damit eine E-Mail-Adresse hinterlegt ist.
+
+### Verantwortlichen-Auswahl aus Mitgliedern
+
+Das Feld „Verantwortlich" in LOP-Tabelle und Detail-Dialog wird von einem Freitext-Eingabefeld auf ein Dropdown umgestellt, das die eingeladenen Workspace-Mitglieder (Name + E-Mail) auflistet.
+
+| Aspekt | Umsetzung |
+|---|---|
+| DB | Neue Spalte `responsible_user_id` (FK → `workspace_members`) neben bestehendem `responsible` (Freitext-Fallback) |
+| API | `GET /api/members?workspaceId=…` liefert Mitgliederliste mit E-Mail für Dropdown |
+| UI | Dropdown in LopTableRow, LopItemDialog und AddLopItemForm |
+| Fallback | Bestehende Freitext-Einträge ohne `responsible_user_id` bleiben lesbar angezeigt |
+
+### Täglicher E-Mail-Digest
+
+| Aspekt | Umsetzung |
+|---|---|
+| Auslöser | Vercel Cron Job, täglich um z. B. 07:00 Uhr (`/api/cron/daily-digest`) |
+| Inhalt | Alle eigenen offenen (`offen` + `in_bearbeitung`) LOP-Punkte des Empfängers über alle Projekte, sortiert nach Fälligkeit |
+| Format | HTML-E-Mail via Resend: Titel, Status, Fälligkeitsdatum, Direktlink zur Projektseite |
+| Opt-out | Einstellung im Settings-Tab „Benachrichtigungen" pro Workspace (Standard: ein) |
+| Voraussetzung | `RESEND_API_KEY` muss gesetzt sein |
+
+### Direktlink in der E-Mail
+
+Jeder LOP-Punkt enthält einen Link der Form `https://autotodo.app/projects/[id]`, der direkt zur Projektseite mit der entsprechenden LOP-Liste führt.
+
+---
+
 ## Public API & Webhooks
 
 ### REST API (implementiert ab M7)
@@ -321,6 +354,7 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Vercel-Deployment + Single-Domain-Fixes
 
 ### Phase 2 – SaaS-Features (nächste Schritte)
+- **E-Mail-Digest (M7e):** Tägliche Zusammenfassung offener LOP-Punkte je Verantwortlichem; Verantwortliche aus eingeladenen Mitgliedern wählen (Freitext → Dropdown mit E-Mail)
 - Webhook-System (Registrierung + Delivery + HMAC-SHA256-Signatur + Retry)
 - Audit-Log UI
 - Rollenverwaltung UI

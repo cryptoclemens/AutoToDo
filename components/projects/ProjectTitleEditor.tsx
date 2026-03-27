@@ -15,11 +15,21 @@ export default function ProjectTitleEditor({ projectId, initialName, canEdit }: 
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(initialName)
   const [saving, setSaving] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (editing) inputRef.current?.focus()
+    if (editing && textareaRef.current) {
+      textareaRef.current.focus()
+      // auto-size on open
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
+    }
   }, [editing])
+
+  function autoResize(el: HTMLTextAreaElement) {
+    el.style.height = 'auto'
+    el.style.height = el.scrollHeight + 'px'
+  }
 
   async function handleSave() {
     const trimmed = name.trim()
@@ -47,32 +57,33 @@ export default function ProjectTitleEditor({ projectId, initialName, canEdit }: 
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') handleSave()
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave() }
     if (e.key === 'Escape') { setName(initialName); setEditing(false) }
   }
 
   if (editing) {
     return (
-      <div className="flex items-center gap-2">
-        <input
-          ref={inputRef}
+      <div className="flex items-start gap-2">
+        <textarea
+          ref={textareaRef}
           value={name}
-          onChange={e => setName(e.target.value)}
+          rows={1}
+          onChange={e => { setName(e.target.value); autoResize(e.target) }}
           onKeyDown={handleKeyDown}
           disabled={saving}
-          className="text-2xl font-bold text-gray-900 border-b-2 border-blue-400 bg-transparent outline-none w-full max-w-md"
+          className="text-2xl font-bold text-gray-900 border-b-2 border-blue-400 bg-transparent outline-none w-full max-w-md resize-none overflow-hidden leading-tight"
         />
         <button
           onClick={handleSave}
           disabled={saving}
-          className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 disabled:opacity-50 shrink-0"
+          className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 disabled:opacity-50 shrink-0 mt-1"
         >
           {saving ? '…' : '✓'}
         </button>
         <button
           onClick={() => { setName(initialName); setEditing(false) }}
-          className="text-xs text-gray-400 hover:text-gray-600 px-1 shrink-0"
+          className="text-xs text-gray-400 hover:text-gray-600 px-1 shrink-0 mt-1"
         >
           ✕
         </button>
@@ -81,12 +92,12 @@ export default function ProjectTitleEditor({ projectId, initialName, canEdit }: 
   }
 
   return (
-    <div className="flex items-center gap-2 group">
-      <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
+    <div className="flex items-start gap-2 group">
+      <h1 className="text-2xl font-bold text-gray-900 whitespace-pre-line leading-tight">{name}</h1>
       {canEdit && (
         <button
           onClick={() => setEditing(true)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-gray-500 p-1"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-gray-500 p-1 mt-0.5 shrink-0"
           title="Projektname bearbeiten"
         >
           ✏
