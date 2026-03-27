@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { toast } from 'sonner'
 import BrandingForm from '@/app/(app)/settings/branding/BrandingForm'
 import WorkspaceInviteForm from '@/app/(app)/settings/members/WorkspaceInviteForm'
 import { LlmSettingsForm } from '@/app/(app)/settings/llm/LlmSettingsForm'
@@ -39,7 +40,7 @@ interface ApiKey {
 interface Props {
   userEmail: string
   isAdmin: boolean
-  workspace: { id: string; name: string; brand_color: string; logo_url: string | null }
+  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean }
   members: Member[]
   llmInitial: {
     configured: boolean
@@ -61,6 +62,28 @@ const TABS: Array<{ id: Tab; label: string; adminOnly?: boolean }> = [
 
 export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
+  const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
+  const [digestSaving, setDigestSaving] = useState(false)
+
+  async function handleDigestToggle() {
+    const next = !digestEnabled
+    setDigestEnabled(next)
+    setDigestSaving(true)
+    try {
+      const res = await fetch('/api/settings/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ digest_enabled: next }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success(next ? 'Täglicher Digest aktiviert.' : 'Täglicher Digest deaktiviert.')
+    } catch {
+      setDigestEnabled(!next)
+      toast.error('Fehler beim Speichern.')
+    } finally {
+      setDigestSaving(false)
+    }
+  }
 
   const visibleTabs = TABS.filter(t => !t.adminOnly || isAdmin)
 
@@ -89,9 +112,42 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
 
       {/* Workspace Branding */}
       {tab === 'workspace' && isAdmin && (
-        <div>
-          <p className="text-sm text-gray-500 mb-6">Logo und Akzentfarbe deines Workspaces anpassen.</p>
-          <BrandingForm workspace={workspace} />
+        <div className="space-y-8">
+          <div>
+            <p className="text-sm text-gray-500 mb-6">Logo und Akzentfarbe deines Workspaces anpassen.</p>
+            <BrandingForm workspace={workspace} />
+          </div>
+
+          {/* E-Mail-Digest */}
+          <div className="border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">E-Mail-Benachrichtigungen</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Werktäglich um 17 Uhr erhalten alle Verantwortlichen eine Zusammenfassung ihrer offenen LOP-Punkte per E-Mail.
+              Voraussetzung: <code className="bg-gray-100 px-1 rounded text-xs">RESEND_API_KEY</code> muss gesetzt sein.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={digestEnabled}
+                disabled={digestSaving}
+                onClick={handleDigestToggle}
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
+                  digestEnabled ? 'bg-blue-600' : 'bg-gray-200'
+                }`}
+                style={digestEnabled ? { backgroundColor: 'var(--brand, #2563EB)' } : {}}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform ${
+                    digestEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+              <span className="text-sm text-gray-700">
+                Täglicher E-Mail-Digest {digestEnabled ? 'aktiv' : 'deaktiviert'}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

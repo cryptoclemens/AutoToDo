@@ -53,13 +53,14 @@ export default async function ProjectPage({ params }: Props) {
   // LOP-Punkte laden
   const { data: lopItems } = await supabase
     .from('lop_items')
-    .select('id, title, description, responsible, due_date, priority, status, result, requires_review, ai_confidence, source_quote, created_at, updated_at')
+    .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, created_at, updated_at')
     .eq('project_id', project.id)
     .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false }) as {
       data: Array<{
         id: string; title: string; description: string | null
-        responsible: string | null; due_date: string | null
+        responsible: string | null; responsible_user_id: string | null
+        due_date: string | null
         priority: 'hoch' | 'mittel' | 'niedrig'
         status: 'offen' | 'in_bearbeitung' | 'abgeschlossen'
         result: string | null; requires_review: boolean

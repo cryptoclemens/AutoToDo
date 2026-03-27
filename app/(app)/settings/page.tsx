@@ -29,11 +29,11 @@ export default async function SettingsPage() {
 
   const isAdmin = ['workspace_owner', 'workspace_admin'].includes(member.role)
 
-  // Load workspace branding
+  // Load workspace branding + digest setting
   const { data: ws } = await supabase
-    .from('workspaces').select('id, name, brand_color, logo_url')
+    .from('workspaces').select('id, name, brand_color, logo_url, digest_enabled')
     .eq('id', workspace.id).single() as {
-      data: { id: string; name: string; brand_color: string; logo_url: string | null } | null
+      data: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean } | null
     }
 
   // Load members
@@ -75,7 +75,7 @@ export default async function SettingsPage() {
     <SettingsPageClient
       userEmail={user.email ?? ''}
       isAdmin={isAdmin}
-      workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null }}
+      workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null, digest_enabled: true }}
       members={members ?? []}
       llmInitial={llmInitial}
       apiKeys={apiKeys ?? []}

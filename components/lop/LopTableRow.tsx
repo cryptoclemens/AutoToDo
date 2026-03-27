@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import type { LopItem } from './LopItemDialog'
+import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
@@ -16,6 +17,7 @@ interface Props {
   item: LopItem
   index: number
   canEdit: boolean
+  members: WorkspaceMember[]
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
   onDelete: (id: string) => void
   onOpenDetail: () => void
@@ -23,7 +25,7 @@ interface Props {
 
 const STATUS_CYCLE: Status[] = ['offen', 'in_bearbeitung', 'abgeschlossen']
 
-export default function LopTableRow({ item, index, canEdit, onUpdate, onDelete, onOpenDetail }: Props) {
+export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onOpenDetail }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<LopItem>(item)
   const [saving, setSaving] = useState(false)
@@ -39,6 +41,7 @@ export default function LopTableRow({ item, index, canEdit, onUpdate, onDelete, 
       title: draft.title,
       description: draft.description,
       responsible: draft.responsible,
+      responsible_user_id: draft.responsible_user_id,
       due_date: draft.due_date,
       priority: draft.priority,
       result: draft.result,
@@ -74,11 +77,14 @@ export default function LopTableRow({ item, index, canEdit, onUpdate, onDelete, 
           />
         </td>
         <td className="px-3 py-2">
-          <Input
-            value={draft.responsible ?? ''}
-            onChange={e => setDraft(d => ({ ...d, responsible: e.target.value || null }))}
-            className="text-sm"
-            placeholder="Name"
+          <ResponsibleSelect
+            responsible={draft.responsible}
+            responsibleUserId={draft.responsible_user_id}
+            members={members}
+            onChange={(responsible, responsibleUserId) =>
+              setDraft(d => ({ ...d, responsible, responsible_user_id: responsibleUserId }))
+            }
+            className="text-sm h-8"
           />
         </td>
         <td className="px-3 py-2">

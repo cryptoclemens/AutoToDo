@@ -207,16 +207,16 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 7e.1 | Migration: `lop_items.responsible_user_id` (FK → `workspace_members`) neben bisherigem Freitext | 🔲 Offen |
-| 7e.2 | API: Workspace-Mitglieder mit E-Mail-Adresse für Responsible-Dropdown laden | 🔲 Offen |
-| 7e.3 | LOP-Tabelle & Detail-Dialog: Verantwortlich-Auswahl aus eingeladenen Mitgliedern (Dropdown statt Freitext) | 🔲 Offen |
-| 7e.4 | Freitext-Fallback: bestehende Einträge ohne `responsible_user_id` weiterhin anzeigen | 🔲 Offen |
-| 7e.5 | Täglicher Digest-Cron Job (`/api/cron/daily-digest`, Vercel Cron) | 🔲 Offen |
-| 7e.6 | Digest-Logik: offene & überfällige LOP-Punkte je Verantwortlichem aggregieren | 🔲 Offen |
-| 7e.7 | Digest-E-Mail via Resend: Liste der eigenen offenen Punkte + Fälligkeitsdatum | 🔲 Offen |
-| 7e.8 | Digest-E-Mail: Direktlink zur jeweiligen Projektseite | 🔲 Offen |
-| 7e.9 | Resend-HTML-Template für Digest (responsiv, Branding) | 🔲 Offen |
-| 7e.10 | Digest-Einstellung: pro Workspace aktivierbar/deaktivierbar (Settings-Tab) | 🔲 Offen |
+| 7e.1 | Migration 008: `lop_items.responsible_user_id` + `workspaces.digest_enabled` + RPC `get_workspace_members_with_email` | ✅ Erledigt |
+| 7e.2 | API `GET /api/members`: Workspace-Mitglieder mit E-Mail via RPC | ✅ Erledigt |
+| 7e.3 | `ResponsibleSelect`-Komponente + LOP-Tabelle, Detail-Dialog, Inline-Edit, Hinzufügen-Formular | ✅ Erledigt |
+| 7e.4 | Freitext-Fallback: Legacy-Einträge ohne `responsible_user_id` → Freitext-Input mit ↩-Button | ✅ Erledigt |
+| 7e.5 | Täglicher Digest-Cron Job (`/api/cron/daily-digest`, Vercel Cron Mo–Fr 17 Uhr) | ✅ Erledigt |
+| 7e.6 | Digest-Logik: offene & in_bearbeitung-Punkte je Verantwortlichem, über alle Workspaces aggregiert | ✅ Erledigt |
+| 7e.7 | Digest-E-Mail via Resend Fetch-API: offene Punkte + Fälligkeitsdatum (überfällig rot markiert) | ✅ Erledigt |
+| 7e.8 | Digest-E-Mail: Direktlink „Zur Liste →" je Projekt | ✅ Erledigt |
+| 7e.9 | Responsives HTML-E-Mail-Template (AutoToDo-Header, Tabelle, Footer mit Einstellungslink) | ✅ Erledigt |
+| 7e.10 | Digest-Toggle in Settings → Workspace-Tab (On/Off-Switch, sofortige Speicherung) | ✅ Erledigt |
 | 7e.11 | Projektitel: Zeilenumbrüche via `Shift+Enter` (Textarea statt Input, `whitespace-pre-line`) | ✅ Erledigt |
 | 7e.12 | LOP-Button „+ LOP-Punkt manuell hinzufügen" neben „+ Mitglied einladen" im Header | ✅ Erledigt |
 

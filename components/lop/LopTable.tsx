@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import LopTableRow from './LopTableRow'
 import LopItemDialog, { type LopItem } from './LopItemDialog'
 import ReviewBanner from './ReviewBanner'
 import AiReviewPanel from './AiReviewPanel'
+import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -31,6 +32,15 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
 
   const showAddForm = externalShowAddForm ?? internalShowAddForm
   const setShowAddForm = onShowAddFormChange ?? setInternalShowAddForm
+
+  const [members, setMembers] = useState<WorkspaceMember[]>([])
+
+  useEffect(() => {
+    fetch('/api/members')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: WorkspaceMember[]) => setMembers(data))
+      .catch(() => {})
+  }, [])
 
   const reviewItems = items.filter(i => i.requires_review)
   const reviewCount = reviewItems.length
@@ -195,6 +205,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
                   item={item}
                   index={index}
                   canEdit={canEdit}
+                  members={members}
                   onUpdate={handleUpdate}
                   onDelete={handleDelete}
                   onOpenDetail={() => setSelectedItem(item)}
@@ -209,6 +220,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       {canEdit && (
         <AddLopItemForm
           projectId={projectId}
+          members={members}
           onAdd={handleNewItem}
           open={showAddForm}
           onOpenChange={setShowAddForm}
@@ -219,6 +231,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       <LopItemDialog
         item={selectedItem}
         canEdit={canEdit}
+        members={members}
         onClose={() => setSelectedItem(null)}
         onUpdate={handleUpdate}
       />
@@ -229,17 +242,20 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
 // ─── Inline-Formular für neuen LOP-Punkt ──────────────────────────────────────
 function AddLopItemForm({
   projectId,
+  members,
   onAdd,
   open,
   onOpenChange,
 }: {
   projectId: string
+  members: WorkspaceMember[]
   onAdd: (item: LopItem) => void
   open: boolean
   onOpenChange: (v: boolean) => void
 }) {
   const [title, setTitle] = useState('')
-  const [responsible, setResponsible] = useState('')
+  const [responsible, setResponsible] = useState<string | null>(null)
+  const [responsibleUserId, setResponsibleUserId] = useState<string | null>(null)
   const [dueDate, setDueDate] = useState('')
   const [priority, setPriority] = useState<Priority>('mittel')
   const [loading, setLoading] = useState(false)
@@ -256,7 +272,8 @@ function AddLopItemForm({
       body: JSON.stringify({
         projectId,
         title,
-        responsible: responsible || null,
+        responsible,
+        responsible_user_id: responsibleUserId,
         due_date: dueDate || null,
         priority,
       }),
@@ -272,7 +289,8 @@ function AddLopItemForm({
     const item = await res.json()
     onAdd(item)
     setTitle('')
-    setResponsible('')
+    setResponsible(null)
+    setResponsibleUserId(null)
     setDueDate('')
     setPriority('mittel')
     onOpenChange(false)
@@ -304,12 +322,16 @@ function AddLopItemForm({
         </Select>
       </div>
       <div className="flex gap-2">
-        <Input
-          placeholder="Verantwortlich"
-          value={responsible}
-          onChange={e => setResponsible(e.target.value)}
-          className="flex-1 text-sm"
-        />
+        <div className="flex-1">
+          <ResponsibleSelect
+            responsible={responsible}
+            responsibleUserId={responsibleUserId}
+            members={members}
+            onChange={(r, uid) => { setResponsible(r); setResponsibleUserId(uid) }}
+            className="w-full text-sm h-9"
+            placeholder="Verantwortlich"
+          />
+        </div>
         <Input
           type="date"
           value={dueDate}

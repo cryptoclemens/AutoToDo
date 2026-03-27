@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
+import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
@@ -20,6 +21,7 @@ export interface LopItem {
   title: string
   description: string | null
   responsible: string | null
+  responsible_user_id: string | null
   due_date: string | null
   priority: Priority
   status: Status
@@ -32,11 +34,12 @@ export interface LopItem {
 interface Props {
   item: LopItem | null
   canEdit: boolean
+  members: WorkspaceMember[]
   onClose: () => void
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
 }
 
-export default function LopItemDialog({ item, canEdit, onClose, onUpdate }: Props) {
+export default function LopItemDialog({ item, canEdit, members, onClose, onUpdate }: Props) {
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -51,6 +54,7 @@ export default function LopItemDialog({ item, canEdit, onClose, onUpdate }: Prop
       title: draft.title,
       description: draft.description,
       responsible: draft.responsible,
+      responsible_user_id: draft.responsible_user_id,
       due_date: draft.due_date,
       priority: draft.priority,
       status: draft.status,
@@ -144,11 +148,14 @@ export default function LopItemDialog({ item, canEdit, onClose, onUpdate }: Prop
               <div className="space-y-1">
                 <Label className="text-xs text-gray-500">Verantwortlich</Label>
                 {canEdit ? (
-                  <Input
-                    value={draft.responsible ?? ''}
-                    onChange={e => setDraft(d => d ? { ...d, responsible: e.target.value || null } : d)}
-                    className="h-8 text-sm"
-                    placeholder="Name"
+                  <ResponsibleSelect
+                    key={draft.id}
+                    responsible={draft.responsible}
+                    responsibleUserId={draft.responsible_user_id}
+                    members={members}
+                    onChange={(responsible, responsibleUserId) =>
+                      setDraft(d => d ? { ...d, responsible, responsible_user_id: responsibleUserId } : d)
+                    }
                   />
                 ) : (
                   <p className="text-sm text-gray-700">{draft.responsible ?? <span className="text-gray-400 italic">–</span>}</p>
