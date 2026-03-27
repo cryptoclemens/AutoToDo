@@ -36,12 +36,10 @@ export default async function SettingsPage() {
       data: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean } | null
     }
 
-  // Load members
+  // Load members with email via RPC (SECURITY DEFINER, joins auth.users)
   const { data: members } = await supabase
-    .from('workspace_members').select('user_id, role, joined_at')
-    .eq('workspace_id', workspace.id)
-    .order('joined_at', { ascending: true }) as {
-      data: Array<{ user_id: string; role: string; joined_at: string }> | null
+    .rpc('get_workspace_members_with_email', { p_workspace_id: workspace.id }) as {
+      data: Array<{ user_id: string; role: string; joined_at: string; email: string; display_name: string }> | null
     }
 
   // Load LLM config (admin only)

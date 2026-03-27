@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient, SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { dispatchWebhook } from '@/lib/webhook'
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -78,6 +79,10 @@ export async function PATCH(
     new_values: parsed.data,
   })
 
+  // Webhook (fire-and-forget)
+  const webhookEvent = parsed.data.status ? 'lop.item.status_changed' : 'lop.item.updated'
+  dispatchWebhook(existing.workspace_id, webhookEvent, data as Record<string, unknown>)
+
   return NextResponse.json(data)
 }
 
@@ -95,6 +100,8 @@ export async function DELETE(
 
   const { error } = await supabase.from('lop_items').delete().eq('id', params.id)
   if (error) return NextResponse.json({ error: 'Löschen fehlgeschlagen.' }, { status: 500 })
+
+  dispatchWebhook(existing.workspace_id, 'lop.item.deleted', { id: params.id })
 
   return NextResponse.json({ ok: true })
 }

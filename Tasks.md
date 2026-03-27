@@ -165,7 +165,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 | 7b.5 | Pflichtakzeptanz AGB + Datenschutz bei Registrierung (Checkbox + Popup-Links) | ✅ Erledigt |
 | 7b.6 | Akzeptanz-Zeitstempel in DB speichern (`legal_accepted_at`, `legal_version`) | ✅ Erledigt |
 | 7b.7 | Auftragsverarbeitungsvertrag (AVV) als Download/PDF | ✅ Erledigt |
-| 7b.8 | Cookie-Hinweis / Consent-Banner (§ 25 TDDDG, nur bei Bedarf) | 🔲 Offen |
+| 7b.8 | Cookie-Hinweis / Consent-Banner (§ 25 TDDDG, nur bei Bedarf) | ✅ Erledigt |
 | 7b.9 | Impressum-Seite (`/impressum`) | ✅ Erledigt |
 
 ### Meilenstein 7c: KI-Review-Panel & Sicherheits-Härtung
@@ -231,11 +231,11 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 8.1 | Webhook-Endpoints UI (Registrierung) | 🔲 Offen |
-| 8.2 | Webhook-Dispatcher (HMAC-SHA256) | 🔲 Offen |
-| 8.3 | Retry-Logik (exponential backoff, 3 Versuche) | 🔲 Offen |
-| 8.4 | Audit-Log UI | 🔲 Offen |
-| 8.5 | Rollenverwaltung UI (granulare Berechtigungen) | 🔲 Offen |
+| 8.1 | Webhook-Endpoints UI (Registrierung) | ✅ Erledigt |
+| 8.2 | Webhook-Dispatcher (HMAC-SHA256) | ✅ Erledigt |
+| 8.3 | Retry-Logik (exponential backoff, 3 Versuche) | ✅ Erledigt |
+| 8.4 | Audit-Log UI | ✅ Erledigt |
+| 8.5 | Rollenverwaltung UI (granulare Berechtigungen) | ✅ Erledigt |
 
 ---
 

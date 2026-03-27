@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
+import CookieBanner from '@/components/CookieBanner'
 
 // AUTO-UPDATED by scripts/bump-version.sh
 const APP_VERSION = '0.1.51'
@@ -133,6 +134,9 @@ export default function LandingPage() {
 
       {/* Footer */}
       <LandingLegalFooter />
+
+      {/* Cookie-Hinweis */}
+      <CookieBanner />
 
       {/* Versions-Badge */}
       <div className="fixed bottom-4 right-4 z-50">

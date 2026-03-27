@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 import { resolveWorkspace } from '@/lib/workspace'
+import { dispatchWebhook } from '@/lib/webhook'
 
 const createSchema = z.object({
   projectId: z.string().uuid(),
@@ -69,6 +70,9 @@ export async function POST(request: NextRequest) {
     change_type: 'manual_edit',
     new_values: data,
   })
+
+  // Webhook (fire-and-forget)
+  dispatchWebhook(workspaceId, 'lop.item.created', data as Record<string, unknown>)
 
   return NextResponse.json(data, { status: 201 })
 }
