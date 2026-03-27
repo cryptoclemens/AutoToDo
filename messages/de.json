@@ -1,0 +1,206 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "loading": "Lädt…",
+    "saving": "Speichert…",
+    "error": "Fehler",
+    "success": "Erfolgreich",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "optional": "optional",
+    "required": "Pflichtfeld"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "howTo": "Anleitung",
+    "newProject": "Neues Projekt"
+  },
+  "landing": {
+    "title": "Meetings in Maßnahmen.",
+    "subtitle": "Transkript hochladen. KI extrahiert alle offenen Punkte. LOP immer aktuell.",
+    "cta": "Kostenlos starten",
+    "ctaLogin": "Anmelden",
+    "feature1Title": "KI-gestützte Extraktion",
+    "feature1Desc": "Lade dein Meeting-Transkript hoch — AutoToDo erkennt automatisch alle Aufgaben, Verantwortlichen und Deadlines.",
+    "feature2Title": "Strukturiertes LOP",
+    "feature2Desc": "Alle offenen Punkte übersichtlich in einer Tabelle. Filter, Prioritäten, Status-Tracking — alles inklusive.",
+    "feature3Title": "Team-Kollaboration",
+    "feature3Desc": "Mehrere Mitglieder, klare Rollen, direkter Export als XLSX. Dein Team bleibt immer auf dem gleichen Stand.",
+    "trustTitle": "Vertrauen durch Transparenz",
+    "trustSubtitle": "DSGVO-konform, sicher, zuverlässig",
+    "tags": {
+      "claude": "Anthropic Claude",
+      "gpt": "OpenAI GPT-4o",
+      "privacy": "Datenschutz by Design",
+      "gdpr": "DSGVO-konform"
+    }
+  },
+  "auth": {
+    "loginTitle": "Willkommen zurück",
+    "loginSubtitle": "Mit deinem Konto anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "passwordPlaceholder": "Mindestens 8 Zeichen",
+    "login": "Anmelden",
+    "loggingIn": "Wird angemeldet…",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "register": "Registrieren",
+    "registerTitle": "Kostenlos starten",
+    "step1": "Schritt 1/3 – Konto erstellen",
+    "step2": "Schritt 2/3 – Workspace einrichten",
+    "step3": "Schritt 3/3 – KI-Anbieter konfigurieren (optional)",
+    "fullName": "Vollständiger Name",
+    "namePlaceholder": "Max Mustermann",
+    "emailPlaceholder": "max@firma.de",
+    "agbAccept": "Ich habe die AGB und die Datenschutzerklärung der vencly GmbH gelesen und stimme diesen zu.",
+    "workspaceName": "Workspace-Name",
+    "workspaceNamePlaceholder": "z.B. ACME Consulting",
+    "subdomain": "Subdomain",
+    "subdomainHint": "Nur Kleinbuchstaben, Zahlen und Bindestriche.",
+    "alreadyRegistered": "Bereits registriert?",
+    "resetTitle": "Passwort zurücksetzen",
+    "resetSubtitle": "Wir senden dir einen Link zum Zurücksetzen.",
+    "sendLink": "Link senden",
+    "backToLogin": "Zurück zum Login"
+  },
+  "dashboard": {
+    "title": "Meine Projekte",
+    "newProject": "Neues Projekt",
+    "noProjects": "Noch keine Projekte.",
+    "noProjectsHint": "Lege dein erstes Projekt an und lade ein Transkript hoch.",
+    "archived": "Archiviert",
+    "active": "Aktiv",
+    "openItems": "offene Punkte",
+    "totalItems": "Punkte gesamt"
+  },
+  "project": {
+    "uploadTranscript": "Transkript hochladen",
+    "exportXlsx": "XLSX",
+    "archive": "Archivieren",
+    "unarchive": "Reaktivieren",
+    "open": "offen",
+    "inProgress": "in Bearbeitung",
+    "done": "abgeschlossen",
+    "total": "gesamt",
+    "avgDays": "Ø {days} {unit} Bearbeitungszeit",
+    "lessThanOneDay": "< 1 Tag",
+    "day": "Tag",
+    "days": "Tage",
+    "completionPct": "{pct} % fertig",
+    "inviteMember": "+ Mitglied einladen",
+    "addLopItem": "+ LOP-Punkt manuell hinzufügen"
+  },
+  "lop": {
+    "title": "Titel",
+    "responsible": "Verantwortlich",
+    "dueDate": "Fälligkeitsdatum",
+    "priority": "Priorität",
+    "status": "Status",
+    "result": "Ergebnis",
+    "description": "Beschreibung",
+    "sourceQuote": "Zitat aus Transkript",
+    "aiConfidence": "KI-Konfidenz",
+    "noItems": "Keine LOP-Punkte vorhanden.",
+    "addFirst": "Füge den ersten Punkt manuell hinzu oder lade ein Transkript hoch.",
+    "filters": {
+      "search": "Suchen…",
+      "allStatuses": "Alle Status",
+      "allPriorities": "Alle Prioritäten",
+      "allResponsible": "Alle Verantwortlichen",
+      "reset": "Filter zurücksetzen",
+      "showing": "{count} von {total} Punkten"
+    },
+    "status": {
+      "offen": "Offen",
+      "in_bearbeitung": "In Bearbeitung",
+      "abgeschlossen": "Abgeschlossen"
+    },
+    "priority": {
+      "hoch": "Hoch",
+      "mittel": "Mittel",
+      "niedrig": "Niedrig"
+    },
+    "actions": {
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "confirmDelete": "Diesen LOP-Punkt wirklich löschen?"
+    },
+    "addForm": {
+      "title": "Neuen LOP-Punkt hinzufügen",
+      "titlePlaceholder": "Aufgabe beschreiben…",
+      "responsiblePlaceholder": "Name oder Mitglied wählen",
+      "dueDatePlaceholder": "Fällig am",
+      "add": "Hinzufügen",
+      "adding": "Wird hinzugefügt…"
+    },
+    "dialog": {
+      "editTitle": "LOP-Punkt bearbeiten",
+      "requiresReview": "Erfordert Review",
+      "noResult": "Noch kein Ergebnis"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "tabs": {
+      "account": "Konto",
+      "workspace": "Workspace",
+      "team": "Team",
+      "ai": "KI-Konfiguration",
+      "api": "API-Keys",
+      "webhooks": "Webhooks",
+      "audit": "Audit-Log"
+    },
+    "account": {
+      "title": "Konto",
+      "changeEmail": "E-Mail-Adresse ändern",
+      "changePassword": "Passwort ändern"
+    },
+    "workspace": {
+      "brandingTitle": "Branding",
+      "brandingDesc": "Logo und Akzentfarbe deines Workspaces anpassen.",
+      "digestTitle": "E-Mail-Benachrichtigungen",
+      "digestDesc": "Werktäglich um 17 Uhr erhalten alle Verantwortlichen eine Zusammenfassung ihrer offenen LOP-Punkte per E-Mail.",
+      "digestActive": "Täglicher E-Mail-Digest aktiv",
+      "digestInactive": "Täglicher E-Mail-Digest deaktiviert"
+    },
+    "team": {
+      "membersCount": "{count} Mitglieder in diesem Workspace",
+      "joinedAt": "Beigetreten",
+      "roles": {
+        "workspace_owner": "Inhaber",
+        "workspace_admin": "Admin",
+        "project_admin": "Projekt-Admin",
+        "editor": "Editor",
+        "viewer": "Betrachter"
+      }
+    }
+  },
+  "transcript": {
+    "upload": "Transkript hochladen",
+    "paste": "Text einfügen oder Datei hochladen",
+    "processing": "Wird verarbeitet…",
+    "processed": "Verarbeitet",
+    "pending": "Ausstehend",
+    "failed": "Fehlgeschlagen",
+    "retry": "Erneut versuchen"
+  },
+  "errors": {
+    "notAuthenticated": "Nicht authentifiziert.",
+    "notFound": "Nicht gefunden.",
+    "noPermission": "Keine Berechtigung.",
+    "saveFailed": "Speichern fehlgeschlagen.",
+    "loadFailed": "Laden fehlgeschlagen.",
+    "generic": "Ein Fehler ist aufgetreten."
+  }
+}

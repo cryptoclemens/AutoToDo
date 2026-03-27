@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getLocale } from 'next-intl/server'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap', preload: false })
@@ -10,12 +12,17 @@ export const metadata: Metadata = {
   description: 'Meeting-Transkripte hochladen, KI extrahiert offene Punkte – LOP immer aktuell.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+
   return (
-    <html lang="de" className={inter.variable}>
+    <html lang={locale} className={inter.variable}>
       <body className="font-sans antialiased">
-        {children}
-        <Toaster />
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          <Toaster />
+        </NextIntlClientProvider>
       </body>
     </html>
   )

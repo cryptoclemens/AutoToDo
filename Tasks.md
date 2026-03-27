@@ -253,10 +253,10 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 9.5.1 | i18n-Bibliothek einrichten (`next-intl` oder `next-i18next`) | 🔲 Offen |
-| 9.5.2 | Sprachumschalter in Nav (DE / EN, persistiert in localStorage) | 🔲 Offen |
-| 9.5.3 | Landing Page vollständig auf Englisch (Hero, Features, Pricing, Footer) | 🔲 Offen |
-| 9.5.4 | App-UI auf Englisch (Dashboard, Projektseite, LOP-Tabelle, Filter) | 🔲 Offen |
+| 9.5.1 | i18n-Bibliothek einrichten (`next-intl` oder `next-i18next`) | ✅ Erledigt |
+| 9.5.2 | Sprachumschalter in Nav (DE / EN, persistiert in Cookie) | ✅ Erledigt |
+| 9.5.3 | Landing Page vollständig auf Englisch (Hero, Features, Pricing, Footer) | ✅ Erledigt |
+| 9.5.4 | App-UI auf Englisch (Dashboard, Projektseite, LOP-Tabelle, Filter) | 🔄 In Bearbeitung |
 | 9.5.5 | Rechtliche Seiten auf Englisch (AGB, Datenschutz, Impressum) | 🔲 Offen |
 | 9.5.6 | Onboarding & Registrierung auf Englisch | 🔲 Offen |
 | 9.5.7 | Einstellungsseiten & Einladungs-E-Mails auf Englisch | 🔲 Offen |

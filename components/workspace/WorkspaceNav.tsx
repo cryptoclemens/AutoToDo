@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import HowToModal from '@/components/HowToModal'
 import SecurityModal from '@/components/SecurityModal'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 interface Props {
   workspace: { id: string; name: string; slug: string; brand_color: string; logo_url: string | null }
@@ -27,6 +29,8 @@ const isAdmin = (role: string) =>
 export default function WorkspaceNav({ workspace, userRole, userId: _userId }: Props) {
   const pathname = usePathname()
   const router = useRouter()
+  const t = useTranslations('nav')
+  const locale = useLocale()
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -36,9 +40,8 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
   }
 
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/projects', label: 'Projekte' },
-    ...(isAdmin(userRole) ? [{ href: '/settings', label: 'Einstellungen' }] : []),
+    { href: '/dashboard', label: t('dashboard') },
+    ...(isAdmin(userRole) ? [{ href: '/settings', label: t('settings') }] : []),
   ]
 
   return (
@@ -79,36 +82,37 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
           </div>
         </div>
 
-        {/* How-to + Nutzer-Menü */}
-        <div className="flex items-center gap-1">
-        <SecurityModal />
-        <HowToModal />
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50">
-            <span className="hidden sm:inline">Konto</span>
-            <span>▾</span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <div className="px-2 py-1.5 text-xs text-gray-500 font-medium uppercase tracking-wide">
-              {userRole.replace('_', ' ')}
-            </div>
-            <DropdownMenuSeparator />
-            {isAdmin(userRole) && (
-              <>
-                <DropdownMenuItem onClick={() => router.push('/settings')}>
-                  Einstellungen
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              className="text-red-600 focus:text-red-600"
-            >
-              Abmelden
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* How-to + Sprache + Nutzer-Menü */}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher currentLocale={locale} />
+          <SecurityModal />
+          <HowToModal />
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+              <span className="hidden sm:inline">Konto</span>
+              <span>▾</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                {userRole.replace('_', ' ')}
+              </div>
+              <DropdownMenuSeparator />
+              {isAdmin(userRole) && (
+                <>
+                  <DropdownMenuItem onClick={() => router.push('/settings')}>
+                    {t('settings')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="text-red-600 focus:text-red-600"
+              >
+                {t('logout')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>

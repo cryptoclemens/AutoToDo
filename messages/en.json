@@ -1,0 +1,206 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "optional": "optional",
+    "required": "Required"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Sign out",
+    "howTo": "How to",
+    "newProject": "New project"
+  },
+  "landing": {
+    "title": "Meetings into actions.",
+    "subtitle": "Upload your transcript. AI extracts all open items. Your action list always up to date.",
+    "cta": "Get started for free",
+    "ctaLogin": "Sign in",
+    "feature1Title": "AI-powered extraction",
+    "feature1Desc": "Upload your meeting transcript — AutoToDo automatically identifies all tasks, owners and deadlines.",
+    "feature2Title": "Structured action list",
+    "feature2Desc": "All open items in a clear table. Filters, priorities, status tracking — all included.",
+    "feature3Title": "Team collaboration",
+    "feature3Desc": "Multiple members, clear roles, direct XLSX export. Your team stays on the same page.",
+    "trustTitle": "Trust through transparency",
+    "trustSubtitle": "GDPR-compliant, secure, reliable",
+    "tags": {
+      "claude": "Anthropic Claude",
+      "gpt": "OpenAI GPT-4o",
+      "privacy": "Privacy by Design",
+      "gdpr": "GDPR-compliant"
+    }
+  },
+  "auth": {
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "login": "Sign in",
+    "loggingIn": "Signing in…",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "register": "Sign up",
+    "registerTitle": "Get started for free",
+    "step1": "Step 1/3 – Create account",
+    "step2": "Step 2/3 – Set up workspace",
+    "step3": "Step 3/3 – Configure AI provider (optional)",
+    "fullName": "Full name",
+    "namePlaceholder": "Jane Smith",
+    "emailPlaceholder": "jane@company.com",
+    "agbAccept": "I have read and agree to the Terms of Service and Privacy Policy of vencly GmbH.",
+    "workspaceName": "Workspace name",
+    "workspaceNamePlaceholder": "e.g. ACME Consulting",
+    "subdomain": "Subdomain",
+    "subdomainHint": "Lowercase letters, numbers and hyphens only.",
+    "alreadyRegistered": "Already have an account?",
+    "resetTitle": "Reset password",
+    "resetSubtitle": "We'll send you a link to reset your password.",
+    "sendLink": "Send link",
+    "backToLogin": "Back to sign in"
+  },
+  "dashboard": {
+    "title": "My Projects",
+    "newProject": "New project",
+    "noProjects": "No projects yet.",
+    "noProjectsHint": "Create your first project and upload a transcript.",
+    "archived": "Archived",
+    "active": "Active",
+    "openItems": "open items",
+    "totalItems": "items total"
+  },
+  "project": {
+    "uploadTranscript": "Upload transcript",
+    "exportXlsx": "XLSX",
+    "archive": "Archive",
+    "unarchive": "Restore",
+    "open": "open",
+    "inProgress": "in progress",
+    "done": "done",
+    "total": "total",
+    "avgDays": "Avg. {days} {unit} to close",
+    "lessThanOneDay": "< 1 day",
+    "day": "day",
+    "days": "days",
+    "completionPct": "{pct}% done",
+    "inviteMember": "+ Invite member",
+    "addLopItem": "+ Add item manually"
+  },
+  "lop": {
+    "title": "Title",
+    "responsible": "Owner",
+    "dueDate": "Due date",
+    "priority": "Priority",
+    "status": "Status",
+    "result": "Result",
+    "description": "Description",
+    "sourceQuote": "Quote from transcript",
+    "aiConfidence": "AI confidence",
+    "noItems": "No action items yet.",
+    "addFirst": "Add the first item manually or upload a transcript.",
+    "filters": {
+      "search": "Search…",
+      "allStatuses": "All statuses",
+      "allPriorities": "All priorities",
+      "allResponsible": "All owners",
+      "reset": "Reset filters",
+      "showing": "{count} of {total} items"
+    },
+    "status": {
+      "offen": "Open",
+      "in_bearbeitung": "In Progress",
+      "abgeschlossen": "Done"
+    },
+    "priority": {
+      "hoch": "High",
+      "mittel": "Medium",
+      "niedrig": "Low"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "confirmDelete": "Really delete this action item?"
+    },
+    "addForm": {
+      "title": "Add new action item",
+      "titlePlaceholder": "Describe the task…",
+      "responsiblePlaceholder": "Name or choose member",
+      "dueDatePlaceholder": "Due date",
+      "add": "Add",
+      "adding": "Adding…"
+    },
+    "dialog": {
+      "editTitle": "Edit action item",
+      "requiresReview": "Requires review",
+      "noResult": "No result yet"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "account": "Account",
+      "workspace": "Workspace",
+      "team": "Team",
+      "ai": "AI Configuration",
+      "api": "API Keys",
+      "webhooks": "Webhooks",
+      "audit": "Audit Log"
+    },
+    "account": {
+      "title": "Account",
+      "changeEmail": "Change email address",
+      "changePassword": "Change password"
+    },
+    "workspace": {
+      "brandingTitle": "Branding",
+      "brandingDesc": "Customize your workspace logo and accent color.",
+      "digestTitle": "Email notifications",
+      "digestDesc": "On weekdays at 5 PM, all responsible members receive a summary of their open action items by email.",
+      "digestActive": "Daily email digest active",
+      "digestInactive": "Daily email digest disabled"
+    },
+    "team": {
+      "membersCount": "{count} members in this workspace",
+      "joinedAt": "Joined",
+      "roles": {
+        "workspace_owner": "Owner",
+        "workspace_admin": "Admin",
+        "project_admin": "Project Admin",
+        "editor": "Editor",
+        "viewer": "Viewer"
+      }
+    }
+  },
+  "transcript": {
+    "upload": "Upload transcript",
+    "paste": "Paste text or upload a file",
+    "processing": "Processing…",
+    "processed": "Processed",
+    "pending": "Pending",
+    "failed": "Failed",
+    "retry": "Retry"
+  },
+  "errors": {
+    "notAuthenticated": "Not authenticated.",
+    "notFound": "Not found.",
+    "noPermission": "No permission.",
+    "saveFailed": "Save failed.",
+    "loadFailed": "Load failed.",
+    "generic": "An error occurred."
+  }
+}
