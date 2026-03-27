@@ -240,8 +240,21 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 | 9.2 | Custom Domain (CNAME-Support) | 🔲 Offen |
 | 9.3 | E-Mail-Benachrichtigungen (Resend) | 🔲 Offen |
 | 9.4 | Slack/Teams-Integration via Webhook | 🔲 Offen |
-| 9.5 | Mehrsprachigkeit (DE/EN) | 🔲 Offen |
 | 9.6 | SSO (SAML für Enterprise) | 🔲 Offen |
+
+### Meilenstein 9.5: Mehrsprachigkeit (DE / EN)
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 9.5.1 | i18n-Bibliothek einrichten (`next-intl` oder `next-i18next`) | 🔲 Offen |
+| 9.5.2 | Sprachumschalter in Nav (DE / EN, persistiert in localStorage) | 🔲 Offen |
+| 9.5.3 | Landing Page vollständig auf Englisch (Hero, Features, Pricing, Footer) | 🔲 Offen |
+| 9.5.4 | App-UI auf Englisch (Dashboard, Projektseite, LOP-Tabelle, Filter) | 🔲 Offen |
+| 9.5.5 | Rechtliche Seiten auf Englisch (AGB, Datenschutz, Impressum) | 🔲 Offen |
+| 9.5.6 | Onboarding & Registrierung auf Englisch | 🔲 Offen |
+| 9.5.7 | Einstellungsseiten & Einladungs-E-Mails auf Englisch | 🔲 Offen |
+| 9.5.8 | „How to"-Popup auf Englisch | 🔲 Offen |
+| 9.5.9 | Fehlermeldungen & Toast-Nachrichten lokalisiert | 🔲 Offen |
 
 ---
 

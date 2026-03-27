@@ -40,7 +40,14 @@ const STEPS = [
       'In der LOP-Tabelle kannst du nach Status, Priorität und Verantwortlichem filtern. Klicke auf einen Titel, um alle Details in einem Dialog zu bearbeiten. Statusänderungen sind direkt in der Zeile möglich.',
   },
   {
-    title: 'Schritt 5 – Exportieren & teilen',
+    title: 'Schritt 5 – Punkte manuell hinzufügen',
+    subtitle: 'Ergänze Aufgaben unabhängig vom Transkript.',
+    visual: <ManualAddVisual />,
+    description:
+      'Klicke oben auf der Projektseite auf „+ LOP-Punkt manuell hinzufügen". Ein Formular öffnet sich, in dem du Titel, Verantwortlichen, Fälligkeitsdatum und Priorität angeben kannst. So lässt sich die Liste jederzeit manuell ergänzen – ohne Transkript.',
+  },
+  {
+    title: 'Schritt 6 – Exportieren & teilen',
     subtitle: 'XLSX-Export mit Workspace-Branding.',
     visual: <ExportVisual />,
     description:
@@ -263,6 +270,31 @@ function LopVisual() {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  )
+}
+
+function ManualAddVisual() {
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex gap-2 mb-1">
+        <div className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600">+ Mitglied einladen</div>
+        <div className="text-xs text-white rounded px-2 py-1" style={{ backgroundColor: 'var(--brand,#2563EB)' }}>+ LOP-Punkt manuell hinzufügen</div>
+      </div>
+      <div className="bg-white border border-blue-200 rounded-lg p-3 shadow-sm space-y-2 text-xs">
+        <div className="flex gap-2">
+          <div className="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Titel des LOP-Punktes *</div>
+          <div className="w-20 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Priorität</div>
+        </div>
+        <div className="flex gap-2">
+          <div className="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Verantwortlich</div>
+          <div className="w-24 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Fälligkeitsdatum</div>
+        </div>
+        <div className="flex gap-2 justify-end pt-1">
+          <div className="border border-gray-200 rounded px-2 py-1 text-gray-500">Abbrechen</div>
+          <div className="text-white rounded px-2 py-1" style={{ backgroundColor: 'var(--brand,#2563EB)' }}>Hinzufügen</div>
+        </div>
       </div>
     </div>
   )
