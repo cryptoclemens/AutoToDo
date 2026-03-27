@@ -4,10 +4,12 @@ import SecurityModal from '@/components/SecurityModal'
 import LegalModal from '@/components/legal/LegalModal'
 
 const TRUST_ITEMS = [
-  { icon: '🔐', label: 'TLS 1.3', desc: 'Verschlüsselte Übertragung' },
-  { icon: '🔒', label: 'AES-256-GCM', desc: 'Verschlüsselte Speicherung' },
+  { icon: '🔐', label: 'TLS 1.3 + HSTS', desc: 'Verschlüsselte Übertragung, erzwungen' },
+  { icon: '🔒', label: 'AES-256-GCM', desc: 'Verschlüsselte Speicherung mit Auth-Tag' },
+  { icon: '🛡️', label: 'Security Headers', desc: 'HSTS, X-Frame-Options, nosniff' },
   { icon: '🏛️', label: 'RLS', desc: 'Mandantentrennung auf DB-Ebene' },
-  { icon: '🇪🇺', label: 'DSGVO', desc: 'EU-konformer Betrieb' },
+  { icon: '🗝️', label: '256-Bit Token', desc: 'Kryptografisch sichere API-Keys' },
+  { icon: '🇪🇺', label: 'DSGVO', desc: 'EU-konformer Betrieb, Frankfurt' },
   { icon: '✅', label: 'BYOK', desc: 'Ihre KI-Keys, Ihre Kontrolle' },
   { icon: '🚫', label: 'Kein Tracking', desc: 'Keine Analyse-Cookies' },
 ]
@@ -25,7 +27,7 @@ export function LandingSecuritySection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {TRUST_ITEMS.map(item => (
             <div key={item.label} className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-start gap-3">
               <span className="text-2xl shrink-0">{item.icon}</span>
