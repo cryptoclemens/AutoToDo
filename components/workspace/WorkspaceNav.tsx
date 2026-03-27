@@ -95,17 +95,8 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
             <DropdownMenuSeparator />
             {isAdmin(userRole) && (
               <>
-                <DropdownMenuItem onClick={() => router.push('/settings/branding')}>
-                  Branding
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings/members')}>
-                  Team
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings/llm')}>
-                  KI-Konfiguration
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings/api')}>
-                  API-Keys
+                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  Einstellungen
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>

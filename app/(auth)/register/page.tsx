@@ -10,6 +10,39 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import LegalModal from '@/components/legal/LegalModal'
 
+const LLM_PROVIDERS = [
+  {
+    id: 'anthropic',
+    label: 'Anthropic (Claude)',
+    placeholder: 'sk-ant-api03-…',
+    models: [
+      { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (empfohlen)' },
+      { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (schnell & günstig)' },
+    ],
+    needsEndpoint: false,
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI (GPT)',
+    placeholder: 'sk-…',
+    models: [
+      { id: 'gpt-4o', label: 'GPT-4o (empfohlen)' },
+      { id: 'gpt-4o-mini', label: 'GPT-4o mini (günstig)' },
+    ],
+    needsEndpoint: false,
+  },
+  {
+    id: 'azure_openai',
+    label: 'Azure OpenAI (Microsoft)',
+    placeholder: 'Azure API-Key',
+    models: [
+      { id: 'gpt-4o', label: 'gpt-4o' },
+      { id: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+    ],
+    needsEndpoint: true,
+  },
+]
+
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -21,10 +54,9 @@ function slugify(text: string) {
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [step, setStep] = useState<'account' | 'workspace'>('account')
+  const [step, setStep] = useState<'account' | 'workspace' | 'llm'>('account')
   const [existingUserId, setExistingUserId] = useState<string | null>(null)
 
-  // If already logged in, skip account creation and go straight to workspace setup
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
@@ -35,233 +67,285 @@ export default function RegisterPage() {
     })
   }, [])
 
-  // Account-Felder
+  // Account
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [agbAccepted, setAgbAccepted] = useState(false)
 
-  // Workspace-Felder
+  // Workspace
   const [workspaceName, setWorkspaceName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
-  const [agbAccepted, setAgbAccepted] = useState(false)
+  // LLM (optional)
+  const [llmProvider, setLlmProvider] = useState('anthropic')
+  const [llmModel, setLlmModel] = useState('claude-sonnet-4-6')
+  const [llmApiKey, setLlmApiKey] = useState('')
+  const [llmEndpoint, setLlmEndpoint] = useState('')
+  const [llmSaving, setLlmSaving] = useState(false)
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const providerData = LLM_PROVIDERS.find(p => p.id === llmProvider) ?? LLM_PROVIDERS[0]
+
   function handleWorkspaceNameChange(value: string) {
     setWorkspaceName(value)
-    if (!slugManuallyEdited) {
-      setSlug(slugify(value))
-    }
+    if (!slugManuallyEdited) setSlug(slugify(value))
+  }
+
+  function handleLlmProviderChange(v: string) {
+    setLlmProvider(v)
+    const pd = LLM_PROVIDERS.find(p => p.id === v) ?? LLM_PROVIDERS[0]
+    setLlmModel(pd.models[0].id)
+    setLlmEndpoint('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
     if (step === 'account') {
-      if (password.length < 8) {
-        setError('Passwort muss mindestens 8 Zeichen haben.')
-        return
-      }
-      if (!agbAccepted) {
-        setError('Bitte stimmen Sie den AGB und der Datenschutzerklärung zu.')
-        return
-      }
+      if (password.length < 8) { setError('Passwort muss mindestens 8 Zeichen haben.'); return }
+      if (!agbAccepted) { setError('Bitte stimmen Sie den AGB und der Datenschutzerklärung zu.'); return }
       setError('')
       setStep('workspace')
       return
     }
 
-    // Schritt 2: Registrierung + Workspace anlegen
-    setError('')
-    setLoading(true)
+    if (step === 'workspace') {
+      setError('')
+      setLoading(true)
 
-    const supabase = createClient()
-    let userId = existingUserId
+      const supabase = createClient()
+      let userId = existingUserId
 
-    // Nur registrieren wenn kein bestehender Account
-    if (!userId) {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: name },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      if (!userId) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: name },
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        })
+        if (authError) { setError(authError.message); setLoading(false); return }
+        if (!authData.user) { setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.'); setLoading(false); return }
+        userId = authData.user.id
+      }
+
+      const res = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: workspaceName, slug, userId }),
       })
 
-      if (authError) {
-        setError(authError.message)
+      if (!res.ok) {
+        const { error: wsError } = await res.json()
+        setError(wsError ?? 'Workspace konnte nicht erstellt werden.')
         setLoading(false)
         return
       }
 
-      if (!authData.user) {
-        setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.')
-        setLoading(false)
-        return
-      }
-      userId = authData.user.id
-    }
-
-    // Workspace anlegen (via API Route, da service_role benötigt)
-    const res = await fetch('/api/workspaces', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: workspaceName,
-        slug,
-        userId,
-      }),
-    })
-
-    if (!res.ok) {
-      const { error: wsError } = await res.json()
-      setError(wsError ?? 'Workspace konnte nicht erstellt werden.')
       setLoading(false)
+      setStep('llm')
       return
     }
+  }
 
+  async function handleLlmSave() {
+    if (!llmApiKey.trim()) { router.push('/onboarding'); router.refresh(); return }
+    if (providerData.needsEndpoint && !llmEndpoint.trim()) {
+      setError('Bitte Endpoint-URL eingeben oder diesen Schritt überspringen.')
+      return
+    }
+    setLlmSaving(true)
+    try {
+      const res = await fetch('/api/settings/llm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: llmProvider,
+          model: llmModel,
+          apiKey: llmApiKey,
+          endpoint: providerData.needsEndpoint ? llmEndpoint.trim() : undefined,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json() as { error?: string }
+        setError(d.error ?? 'Fehler beim Speichern der KI-Konfiguration.')
+        setLlmSaving(false)
+        return
+      }
+    } catch {
+      // Non-blocking: proceed even if save fails
+    }
     router.push('/onboarding')
     router.refresh()
   }
 
+  // Step indicator
+  const stepNum = step === 'account' ? 1 : step === 'workspace' ? 2 : 3
+
   return (
     <Card>
       <CardHeader>
+        <div className="flex items-center gap-1 mb-2">
+          {[1, 2, 3].map(n => (
+            <div key={n} className={`h-1.5 rounded-full flex-1 transition-colors ${n <= stepNum ? 'bg-blue-600' : 'bg-gray-200'}`} />
+          ))}
+        </div>
         <CardTitle>Kostenlos starten</CardTitle>
         <CardDescription>
-          {step === 'account'
-            ? 'Erstellen Sie Ihr Konto.'
-            : 'Richten Sie Ihren Workspace ein.'}
+          {step === 'account' && 'Schritt 1/3 – Konto erstellen'}
+          {step === 'workspace' && 'Schritt 2/3 – Workspace einrichten'}
+          {step === 'llm' && 'Schritt 3/3 – KI-Anbieter konfigurieren (optional)'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {step === 'account' ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="name">Vollständiger Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Max Mustermann"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">E-Mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="max@firma.de"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Passwort</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Mindestens 8 Zeichen"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
-              <div className="flex items-start gap-3 pt-1">
-                <input
-                  id="agb"
-                  type="checkbox"
-                  checked={agbAccepted}
-                  onChange={e => setAgbAccepted(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
-                />
-                <label htmlFor="agb" className="text-sm text-gray-600 cursor-pointer leading-snug">
-                  Ich habe die{' '}
-                  <LegalModal initialTab="agb" trigger={
-                    <span className="text-blue-600 hover:underline font-medium">AGB</span>
-                  } />{' '}
-                  und die{' '}
-                  <LegalModal initialTab="datenschutz" trigger={
-                    <span className="text-blue-600 hover:underline font-medium">Datenschutzerklärung</span>
-                  } />{' '}
-                  der vencly GmbH gelesen und stimme diesen zu.
-                </label>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="workspaceName">Workspace-Name</Label>
-                <Input
-                  id="workspaceName"
-                  type="text"
-                  placeholder="z.B. ACME Consulting"
-                  value={workspaceName}
-                  onChange={e => handleWorkspaceNameChange(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="slug">Subdomain</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="slug"
-                    type="text"
-                    placeholder="acme-consulting"
-                    value={slug}
-                    onChange={e => {
-                      setSlug(slugify(e.target.value))
-                      setSlugManuallyEdited(true)
-                    }}
-                    required
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.app</span>
+        {/* Steps 1 & 2 share a form */}
+        {step !== 'llm' && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {step === 'account' ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Vollständiger Name</Label>
+                  <Input id="name" type="text" placeholder="Max Mustermann" value={name} onChange={e => setName(e.target.value)} required />
                 </div>
-                <p className="text-xs text-gray-400">
-                  Nur Kleinbuchstaben, Zahlen und Bindestriche.
-                </p>
-              </div>
-            </>
-          )}
-
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>
-          )}
-
-          <div className="flex gap-2">
-            {step === 'workspace' && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep('account')}
-                className="flex-1"
-              >
-                Zurück
-              </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-Mail</Label>
+                  <Input id="email" type="email" placeholder="max@firma.de" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Passwort</Label>
+                  <Input id="password" type="password" placeholder="Mindestens 8 Zeichen" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" />
+                </div>
+                <div className="flex items-start gap-3 pt-1">
+                  <input
+                    id="agb" type="checkbox" checked={agbAccepted} onChange={e => setAgbAccepted(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                  />
+                  <label htmlFor="agb" className="text-sm text-gray-600 cursor-pointer leading-snug">
+                    Ich habe die{' '}
+                    <LegalModal initialTab="agb" trigger={<span className="text-blue-600 hover:underline font-medium">AGB</span>} />{' '}
+                    und die{' '}
+                    <LegalModal initialTab="datenschutz" trigger={<span className="text-blue-600 hover:underline font-medium">Datenschutzerklärung</span>} />{' '}
+                    der vencly GmbH gelesen und stimme diesen zu.
+                  </label>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="workspaceName">Workspace-Name</Label>
+                  <Input id="workspaceName" type="text" placeholder="z.B. ACME Consulting" value={workspaceName} onChange={e => handleWorkspaceNameChange(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Subdomain</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="slug" type="text" placeholder="acme-consulting" value={slug}
+                      onChange={e => { setSlug(slugify(e.target.value)); setSlugManuallyEdited(true) }}
+                      required className="flex-1"
+                    />
+                    <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.app</span>
+                  </div>
+                  <p className="text-xs text-gray-400">Nur Kleinbuchstaben, Zahlen und Bindestriche.</p>
+                </div>
+              </>
             )}
-            <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? 'Wird erstellt…' : step === 'account' ? 'Weiter' : 'Workspace erstellen'}
-            </Button>
+
+            {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+
+            <div className="flex gap-2">
+              {step === 'workspace' && (
+                <Button type="button" variant="outline" onClick={() => setStep('account')} className="flex-1">Zurück</Button>
+              )}
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? 'Wird erstellt…' : step === 'account' ? 'Weiter' : 'Weiter'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Step 3: optional LLM */}
+        {step === 'llm' && (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+              <p className="text-xs text-blue-700">
+                Hinterlegen Sie Ihren eigenen KI-API-Key, um Transkripte automatisch zu verarbeiten.
+                Sie können diesen Schritt auch überspringen und den Key später unter <strong>Einstellungen → KI-Konfiguration</strong> hinterlegen.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>KI-Anbieter</Label>
+              <select
+                value={llmProvider}
+                onChange={e => handleLlmProviderChange(e.target.value)}
+                className="w-full h-9 text-sm border border-input rounded-md px-3 bg-background"
+              >
+                {LLM_PROVIDERS.map(p => (
+                  <option key={p.id} value={p.id}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Modell</Label>
+              <select
+                value={llmModel}
+                onChange={e => setLlmModel(e.target.value)}
+                className="w-full h-9 text-sm border border-input rounded-md px-3 bg-background"
+              >
+                {providerData.models.map(m => (
+                  <option key={m.id} value={m.id}>{m.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {providerData.needsEndpoint && (
+              <div className="space-y-2">
+                <Label>Endpoint-URL</Label>
+                <Input
+                  placeholder="https://mein-resource.openai.azure.com"
+                  value={llmEndpoint}
+                  onChange={e => setLlmEndpoint(e.target.value)}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-gray-400">Azure Portal → Azure OpenAI → Schlüssel und Endpunkt</p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>API-Key</Label>
+              <Input
+                type="password"
+                placeholder={providerData.placeholder}
+                value={llmApiKey}
+                onChange={e => setLlmApiKey(e.target.value)}
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-gray-400">Wird AES-256-GCM verschlüsselt gespeichert.</p>
+            </div>
+
+            {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => { router.push('/onboarding'); router.refresh() }}>
+                Überspringen
+              </Button>
+              <Button type="button" className="flex-1" disabled={llmSaving} onClick={handleLlmSave}>
+                {llmSaving ? 'Speichert…' : 'Speichern & Fertig'}
+              </Button>
+            </div>
           </div>
-        </form>
+        )}
 
         {step === 'account' && (
           <p className="text-center text-sm text-gray-500 mt-4">
             Bereits registriert?{' '}
-            <Link href="/login" className="text-blue-600 hover:underline font-medium">
-              Anmelden
-            </Link>
+            <Link href="/login" className="text-blue-600 hover:underline font-medium">Anmelden</Link>
           </p>
         )}
       </CardContent>
