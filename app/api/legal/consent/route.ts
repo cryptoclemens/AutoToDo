@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 
-export const LEGAL_VERSION = '2026-03-27'
+const LEGAL_VERSION = '2026-03-27'
 
 export async function POST(_request: NextRequest) {
   const authClient = createClient()
