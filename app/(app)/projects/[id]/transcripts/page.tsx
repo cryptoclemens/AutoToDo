@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TranscriptUploadForm } from '@/components/transcripts/TranscriptUploadForm'
 import TranscriptsRefresher from './TranscriptsRefresher'
+import { RetryButton } from './RetryButton'
 
 interface Props {
   params: { id: string }
@@ -123,6 +124,11 @@ export default async function TranscriptsPage({ params }: Props) {
                     )}
                     {(t.processing_error || t.error_message) && (
                       <p className="text-xs text-red-500 mt-1">{t.processing_error ?? t.error_message}</p>
+                    )}
+                    {(t.processing_status === 'pending' || t.processing_status === 'error') && canUpload && (
+                      <div className="mt-1">
+                        <RetryButton transcriptId={t.id} />
+                      </div>
                     )}
                   </div>
                   <Badge className={`text-xs shrink-0 ${STATUS_COLORS[t.processing_status] ?? ''}`}>

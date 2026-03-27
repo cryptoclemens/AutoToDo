@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { encrypt } from '@/lib/encryption'
 import { resolveWorkspace } from '@/lib/workspace'
+import { runTranscriptProcessing } from '@/lib/processTranscript'
+
+// Allow up to 60s for LLM processing on Vercel
+export const maxDuration = 60
 
 const MAX_FILE_SIZE = 500 * 1024 // 500 KB
 const MAX_TEXT_SIZE = 500 * 1024 // 500 KB as characters
@@ -132,15 +136,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Fehler beim Speichern.' }, { status: 500 })
   }
 
-  // Trigger async processing (fire-and-forget)
-  const baseUrl = req.nextUrl.origin
-  fetch(`${baseUrl}/api/transcripts/${transcript.id}/process`, {
-    method: 'POST',
-    headers: {
-      'x-workspace-slug': slug,
-      'x-internal-secret': process.env.INTERNAL_API_SECRET ?? '',
-    },
-  }).catch(() => {/* Processing will be retried manually */})
+  // Process inline (awaited) – fire-and-forget fails on Vercel serverless
+  const result = await runTranscriptProcessing(transcript.id)
 
-  return NextResponse.json({ id: transcript.id, status: 'pending' }, { status: 201 })
+  return NextResponse.json({
+    id: transcript.id,
+    status: result.ok ? 'done' : 'error',
+    itemsCreated: result.itemsCreated ?? 0,
+    itemsUpdated: result.itemsUpdated ?? 0,
+    error: result.error ?? null,
+  }, { status: 201 })
 }
