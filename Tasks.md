@@ -220,6 +220,13 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 | 7e.11 | Projektitel: Zeilenumbrüche via `Shift+Enter` (Textarea statt Input, `whitespace-pre-line`) | ✅ Erledigt |
 | 7e.12 | LOP-Button „+ LOP-Punkt manuell hinzufügen" neben „+ Mitglied einladen" im Header | ✅ Erledigt |
 
+### Meilenstein 7f: Nutzer-Feedback (aus feedback.md)
+
+| # | Aufgabe | Quelle | Status |
+|---|---|---|---|
+| 7f.1 | XLSX-Reimport: offline bearbeitete LOP-Datei hochladen & mit bestehender LOP abgleichen (Spalten-Mapping, Konflikterkennung) | Feature-Wunsch 2026-03-27 | 🔲 Offen |
+| 7f.2 | Statusanzeige: Rohwerte (`in_bearbeitung`) prüfen & überall durch lesbare Labels ersetzen – v. a. in Tooltips, XLSX-Spaltenköpfen, API-Responses | Bug 2026-03-27 | 🔲 Offen |
+
 ### Meilenstein 8: Webhooks & Audit
 
 | # | Aufgabe | Status |
