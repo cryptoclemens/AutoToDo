@@ -12,3 +12,10 @@
 Ich fände es cool, wenn ich auf Excel offline bearbeitete XSLX, die ich vorher von dieser Seite runtergeladen habe, wieder hochladen kann, und dann ein Abbgleich mit der jweiliegen Lop-Liste stattfindet
 
 ---
+## 2026-03-27 12:14:26 | 🐛 Fehler
+**Workspace:** Plenum
+**Nutzer:** clemens.pompey@vencly.com
+
+Die Schreibweise bei den Status ist etwas komisch, z.B. in_bearbeitung
+
+---
