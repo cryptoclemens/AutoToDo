@@ -397,8 +397,8 @@ function AvvContent() {
           <p className="text-xs text-gray-500 mt-0.5">PDF · Auftragsverarbeitungsvertrag gemäß Art. 28 DSGVO</p>
         </div>
         <a
-          href="/avv.pdf"
-          download="AVV-vencly-GmbH.pdf"
+          href="/AVV_vencly_AutoToDo.pdf"
+          download="AVV_vencly_AutoToDo.pdf"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors no-underline"
         >
           ↓ AVV herunterladen (PDF)

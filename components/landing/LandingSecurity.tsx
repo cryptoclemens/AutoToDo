@@ -76,7 +76,7 @@ export function LandingLegalFooter() {
           <Link href="/datenschutz" className="hover:text-gray-600 transition-colors">Datenschutzerklärung</Link>
           <Link href="/impressum" className="hover:text-gray-600 transition-colors">Impressum</Link>
           <Link href="/datensicherheit" className="hover:text-gray-600 transition-colors">Datensicherheit</Link>
-          <a href="/avv.pdf" download="AVV-vencly-GmbH.pdf" className="hover:text-gray-600 transition-colors">AVV</a>
+          <a href="/AVV_vencly_AutoToDo.pdf" download="AVV_vencly_AutoToDo.pdf" className="hover:text-gray-600 transition-colors">AVV</a>
         </div>
       </div>
     </footer>
