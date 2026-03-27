@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
 
 // AUTO-UPDATED by scripts/bump-version.sh
-const APP_VERSION = '0.1.42'
+const APP_VERSION = '0.1.43'
 
 export default function LandingPage() {
   return (
