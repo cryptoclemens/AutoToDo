@@ -83,7 +83,10 @@
     "active": "Active",
     "openItems": "open items",
     "totalItems": "items total",
-    "active": "Active"
+    "statOpen": "Open",
+    "statOverdue": "Overdue",
+    "statDone": "Done",
+    "statTotal": "Total"
   },
   "project": {
     "uploadTranscript": "Upload transcript",

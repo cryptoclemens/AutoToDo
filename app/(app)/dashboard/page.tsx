@@ -26,6 +26,27 @@ export default async function DashboardPage() {
       data: Array<{ id: string; name: string; description: string | null; created_at: string; archived_at: string | null }> | null
     }
 
+  // Workspace-weite LOP-Statistiken
+  const projectIds = (projects ?? []).map(p => p.id)
+  const { data: allItems } = projectIds.length > 0
+    ? await supabase
+        .from('lop_items')
+        .select('status, due_date')
+        .in('project_id', projectIds)
+    : { data: [] }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const openCount = (allItems ?? []).filter(i => i.status !== 'abgeschlossen').length
+  const overdueCount = (allItems ?? []).filter(i =>
+    i.status !== 'abgeschlossen' &&
+    i.due_date &&
+    new Date(i.due_date) < today
+  ).length
+  const doneCount = (allItems ?? []).filter(i => i.status === 'abgeschlossen').length
+  const totalCount = (allItems ?? []).length
+
   const t = await getTranslations('dashboard')
   const locale = await getLocale()
 
@@ -42,6 +63,40 @@ export default async function DashboardPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Statistik-Karten */}
+      {totalCount > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <StatCard
+            label={t('statOpen')}
+            value={openCount}
+            color="text-blue-600"
+            bg="bg-blue-50"
+            icon="◯"
+          />
+          <StatCard
+            label={t('statOverdue')}
+            value={overdueCount}
+            color={overdueCount > 0 ? 'text-red-600' : 'text-gray-400'}
+            bg={overdueCount > 0 ? 'bg-red-50' : 'bg-gray-50'}
+            icon="⚠"
+          />
+          <StatCard
+            label={t('statDone')}
+            value={doneCount}
+            color="text-green-600"
+            bg="bg-green-50"
+            icon="✓"
+          />
+          <StatCard
+            label={t('statTotal')}
+            value={totalCount}
+            color="text-gray-600"
+            bg="bg-gray-50"
+            icon="≡"
+          />
+        </div>
+      )}
 
       {!projects || projects.length === 0 ? (
         <Card className="text-center py-12">
@@ -78,6 +133,24 @@ export default async function DashboardPage() {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function StatCard({ label, value, color, bg, icon }: {
+  label: string
+  value: number
+  color: string
+  bg: string
+  icon: string
+}) {
+  return (
+    <div className={`${bg} rounded-lg px-4 py-3 flex items-center gap-3`}>
+      <span className={`text-xl ${color}`}>{icon}</span>
+      <div>
+        <div className={`text-2xl font-bold leading-none ${color}`}>{value}</div>
+        <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+      </div>
     </div>
   )
 }

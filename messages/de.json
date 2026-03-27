@@ -83,7 +83,10 @@
     "active": "Aktiv",
     "openItems": "offene Punkte",
     "totalItems": "Punkte gesamt",
-    "active": "Aktiv"
+    "statOpen": "Offen",
+    "statOverdue": "Überfällig",
+    "statDone": "Erledigt",
+    "statTotal": "Gesamt"
   },
   "project": {
     "uploadTranscript": "Transkript hochladen",
