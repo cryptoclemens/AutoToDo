@@ -1,8 +1,8 @@
 # AutoToDo
 
-**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition
+**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.32
 
-AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → LOP aktuell → Export als XLSX.
+AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
 
 ---
 
@@ -13,7 +13,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
 | KI | Anthropic Claude / OpenAI GPT / Azure OpenAI (BYOK – Bring Your Own Key) |
-| Deployment | Vercel |
+| Deployment | Vercel (maxDuration 60s für LLM-Verarbeitung) |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
 | Billing | Stripe (geplant) |
 
@@ -49,6 +49,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ENCRYPTION_SECRET=your-64-char-hex-string   # openssl rand -hex 32
+INTERNAL_API_SECRET=your-secret-string
 ```
 
 ### 3. Datenbank einrichten
@@ -81,45 +82,64 @@ App läuft auf [http://localhost:3000](http://localhost:3000)
 autotodo/
 ├── app/                    # Next.js App Router
 │   ├── page.tsx            # Landing Page (direkt in app/, kein Route-Group)
-│   ├── (auth)/             # Login, Register, Passwort-Reset
+│   ├── (auth)/             # Login, Register, Passwort-Reset, Invite-Accept
 │   ├── (onboarding)/       # Onboarding-Wizard
 │   ├── (app)/              # Workspace-App (auth-geschützt)
+│   │   ├── dashboard/      # Projekt-Übersicht
+│   │   ├── projects/[id]/  # Projektseite, Transkripte
+│   │   └── settings/       # Branding, LLM, API-Keys, Members
 │   ├── auth/callback/      # Supabase E-Mail-Bestätigung
 │   └── api/                # API Routes
+│       ├── lop/            # LOP CRUD
+│       ├── transcripts/    # Upload + Inline-Verarbeitung + Retry
+│       ├── v1/             # Öffentliche REST API (Bearer-Token)
+│       ├── api-keys/       # API-Key-Verwaltung
+│       ├── feedback/       # Feedback-Speicherung (DB + GitHub)
+│       ├── invitations/    # Einladungs-Generierung + Resend-E-Mail
+│       └── settings/       # Branding, Logo-Upload
 ├── components/
-│   ├── lop/                # LOP-Tabelle, Badges, ReviewBanner, LopItemDialog
-│   ├── transcripts/        # TranscriptUploadForm
+│   ├── lop/                # LopTable, LopTableRow, LopItemDialog,
+│   │                       # ReviewBanner, AiReviewPanel, StatusBadge, PriorityBadge
+│   ├── transcripts/        # TranscriptUploadForm, RetryButton
 │   ├── workspace/          # WorkspaceNav
 │   ├── projects/           # ProjectTitleEditor, ProjectInviteButton
+│   ├── landing/            # LandingSecuritySection, LandingLegalFooter
+│   ├── legal/              # LegalModal (AGB + Datenschutzerklärung)
 │   ├── FeedbackButton.tsx  # Feedback-Popup (fixed bottom-left)
 │   ├── HowToModal.tsx      # How-to-Tour (6 Schritte)
+│   ├── SecurityModal.tsx   # Datensicherheits-Popup (9 TOMs)
 │   └── ui/                 # shadcn/ui Komponenten
 ├── lib/
 │   ├── supabase/           # Client, Server, Middleware Helper
-│   ├── llm/                # LLM-Abstraktionsschicht (BYOK)
+│   ├── llm/                # LLM-Abstraktionsschicht (BYOK): Anthropic, OpenAI, Azure
 │   ├── workspace.ts        # resolveWorkspace() Helper
-│   ├── encryption.ts       # AES-256-GCM
-│   ├── apiKeyAuth.ts       # SHA-256 API-Key-Validierung
+│   ├── encryption.ts       # AES-256-GCM (mit Error-Handling)
+│   ├── apiKeyAuth.ts       # SHA-256 API-Key-Validierung + Scope-Prüfung
+│   ├── processTranscript.ts # Shared LLM-Verarbeitungslogik (inline + retry)
 │   └── export.ts           # XLSX-Export (SheetJS)
 ├── supabase/migrations/    # SQL Migrations (7 Dateien)
 ├── scripts/                # bump-version.sh, install-hooks.sh
 ├── middleware.ts            # Auth-Schutz + Workspace-Header
+├── next.config.mjs         # Security Headers (HSTS, X-Frame-Options, nosniff, …)
 ├── CLAUDE.md               # Entwicklungsregeln & Fallstricke
-└── Tasks.md                # Meilenstein-Tracking
+├── Tasks.md                # Meilenstein-Tracking
+└── Brief.md                # Vollständige Produktspezifikation
 ```
 
 ---
 
 ## Multi-Tenancy & Sicherheit
 
-- **Workspace-Auflösung:** `resolveWorkspace()` löst den Workspace via Slug (Subdomain) oder Membership-Fallback auf – funktioniert auf Single-Domain und Subdomain-Deployments
+- **Workspace-Auflösung:** `resolveWorkspace()` löst den Workspace via Slug oder Membership-Fallback auf
 - **Row-Level Security:** Vollständige Datenisolation zwischen Workspaces auf DB-Ebene
+- **Security Headers:** HSTS, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection, Referrer-Policy, Permissions-Policy
 - **BYOK:** API-Keys für Anthropic, OpenAI und Azure OpenAI werden AES-256-GCM verschlüsselt gespeichert
-- **Azure OpenAI:** Endpoint-URL + Deployment-Name konfigurierbar (Microsoft Copilot Enterprise)
-- **Transkripte:** Copy & Paste oder Datei (.txt/.rtf), verschlüsselt in Supabase Storage
-- **Service-Role-Client:** Verwendet serverseitig, um RLS-Rekursionsprobleme zu umgehen
-- **Public API:** `/api/v1/` Endpunkte via Bearer-Token (SHA-256-gehashte API-Keys)
-- **Projektspezifische Mitgliedschaft:** `project_members`-Tabelle, Einladungen tragen Nutzer projekt-scoped ein
+- **Transkripte:** verschlüsselt in privatem Supabase Storage Bucket (kein Public-URL-Zugriff)
+- **Service-Role-Client:** Ausschließlich serverseitig, nie im Client
+- **API v1:** `/api/v1/` via Bearer-Token (SHA-256-gehashte API-Keys), Scope-Prüfung (`read`/`write`) auf allen Endpunkten
+- **Einladungs-Token:** `randomBytes(32)` – 256 Bit Entropie
+- **Input-Validierung:** Zod auf allen API-Routes, UUID-Format-Prüfung auf Query-Parametern
+- **Transkript-Verarbeitung:** Synchron inline im Upload-Request (Vercel-kompatibel, kein fire-and-forget)
 
 ---
 
@@ -131,19 +151,23 @@ Erforderliche Umgebungsvariablen in Vercel:
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
-ENCRYPTION_SECRET           # openssl rand -hex 32
+ENCRYPTION_SECRET           # openssl rand -hex 32  (64 Hex-Zeichen)
 INTERNAL_API_SECRET         # beliebiger Secret-String
 # Optional:
 RESEND_API_KEY              # aktiviert automatischen E-Mail-Versand für Einladungen
 RESEND_FROM                 # z.B. "AutoToDo <noreply@autotodo.app>"
 NEXT_PUBLIC_APP_URL         # Basis-URL für Einladungslinks (z.B. https://autotodo.app)
 GITHUB_FEEDBACK_TOKEN       # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
-GITHUB_FEEDBACK_BRANCH      # Branch für feedback.md (default: claude/github-automated-access-WVPL6)
+GITHUB_FEEDBACK_BRANCH      # Branch für feedback.md (default: main)
 ```
 
 Supabase Auth → URL Configuration:
 - Site URL: `https://deine-app.vercel.app`
 - Redirect URLs: `https://deine-app.vercel.app/auth/callback`
+
+Supabase Storage:
+- `logos`-Bucket: public (Workspace-Logos)
+- `transcripts`-Bucket: **privat** (verschlüsselte Transkript-Inhalte)
 
 ---
 

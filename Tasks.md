@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 (Meilensteine 1–7, 7b.1–7b.4 + Projekt-KPIs abgeschlossen)
+Letzte Aktualisierung: März 2026 · Version 0.1.32 · Meilensteine 1–7c abgeschlossen
 
 ---
 
@@ -38,7 +38,7 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7, 7b.1–7b.4 + Projekt-KPI
 | 3.1 | Onboarding-Wizard Schritt 1: Workspace einrichten | ✅ Erledigt |
 | 3.2 | Onboarding-Wizard Schritt 2: Erstes Projekt anlegen | ✅ Erledigt |
 | 3.3 | Onboarding-Wizard Schritt 3: Team einladen | ✅ Erledigt |
-| 3.4 | Einladungs-Flow: Token-Generierung + E-Mail (Resend) | 🔄 Offen (Token-Generierung ✅, Resend-Versand in M5) |
+| 3.4 | Einladungs-Flow: Token-Generierung + E-Mail (Resend) | ✅ Erledigt |
 | 3.5 | Einladungs-Flow: `/invite/[token]` Seite | ✅ Erledigt |
 
 ### Meilenstein 4: Kern-App
@@ -73,8 +73,10 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7, 7b.1–7b.4 + Projekt-KPI
 | 5.6 | BYOK: LLM-Key speichern/abrufen (verschlüsselt) | ✅ Erledigt |
 | 5.7 | Verarbeitungs-Pipeline (processTranscript) | ✅ Erledigt |
 | 5.8 | Konfidenz-Schwellwert-System | ✅ Erledigt |
-| 5.9 | KI-Vorschläge Review-Flow (ReviewBanner) | ✅ Erledigt |
+| 5.9 | KI-Vorschläge Review-Flow (ReviewBanner + AiReviewPanel) | ✅ Erledigt |
 | 5.10 | Fehlerbehandlung & Retry-Logik | ✅ Erledigt |
+| 5.11 | Inline-Verarbeitung (kein fire-and-forget, Vercel-kompatibel) | ✅ Erledigt |
+| 5.12 | Retry-Button für hängende Transkripte in der UI | ✅ Erledigt |
 
 ### Meilenstein 6: Export & Basis-Branding
 
@@ -165,6 +167,23 @@ Letzte Aktualisierung: März 2026 (Meilensteine 1–7, 7b.1–7b.4 + Projekt-KPI
 | 7b.7 | Auftragsverarbeitungsvertrag (AVV) als Download/PDF | 🔲 Offen |
 | 7b.8 | Cookie-Hinweis / Consent-Banner (§ 25 TDDDG, nur bei Bedarf) | 🔲 Offen |
 | 7b.9 | Impressum-Seite (`/impressum`) | 🔲 Offen |
+
+### Meilenstein 7c: KI-Review-Panel & Sicherheits-Härtung
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 7c.1 | KI-Vorschläge: expandierbares Review-Panel (statt nur Filter) | ✅ Erledigt |
+| 7c.2 | Review-Panel: Inline-Editierung aller Felder pro Vorschlag | ✅ Erledigt |
+| 7c.3 | Review-Panel: Annehmen (speichert + löscht requires_review) | ✅ Erledigt |
+| 7c.4 | Review-Panel: Ablehnen (löscht Vorschlag mit Bestätigung) | ✅ Erledigt |
+| 7c.5 | Review-Panel: Konfidenz-Badge (grün/gelb/rot) + Quellentext | ✅ Erledigt |
+| 7c.6 | Statisches Pentesting / Security-Audit (Subagent) | ✅ Erledigt |
+| 7c.7 | `decrypt()` Error-Handling (Stack-Trace-Exposure verhindert) | ✅ Erledigt |
+| 7c.8 | Security Headers: HSTS, X-Frame-Options DENY, nosniff, XSS-Protection, Referrer-Policy, Permissions-Policy | ✅ Erledigt |
+| 7c.9 | API v1 GET-Endpunkte: explizite `read`-Scope-Prüfung | ✅ Erledigt |
+| 7c.10 | UUID-Format-Validierung auf Query-Parameter (`projectId`) | ✅ Erledigt |
+| 7c.11 | Einladungs-Token: `randomBytes(32)` statt `randomUUID()` (256 Bit) | ✅ Erledigt |
+| 7c.12 | Datensicherheits-Popup + Landing Page mit aktuellen TOMs aktualisiert | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
 

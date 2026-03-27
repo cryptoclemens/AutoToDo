@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.5 (Phase-2-Edition) | Stand: März 2026
+**Version:** 2.6 (Sicherheits-Härtung & KI-Review-Panel) | Stand: März 2026 · v0.1.32
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -11,7 +11,7 @@
 AutoToDo ist ein KI-gestütztes Projektmanagement-Tool für Teams, die regelmäßige Meetings abhalten und deren Ergebnisse strukturiert nachverfolgen wollen.
 
 **Kernworkflow:**
-Meeting-Transkript hochladen → KI extrahiert offene Punkte und Statusänderungen → LOP wird automatisch aktualisiert → manuell nachbearbeitbar → Export als XLSX
+Meeting-Transkript hochladen → KI extrahiert offene Punkte und Statusänderungen → LOP wird automatisch aktualisiert → KI-Vorschläge im Review-Panel prüfen/bearbeiten/annehmen → manuell nachbearbeitbar → Export als XLSX
 
 **Primäre Zielgruppe:** Unternehmensberatungen, Projektsteuerer, Engineering-Teams (tägliche/wöchentliche Standups)
 
@@ -77,9 +77,21 @@ Einladungs-Link generieren (Projektseite oder Team-Einstellungen)
 → Automatische Workspace- und Projekt-Mitgliedschaft → Redirect zu Dashboard
 ```
 
-**Aktueller Status:** Einladungslinks werden generiert und angezeigt. Wenn `RESEND_API_KEY` als Umgebungsvariable gesetzt ist, werden Einladungs-E-Mails automatisch verschickt.
+**Aktueller Status:** Einladungslinks werden generiert und angezeigt. Wenn `RESEND_API_KEY` als Umgebungsvariable gesetzt ist, werden Einladungs-E-Mails automatisch verschickt. Token basieren auf `randomBytes(32)` (256 Bit Entropie).
 
 **Projektspezifische Mitgliedschaft:** Über `project_members`-Tabelle – Einladungen von der Projektseite tragen den Nutzer auch in `project_members` ein (nicht nur in `workspace_members`).
+
+---
+
+## KI-Vorschläge Review-Panel
+
+Nach der Transkript-Verarbeitung erscheinen KI-Vorschläge mit `requires_review = true` in einem gelben Banner. Beim Klick auf „Anzeigen" öffnet sich ein Inline-Panel mit allen offenen Vorschlägen. Jeder Vorschlag kann:
+
+- **Bearbeitet** werden (alle Felder inline editierbar: Titel, Beschreibung, Status, Priorität, Verantwortlich, Fälligkeit)
+- **Angenommen** werden (✓) – speichert Änderungen, entfernt `requires_review`
+- **Abgelehnt** werden (✗) – löscht den Vorschlag
+
+Konfidenz-Badges zeigen grün (≥85%), gelb (≥70%) oder rot (<70%). Quellentext aus dem Transkript wird angezeigt (falls vorhanden). Panel schließt sich automatisch wenn alle Vorschläge bearbeitet sind.
 
 ---
 
@@ -115,6 +127,12 @@ XLSX-Exports enthalten Workspace-Name in der Kopfzeile.
 - Kein direkter Client-Zugriff – ausschließlich über Server-Side API Routes
 - Kein Logging des entschlüsselten Keys
 
+### Transkript-Verarbeitung (Vercel-kompatibel)
+- Verarbeitung erfolgt **synchron inline** im Upload-Request (kein fire-and-forget)
+- `maxDuration = 60` gibt Vercel 60 Sekunden für LLM-Verarbeitung
+- Retry-Button in der UI für hängende/fehlerhafte Transkripte
+- Eigener Retry-Endpunkt `/api/transcripts/[id]/retry` mit User-Auth (kein Internal-Secret nötig)
+
 ### Fallback-Strategie
 - Free-Tier: Optionaler Betreiber-Fallback-Key (Haiku), max. 10 Transkripte/Monat
 - Ab Starter-Tier: BYOK verpflichtend
@@ -132,7 +150,7 @@ Authentifizierung: `Authorization: Bearer ak_live_...`
 - `GET/POST /api/v1/lop?projectId=…` – LOP-Punkte lesen/anlegen
 - `POST /api/v1/transcripts` – Transkript per API hochladen
 
-**API-Key-Verwaltung:** `/settings/api` – Keys erstellen (SHA-256-gehashed), Scopes (`read`/`write`), widerrufen.
+**API-Key-Verwaltung:** `/settings/api` – Keys erstellen (SHA-256-gehashed), Scopes (`read`/`write`), widerrufen. GET- und POST-Endpunkte prüfen Scope explizit.
 
 **Webhooks (Phase 3):**
 
@@ -156,7 +174,7 @@ Die Landing Page zeigt unten rechts ein fixiertes Badge mit der aktuellen Applik
 Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Version in `package.json`:
 - `scripts/bump-version.sh` – liest aktuelle Version, erhöht Patch-Zahl, committed mit `--no-verify`
 - `scripts/install-hooks.sh` – einmalig nach dem Klonen ausführen
-- Versionsformat: SemVer `MAJOR.MINOR.PATCH` (z.B. `0.1.15` → `0.1.16`)
+- Versionsformat: SemVer `MAJOR.MINOR.PATCH` (z.B. `0.1.31` → `0.1.32`)
 
 ---
 
@@ -165,14 +183,14 @@ Bei jedem `git push` erhöht ein `pre-push` Git-Hook automatisch die Patch-Versi
 ### Tabellen
 - `workspaces` – Tenants/Organisationen
 - `workspace_members` – Mitglieder mit Rollen
-- `workspace_llm_config` – BYOK-Konfiguration (verschlüsselt)
+- `workspace_llm_config` – BYOK-Konfiguration (verschlüsselt, inkl. `endpoint` für Azure)
 - `projects` – Projekte pro Workspace
-- `transcripts` – Meeting-Transkripte (verschlüsselt in Supabase Storage)
+- `transcripts` – Meeting-Transkripte (AES-256-GCM verschlüsselt in Supabase Storage, privater Bucket)
 - `lop_items` – LOP-Punkte mit KI-Metadaten
 - `lop_item_history` – Audit-Log
-- `api_keys` – API-Keys (SHA-256-gehashed)
+- `api_keys` – API-Keys (SHA-256-gehashed, RLS aktiv)
 - `webhook_endpoints` – Webhook-Konfigurationen (Phase 3)
-- `invitations` – Einladungs-Tokens (inkl. `project_id`)
+- `invitations` – Einladungs-Token (256-Bit-randomBytes, inkl. `project_id`)
 - `project_members` – projektspezifische Mitgliedschaften
 - `feedback` – Nutzer-Feedback & Feature-Wünsche
 
@@ -203,29 +221,34 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 | Konfidenz | Verhalten |
 |---|---|
 | >= 0.85 | Automatisch angewendet |
-| 0.70 – 0.84 | Angewendet, aber als "KI-Änderung" markiert |
-| < 0.70 | `requires_review = true` → gelber Vorschlag in UI |
+| 0.70 – 0.84 | Angewendet, aber als „KI-Änderung" markiert |
+| < 0.70 | `requires_review = true` → Review-Panel in UI |
 
 ### Fehlerbehandlung
 - JSON-Parse-Fehler: 1 Retry mit expliziterem Prompt
-- Timeout (>30s): Status → `error`, Nutzer-Toast mit Retry
+- Timeout (>60s): Status → `error`, Retry-Button in der UI
 - Rate Limit: Exponential backoff, max 3 Versuche
 
 ---
 
-## Datensicherheit
+## Datensicherheit (TOMs gemäß Art. 32 DSGVO)
 
 | Schicht | Maßnahme |
 |---|---|
-| Transport | TLS 1.3 (Vercel) |
-| Authentifizierung | Supabase Auth (JWT) |
-| Autorisierung | Postgres RLS |
-| Transkripte | AES-256-GCM |
+| Transport | TLS 1.3 + HSTS (max-age 1 Jahr) |
+| Security Headers | X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy |
+| Authentifizierung | Supabase Auth (bcrypt, Cost Factor 10), JWT mit Refresh-Token-Rotation |
+| Autorisierung | Postgres RLS auf allen Tabellen |
+| Transkripte | AES-256-GCM (AEAD, randomisierter IV, Fehlerbehandlung bei Entschlüsselung) |
 | LLM-API-Keys | AES-256-GCM (Envelope Encryption) |
-| API-Keys | SHA-256-gehashed (lib/apiKeyAuth.ts) |
-| Webhooks | HMAC-SHA256 (Phase 2) |
-| Input-Validierung | Zod auf allen API Routes |
-| Tenant-Isolation | workspace_id + RLS + Service-Role-Client |
+| API-Keys | SHA-256-gehashed (`lib/apiKeyAuth.ts`), Scope-Prüfung auf allen Endpunkten |
+| Einladungs-Token | `randomBytes(32)` – 256-Bit-Entropie |
+| Storage | `transcripts`-Bucket: privat, kein Public-URL-Zugriff |
+| Input-Validierung | Zod auf allen API-Routes, UUID-Format-Prüfung auf Query-Parametern |
+| Tenant-Isolation | `workspace_id` + RLS + Service-Role-Client serverseitig |
+| Webhooks | HMAC-SHA256-Signatur (Phase 3) |
+| Audit | `lop_item_history`-Tabelle für alle LOP-Änderungen |
+| Pentesting | Statisches Code-Audit durchgeführt (März 2026), alle Findings behoben |
 
 ---
 
@@ -237,21 +260,24 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Middleware (Auth-Schutz + Workspace-Header)
 - Supabase Auth: Registrierung, Login, Passwort-Reset, E-Mail-Bestätigung
 - Workspace-Erstellung bei Registrierung + Onboarding-Wizard
-- Einladungs-Flow (Token-basiert, Resend-E-Mail optional)
+- Einladungs-Flow (256-Bit-Token, Resend-E-Mail optional)
 - Projekt-CRUD inkl. Inline-Umbenennung des Projekttitels
 - LOP-Tabelle (Inline-Edit, Status-Toggle, Filter nach Status/Priorität/Verantwortlichem)
 - LOP-Detail-Dialog (Klick auf Titel öffnet vollständiges Edit-Popup)
+- KI-Vorschläge Review-Panel (Inline-Edit, Annehmen, Ablehnen, Konfidenz-Badge)
 - Transkript-Upload: Textarea (Copy & Paste) + Datei-Upload (.txt/.rtf)
-- LLM-Verarbeitung: Anthropic, OpenAI, Azure OpenAI (Microsoft Copilot)
-- KI-Vorschläge Review-Flow
+- LLM-Verarbeitung synchron inline (Vercel-kompatibel): Anthropic, OpenAI, Azure OpenAI
+- Retry-Button für hängende/fehlerhafte Transkripte
 - XLSX-Export mit Workspace-Branding (Farbe + Name)
 - Branding-Settings: Logo-Upload (Supabase Storage) + Akzentfarbe
-- API-Key-Verwaltung UI + öffentliche REST API (`/api/v1/`)
+- API-Key-Verwaltung UI + öffentliche REST API (`/api/v1/`) mit Scope-Prüfung
 - Projektspezifische Mitgliedschaft (`project_members`-Tabelle)
 - Feedback-Button (unten links, Kategorie-Auswahl, DB + GitHub `feedback.md`)
 - „How to"-Popup in Navigation (6-Schritte-Tour mit UI-Mockups)
 - Datensicherheits-Popup + AGB + Datenschutzerklärung (DSGVO-konform, im Popup)
 - Projekt-KPIs: offen / in Bearbeitung / abgeschlossen · % fertig · Ø Bearbeitungszeit
+- Security Headers (HSTS, X-Frame-Options, nosniff, XSS-Protection, Referrer-Policy)
+- Sicherheits-Audit + Härtung (decrypt-Error-Handling, 256-Bit-Token, Scope-Checks, UUID-Validierung)
 - Vercel-Deployment + Single-Domain-Fixes
 
 ### Phase 2 – SaaS-Features (nächste Schritte)
