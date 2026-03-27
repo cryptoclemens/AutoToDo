@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import LopTableRow from './LopTableRow'
 import LopItemDialog, { type LopItem } from './LopItemDialog'
 import ReviewBanner from './ReviewBanner'
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function LopTable({ initialItems, projectId, canEdit, showAddForm: externalShowAddForm, onShowAddFormChange }: Props) {
+  const t = useTranslations('lop')
   const [items, setItems] = useState<LopItem[]>(initialItems)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
@@ -129,40 +131,40 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       {/* Filter-Leiste */}
       <div className="flex flex-wrap gap-2 mb-4 items-center">
         <Input
-          placeholder="Suchen…"
+          placeholder={t('filters.search')}
           value={filterSearch}
           onChange={e => setFilterSearch(e.target.value)}
           className="w-44 h-8 text-sm"
         />
         <Select value={filterStatus} onValueChange={v => setFilterStatus(v ?? 'all')}>
           <SelectTrigger className="w-40 h-8 text-sm">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('status_label')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Status</SelectItem>
-            <SelectItem value="offen">Offen</SelectItem>
-            <SelectItem value="in_bearbeitung">In Bearbeitung</SelectItem>
-            <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
+            <SelectItem value="all">{t('filters.allStatuses')}</SelectItem>
+            <SelectItem value="offen">{t('status.offen')}</SelectItem>
+            <SelectItem value="in_bearbeitung">{t('status.in_bearbeitung')}</SelectItem>
+            <SelectItem value="abgeschlossen">{t('status.abgeschlossen')}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filterPriority} onValueChange={v => setFilterPriority(v ?? 'all')}>
           <SelectTrigger className="w-36 h-8 text-sm">
-            <SelectValue placeholder="Priorität" />
+            <SelectValue placeholder={t('priority_label')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Prioritäten</SelectItem>
-            <SelectItem value="hoch">Hoch</SelectItem>
-            <SelectItem value="mittel">Mittel</SelectItem>
-            <SelectItem value="niedrig">Niedrig</SelectItem>
+            <SelectItem value="all">{t('filters.allPriorities')}</SelectItem>
+            <SelectItem value="hoch">{t('priority.hoch')}</SelectItem>
+            <SelectItem value="mittel">{t('priority.mittel')}</SelectItem>
+            <SelectItem value="niedrig">{t('priority.niedrig')}</SelectItem>
           </SelectContent>
         </Select>
         {responsibleOptions.length > 0 && (
           <Select value={filterResponsible} onValueChange={v => setFilterResponsible(v ?? 'all')}>
             <SelectTrigger className="w-44 h-8 text-sm">
-              <SelectValue placeholder="Verantwortlich" />
+              <SelectValue placeholder={t('responsible')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle Personen</SelectItem>
+              <SelectItem value="all">{t('filters.allResponsible')}</SelectItem>
               {responsibleOptions.map(name => (
                 <SelectItem key={name} value={name}>{name}</SelectItem>
               ))}
@@ -170,7 +172,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
           </Select>
         )}
         <span className="text-xs text-gray-400 ml-auto">
-          {filtered.length} von {items.length} Punkte{items.length !== 1 ? 'n' : ''}
+          {t('filters.showing', { count: filtered.length, total: items.length })}
         </span>
       </div>
 
@@ -180,12 +182,12 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
           <thead>
             <tr className="border-b bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
               <th className="px-3 py-2 text-center w-8">#</th>
-              <th className="px-3 py-2 text-left">Titel</th>
-              <th className="px-3 py-2 text-left w-36">Status</th>
-              <th className="px-3 py-2 text-left w-32">Verantwortlich</th>
-              <th className="px-3 py-2 text-left w-28">Fälligkeit</th>
-              <th className="px-3 py-2 text-left w-24">Priorität</th>
-              <th className="px-3 py-2 text-left">Ergebnis</th>
+              <th className="px-3 py-2 text-left">{t('title')}</th>
+              <th className="px-3 py-2 text-left w-36">{t('status_label')}</th>
+              <th className="px-3 py-2 text-left w-32">{t('responsible')}</th>
+              <th className="px-3 py-2 text-left w-28">{t('dueDate')}</th>
+              <th className="px-3 py-2 text-left w-24">{t('priority_label')}</th>
+              <th className="px-3 py-2 text-left">{t('result')}</th>
               <th className="px-3 py-2 w-16"></th>
             </tr>
           </thead>
@@ -194,8 +196,8 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
               <tr>
                 <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
                   {items.length === 0
-                    ? 'Noch keine LOP-Punkte vorhanden.'
-                    : 'Keine Punkte entsprechen dem Filter.'}
+                    ? t('noItems')
+                    : t('filters.noMatch')}
                 </td>
               </tr>
             ) : (

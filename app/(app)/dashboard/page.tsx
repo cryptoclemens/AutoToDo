@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,16 +26,19 @@ export default async function DashboardPage() {
       data: Array<{ id: string; name: string; description: string | null; created_at: string; archived_at: string | null }> | null
     }
 
+  const t = await getTranslations('dashboard')
+  const locale = await getLocale()
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{workspace.name}</p>
         </div>
         <Link href="/projects/new">
           <Button style={{ backgroundColor: 'var(--brand)' }}>
-            + Neues Projekt
+            + {t('newProject')}
           </Button>
         </Link>
       </div>
@@ -42,9 +46,9 @@ export default async function DashboardPage() {
       {!projects || projects.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
-            <p className="text-gray-400 mb-4">Noch keine Projekte vorhanden.</p>
+            <p className="text-gray-400 mb-4">{t('noProjects')}</p>
             <Link href="/projects/new">
-              <Button>Erstes Projekt anlegen</Button>
+              <Button>{t('newProject')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -64,9 +68,9 @@ export default async function DashboardPage() {
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-400">
-                      {new Date(project.created_at).toLocaleDateString('de-DE')}
+                      {new Date(project.created_at).toLocaleDateString(locale === 'en' ? 'en-GB' : 'de-DE')}
                     </span>
-                    <Badge variant="outline" className="text-xs">Aktiv</Badge>
+                    <Badge variant="outline" className="text-xs">{t('active')}</Badge>
                   </div>
                 </CardContent>
               </Card>

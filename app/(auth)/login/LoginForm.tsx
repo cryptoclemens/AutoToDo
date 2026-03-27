@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +13,7 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') ?? '/dashboard'
+  const t = useTranslations('auth')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,7 +30,7 @@ export function LoginForm() {
 
     if (error) {
       setError(error.message === 'Invalid login credentials'
-        ? 'E-Mail oder Passwort falsch.'
+        ? (t('invalidCredentials'))
         : error.message)
       setLoading(false)
       return
@@ -41,11 +43,11 @@ export function LoginForm() {
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">E-Mail</Label>
+        <Label htmlFor="email">{t('email')}</Label>
         <Input
           id="email"
           type="email"
-          placeholder="name@firma.de"
+          placeholder={t('emailPlaceholder')}
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
@@ -54,9 +56,9 @@ export function LoginForm() {
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Passwort</Label>
+          <Label htmlFor="password">{t('password')}</Label>
           <Link href="/reset-password" className="text-xs text-blue-600 hover:underline">
-            Vergessen?
+            {t('forgotPassword')}
           </Link>
         </div>
         <Input
@@ -72,12 +74,12 @@ export function LoginForm() {
         <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>
       )}
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Anmelden…' : 'Anmelden'}
+        {loading ? t('loggingIn') : t('login')}
       </Button>
       <p className="text-center text-sm text-gray-500">
-        Noch kein Konto?{' '}
+        {t('noAccount')}{' '}
         <Link href="/register" className="text-blue-600 hover:underline font-medium">
-          Kostenlos registrieren
+          {t('register')}
         </Link>
       </p>
     </form>
