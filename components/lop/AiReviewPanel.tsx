@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import StatusBadge from './StatusBadge'
+import PriorityBadge from './PriorityBadge'
 import type { LopItem } from './LopItemDialog'
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
@@ -129,7 +131,7 @@ function ReviewCard({
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-sm">{draft.status}</p>
+            <StatusBadge status={draft.status} />
           )}
         </div>
         <div>
@@ -146,7 +148,7 @@ function ReviewCard({
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-sm">{draft.priority}</p>
+            <PriorityBadge priority={draft.priority} />
           )}
         </div>
         <div>

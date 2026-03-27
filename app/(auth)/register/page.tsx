@@ -134,6 +134,9 @@ export default function RegisterPage() {
         userId = authData.user.id
       }
 
+      // Legal consent speichern (fire-and-forget, non-blocking)
+      fetch('/api/legal/consent', { method: 'POST' }).catch(() => {})
+
       const res = await fetch('/api/workspaces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
