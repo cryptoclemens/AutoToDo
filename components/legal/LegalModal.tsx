@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-type Tab = 'agb' | 'datenschutz' | 'impressum'
+type Tab = 'agb' | 'datenschutz' | 'impressum' | 'avv'
 
 interface Props {
   initialTab?: Tab
@@ -45,13 +45,19 @@ export default function LegalModal({ initialTab = 'agb', trigger }: Props) {
                 >
                   Impressum
                 </button>
+                <button
+                  onClick={() => setTab('avv')}
+                  className={`px-4 py-1.5 text-sm rounded-md font-medium transition-colors ${tab === 'avv' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  AVV
+                </button>
               </div>
               <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4">✕</button>
             </div>
 
             {/* Content */}
             <div className="overflow-y-auto flex-1">
-              {tab === 'agb' ? <AgbContent /> : tab === 'datenschutz' ? <DatenschutzContent /> : <ImpressumContent />}
+              {tab === 'agb' ? <AgbContent /> : tab === 'datenschutz' ? <DatenschutzContent /> : tab === 'impressum' ? <ImpressumContent /> : <AvvContent />}
             </div>
           </div>
         </div>
@@ -363,6 +369,47 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div className="mb-5">
       <h3 className="text-sm font-semibold text-gray-800 mb-2">{title}</h3>
       <div className="text-xs text-gray-600 leading-relaxed space-y-2">{children}</div>
+    </div>
+  )
+}
+
+// ─── AVV ──────────────────────────────────────────────────────────────────────
+
+function AvvContent() {
+  return (
+    <div className="px-6 py-5 prose prose-sm max-w-none text-gray-700">
+      <h2 className="text-base font-bold text-gray-900 mb-1">Auftragsverarbeitungsvertrag (AVV)</h2>
+      <p className="text-xs text-gray-400 mb-6">
+        gemäß Art. 28 DSGVO · vencly GmbH · Stand: März 2026
+      </p>
+
+      <p className="text-sm text-gray-600 mb-6">
+        Der Auftragsverarbeitungsvertrag regelt die datenschutzrechtlichen Pflichten zwischen Ihnen
+        als Verantwortlichem und der vencly GmbH als Auftragsverarbeiter gemäß Art. 28 DSGVO.
+        Bitte laden Sie das vollständige Dokument als PDF herunter, drucken Sie es aus und senden
+        Sie uns ein unterzeichnetes Exemplar zu.
+      </p>
+
+      <div className="flex flex-col items-center gap-4 py-6 border border-dashed border-gray-200 rounded-xl bg-gray-50">
+        <div className="text-4xl">📄</div>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-gray-800">AVV – vencly GmbH</p>
+          <p className="text-xs text-gray-500 mt-0.5">PDF · Auftragsverarbeitungsvertrag gemäß Art. 28 DSGVO</p>
+        </div>
+        <a
+          href="/avv.pdf"
+          download="AVV-vencly-GmbH.pdf"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors no-underline"
+        >
+          ↓ AVV herunterladen (PDF)
+        </a>
+      </div>
+
+      <div className="mt-6 text-xs text-gray-500 space-y-1">
+        <p><strong>Kontakt für Rücksendung:</strong></p>
+        <p>vencly GmbH · Leopoldstraße 31 · 80802 München</p>
+        <p>E-Mail: <a href="mailto:datenschutz@vencly.app" className="text-blue-600 hover:underline">datenschutz@vencly.app</a></p>
+      </div>
     </div>
   )
 }
