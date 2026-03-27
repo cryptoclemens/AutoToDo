@@ -70,13 +70,16 @@ export function LandingLegalFooter() {
   return (
     <footer className="border-t border-gray-100 py-8">
       <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-gray-400">© 2026 AutoToDo · Alle Rechte vorbehalten</p>
+        <p className="text-sm text-gray-400">© 2026 vencly GmbH · Alle Rechte vorbehalten</p>
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <LegalModal initialTab="agb" trigger={
             <span className="hover:text-gray-600 transition-colors cursor-pointer">AGB</span>
           } />
           <LegalModal initialTab="datenschutz" trigger={
             <span className="hover:text-gray-600 transition-colors cursor-pointer">Datenschutzerklärung</span>
+          } />
+          <LegalModal initialTab="impressum" trigger={
+            <span className="hover:text-gray-600 transition-colors cursor-pointer">Impressum</span>
           } />
           <SecurityModal trigger={
             <span className="hover:text-gray-600 transition-colors cursor-pointer">Datensicherheit</span>

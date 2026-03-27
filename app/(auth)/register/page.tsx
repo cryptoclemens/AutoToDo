@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import LegalModal from '@/components/legal/LegalModal'
 
 function slugify(text: string) {
   return text
@@ -44,6 +45,8 @@ export default function RegisterPage() {
   const [slug, setSlug] = useState('')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
+  const [agbAccepted, setAgbAccepted] = useState(false)
+
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -60,6 +63,10 @@ export default function RegisterPage() {
     if (step === 'account') {
       if (password.length < 8) {
         setError('Passwort muss mindestens 8 Zeichen haben.')
+        return
+      }
+      if (!agbAccepted) {
+        setError('Bitte stimmen Sie den AGB und der Datenschutzerklärung zu.')
         return
       }
       setError('')
@@ -169,6 +176,26 @@ export default function RegisterPage() {
                   required
                   autoComplete="new-password"
                 />
+              </div>
+              <div className="flex items-start gap-3 pt-1">
+                <input
+                  id="agb"
+                  type="checkbox"
+                  checked={agbAccepted}
+                  onChange={e => setAgbAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                />
+                <label htmlFor="agb" className="text-sm text-gray-600 cursor-pointer leading-snug">
+                  Ich habe die{' '}
+                  <LegalModal initialTab="agb" trigger={
+                    <span className="text-blue-600 hover:underline font-medium">AGB</span>
+                  } />{' '}
+                  und die{' '}
+                  <LegalModal initialTab="datenschutz" trigger={
+                    <span className="text-blue-600 hover:underline font-medium">Datenschutzerklärung</span>
+                  } />{' '}
+                  der vencly GmbH gelesen und stimme diesen zu.
+                </label>
               </div>
             </>
           ) : (

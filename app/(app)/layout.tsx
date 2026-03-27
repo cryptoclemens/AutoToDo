@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
 import WorkspaceNav from '@/components/workspace/WorkspaceNav'
 import FeedbackButton from '@/components/FeedbackButton'
+import Image from 'next/image'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -40,6 +41,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </main>
         <FeedbackButton />
+        <a
+          href="https://www.vencly.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-4 right-4 z-40 opacity-50 hover:opacity-80 transition-opacity"
+        >
+          <Image src="/vencly-logo.svg" alt="vencly" width={72} height={18} />
+        </a>
       </div>
     </>
   )

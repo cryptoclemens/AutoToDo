@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
 
 // AUTO-UPDATED by scripts/bump-version.sh
@@ -9,7 +10,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       {/* Nav */}
       <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <span className="font-bold text-gray-900 text-lg">AutoToDo</span>
+        <div className="flex items-center gap-4">
+          <span className="font-bold text-gray-900 text-lg">AutoToDo</span>
+          <a href="https://www.vencly.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity">
+            <Image src="/vencly-logo.svg" alt="vencly" width={80} height={20} />
+          </a>
+        </div>
         <div className="flex gap-3">
           <Link href="/login"
             className="px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
