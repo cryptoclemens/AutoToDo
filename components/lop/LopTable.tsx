@@ -55,20 +55,24 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
     return Array.from(new Set(values)).sort()
   }, [items])
 
-  const filtered = items.filter(item => {
-    if (filterStatus !== 'all' && item.status !== filterStatus) return false
-    if (filterPriority !== 'all' && item.priority !== filterPriority) return false
-    if (filterResponsible !== 'all' && item.responsible !== filterResponsible) return false
-    if (filterSearch) {
-      const q = filterSearch.toLowerCase()
-      return (
-        item.title.toLowerCase().includes(q) ||
-        item.responsible?.toLowerCase().includes(q) ||
-        item.description?.toLowerCase().includes(q)
-      )
-    }
-    return true
-  })
+  const STATUS_ORDER: Record<string, number> = { offen: 0, in_bearbeitung: 1, abgeschlossen: 2 }
+
+  const filtered = items
+    .filter(item => {
+      if (filterStatus !== 'all' && item.status !== filterStatus) return false
+      if (filterPriority !== 'all' && item.priority !== filterPriority) return false
+      if (filterResponsible !== 'all' && item.responsible !== filterResponsible) return false
+      if (filterSearch) {
+        const q = filterSearch.toLowerCase()
+        return (
+          item.title.toLowerCase().includes(q) ||
+          item.responsible?.toLowerCase().includes(q) ||
+          item.description?.toLowerCase().includes(q)
+        )
+      }
+      return true
+    })
+    .sort((a, b) => (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0))
 
   async function handleUpdate(id: string, changes: Partial<LopItem>) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i))

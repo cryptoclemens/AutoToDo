@@ -55,7 +55,9 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
     setEditing(false)
   }
 
-  const rowBg = item.requires_review ? 'bg-yellow-50' : ''
+  const isDone = item.status === 'abgeschlossen'
+  const rowBg = item.requires_review ? 'bg-yellow-50' : isDone ? 'bg-gray-50' : ''
+  const rowOpacity = isDone ? 'opacity-60' : ''
 
   if (editing) {
     return (
@@ -134,7 +136,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
   }
 
   return (
-    <tr className={`border-b hover:bg-gray-50 group ${rowBg}`}>
+    <tr className={`border-b hover:bg-gray-50 group transition-opacity ${rowBg} ${rowOpacity}`}>
       <td className="px-3 py-2.5 text-center text-xs text-gray-400">{index + 1}</td>
       <td className="px-3 py-2.5 max-w-[240px]">
         <button
