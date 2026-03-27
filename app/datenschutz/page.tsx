@@ -115,7 +115,7 @@ export default function DatenschutzPage() {
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Auskunft</strong> (Art. 15) über gespeicherte Daten</li>
           <li><strong>Berichtigung</strong> (Art. 16) unrichtiger Daten</li>
-          <li><strong>Löschung</strong> (Art. 17) – „Recht auf Vergessenwerden"</li>
+          <li><strong>Löschung</strong> (Art. 17) &ndash; &bdquo;Recht auf Vergessenwerden&ldquo;</li>
           <li><strong>Einschränkung</strong> (Art. 18) der Verarbeitung</li>
           <li><strong>Datenübertragbarkeit</strong> (Art. 20) – Export als XLSX oder JSON auf Anfrage</li>
           <li><strong>Widerspruch</strong> (Art. 21) gegen Verarbeitungen auf Basis berechtigter Interessen</li>

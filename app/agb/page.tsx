@@ -24,7 +24,7 @@ export default function AgbPage() {
       <Section title="§ 1 Geltungsbereich">
         <p>
           Diese Allgemeinen Geschäftsbedingungen (AGB) der vencly GmbH, Leopoldstraße 31,
-          80802 München (nachfolgend „Anbieter"), gelten für alle Verträge über die Nutzung
+          80802 München (nachfolgend &bdquo;Anbieter&ldquo;), gelten für alle Verträge über die Nutzung
           der SaaS-Plattform AutoToDo. Abweichende AGB des Nutzers finden keine Anwendung.
           Vertragssprache ist Deutsch.
         </p>
