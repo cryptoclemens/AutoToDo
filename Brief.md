@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.6 (Sicherheits-Härtung & KI-Review-Panel) | Stand: März 2026 · v0.1.32
+**Version:** 2.7 (Vencly-Branding, Einstellungen-Hub & Onboarding-LLM) | Stand: März 2026 · v0.1.35
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -59,7 +59,10 @@ Ziel: Subdomain-Routing mit `[slug].autotodo.app` über Vercel Wildcard Domain (
 
 ### Selbst-Registrierung (Self-Service)
 ```
-Landing Page → Registrierung (E-Mail, Passwort, Workspace-Name)
+Landing Page → Registrierung (3 Schritte):
+  Schritt 1: Konto erstellen (Name, E-Mail, Passwort, AGB-Zustimmung)
+  Schritt 2: Workspace einrichten (Name, Subdomain)
+  Schritt 3: KI-Anbieter konfigurieren (optional, überspringbar)
 → E-Mail-Bestätigung (Supabase Auth → /auth/callback)
 → Redirect zu /onboarding
 ```
@@ -92,6 +95,23 @@ Nach der Transkript-Verarbeitung erscheinen KI-Vorschläge mit `requires_review 
 - **Abgelehnt** werden (✗) – löscht den Vorschlag
 
 Konfidenz-Badges zeigen grün (≥85%), gelb (≥70%) oder rot (<70%). Quellentext aus dem Transkript wird angezeigt (falls vorhanden). Panel schließt sich automatisch wenn alle Vorschläge bearbeitet sind.
+
+---
+
+## Vencly-Branding & Betreiber
+
+AutoToDo wird betrieben von der **vencly GmbH**, Leopoldstraße 31, 80802 München (HRB 290524).
+
+| Element | Umsetzung |
+|---|---|
+| Betreiber | vencly GmbH (Impressum, AGB, Datenschutzerklärung) |
+| Logo | Gradient-V + „vencly"-Text (`public/vencly-logo.svg`) |
+| Favicon | Gradient-V (`app/icon.svg`, Next.js App Router) |
+| Farbverlauf | `#1D4ED8 → #6D28D9 → #DB2777 → #EA580C` |
+| Platzierung | Landing-Page-Nav oben links + Dashboard unten rechts |
+| Link | Klick öffnet `www.vencly.com` in neuem Tab |
+| Rechtliches | Impressum (§ 5 TMG), AGB, Datenschutzerklärung im LegalModal |
+| Kontakt | info@vencly.com · datenschutz@vencly.com |
 
 ---
 
@@ -136,6 +156,22 @@ XLSX-Exports enthalten Workspace-Name in der Kopfzeile.
 ### Fallback-Strategie
 - Free-Tier: Optionaler Betreiber-Fallback-Key (Haiku), max. 10 Transkripte/Monat
 - Ab Starter-Tier: BYOK verpflichtend
+
+---
+
+## Einstellungen-Hub (`/settings`)
+
+Einheitliche Einstellungsseite mit Tabs – ersetzt das bisherige Redirect-zu-Branding-Pattern.
+
+| Tab | Inhalt | Sichtbar für |
+|---|---|---|
+| **Konto** | E-Mail ändern (Bestätigungs-Mail), Passwort ändern | Alle |
+| **Workspace** | Logo, Name, Akzentfarbe | Admin |
+| **Team** | Mitglieder-Übersicht, Einladungsformular | Admin |
+| **KI-Konfiguration** | LLM-Provider, Modell, API-Key (BYOK) | Admin |
+| **API-Keys** | Keys erstellen/widerrufen, Scope-Auswahl | Admin |
+
+Die Sub-Seiten (`/settings/branding`, `/settings/llm`, etc.) bleiben als direkte URLs erhalten.
 
 ---
 
@@ -259,6 +295,8 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Next.js 14 + TypeScript + Tailwind + shadcn/ui
 - Middleware (Auth-Schutz + Workspace-Header)
 - Supabase Auth: Registrierung, Login, Passwort-Reset, E-Mail-Bestätigung
+- Registrierung 3-Schritt-Flow: Konto → Workspace → KI-Konfiguration (optional)
+- AGB/Datenschutz-Zustimmungs-Checkbox bei Registrierung (Pflicht)
 - Workspace-Erstellung bei Registrierung + Onboarding-Wizard
 - Einladungs-Flow (256-Bit-Token, Resend-E-Mail optional)
 - Projekt-CRUD inkl. Inline-Umbenennung des Projekttitels
@@ -274,10 +312,12 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Projektspezifische Mitgliedschaft (`project_members`-Tabelle)
 - Feedback-Button (unten links, Kategorie-Auswahl, DB + GitHub `feedback.md`)
 - „How to"-Popup in Navigation (6-Schritte-Tour mit UI-Mockups)
-- Datensicherheits-Popup + AGB + Datenschutzerklärung (DSGVO-konform, im Popup)
+- Datensicherheits-Popup + AGB + Datenschutzerklärung + Impressum (vencly GmbH, § 5 TMG)
 - Projekt-KPIs: offen / in Bearbeitung / abgeschlossen · % fertig · Ø Bearbeitungszeit
 - Security Headers (HSTS, X-Frame-Options, nosniff, XSS-Protection, Referrer-Policy)
 - Sicherheits-Audit + Härtung (decrypt-Error-Handling, 256-Bit-Token, Scope-Checks, UUID-Validierung)
+- Vencly-Logo + Favicon (Gradient-V), Betreiber-Branding im Footer und Nav
+- Einstellungen-Hub `/settings`: Konto (E-Mail/Passwort), Workspace, Team, KI, API-Keys
 - Vercel-Deployment + Single-Domain-Fixes
 
 ### Phase 2 – SaaS-Features (nächste Schritte)
@@ -299,7 +339,7 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - App-Layout: Sidebar, Mobile-Ansicht, Dark Mode
 - Dashboard: Statistik-Karten
 - LOP-Tabelle: visuelles Redesign
-- Impressum, Datenschutzerklärung, Cookie-Consent
+- Impressum-Seite, AVV als PDF, Cookie-Consent
 
 ---
 

@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 · Version 0.1.32 · Meilensteine 1–7c abgeschlossen
+Letzte Aktualisierung: März 2026 · Version 0.1.35 · Meilensteine 1–7d abgeschlossen
 
 ---
 
@@ -162,7 +162,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.32 · Meilensteine 1–7c abges
 | 7b.2 | AGB-Text (rechtssicher, DSGVO-konform, im Popup lesbar) | ✅ Erledigt |
 | 7b.3 | Datenschutzerklärung (DSGVO Art. 13/14, TDDDG, im Popup lesbar) | ✅ Erledigt |
 | 7b.4 | AGB + Datenschutz in Footer der Landing Page | ✅ Erledigt |
-| 7b.5 | Pflichtakzeptanz AGB + Datenschutz bei Registrierung (Checkbox + Popup-Links) | 🔲 Offen |
+| 7b.5 | Pflichtakzeptanz AGB + Datenschutz bei Registrierung (Checkbox + Popup-Links) | ✅ Erledigt |
 | 7b.6 | Akzeptanz-Zeitstempel in DB speichern (`legal_accepted_at`, `legal_version`) | 🔲 Offen |
 | 7b.7 | Auftragsverarbeitungsvertrag (AVV) als Download/PDF | 🔲 Offen |
 | 7b.8 | Cookie-Hinweis / Consent-Banner (§ 25 TDDDG, nur bei Bedarf) | 🔲 Offen |
@@ -184,6 +184,24 @@ Letzte Aktualisierung: März 2026 · Version 0.1.32 · Meilensteine 1–7c abges
 | 7c.10 | UUID-Format-Validierung auf Query-Parameter (`projectId`) | ✅ Erledigt |
 | 7c.11 | Einladungs-Token: `randomBytes(32)` statt `randomUUID()` (256 Bit) | ✅ Erledigt |
 | 7c.12 | Datensicherheits-Popup + Landing Page mit aktuellen TOMs aktualisiert | ✅ Erledigt |
+
+### Meilenstein 7d: Vencly-Branding & Einstellungen-Hub
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 7d.1 | Vencly-Logo SVG (`public/vencly-logo.svg`) – Gradient-V + Text | ✅ Erledigt |
+| 7d.2 | Favicon als Gradient-V (`app/icon.svg`) | ✅ Erledigt |
+| 7d.3 | Vencly-Logo oben links in Landing-Page-Nav (Link → www.vencly.com) | ✅ Erledigt |
+| 7d.4 | Vencly-Logo unten rechts im Dashboard-Layout (Link → www.vencly.com) | ✅ Erledigt |
+| 7d.5 | LegalModal: Impressum-Tab (vencly GmbH, § 5 TMG, HRB 290524) | ✅ Erledigt |
+| 7d.6 | AGB & Datenschutzerklärung: Betreiber auf vencly GmbH aktualisiert | ✅ Erledigt |
+| 7d.7 | Footer Landing Page: Impressum-Link + Copyright vencly GmbH | ✅ Erledigt |
+| 7d.8 | Einstellungen-Hub `/settings`: Tabbed UI (Konto, Workspace, Team, KI, API-Keys) | ✅ Erledigt |
+| 7d.9 | AccountSettings: E-Mail-Adresse ändern (Supabase auth.updateUser) | ✅ Erledigt |
+| 7d.10 | AccountSettings: Passwort ändern (Supabase auth.updateUser) | ✅ Erledigt |
+| 7d.11 | WorkspaceNav: Dropdown auf einzelnen „Einstellungen"-Link konsolidiert | ✅ Erledigt |
+| 7d.12 | Registrierung Schritt 3 (optional): KI-Anbieter + API-Key beim Onboarding | ✅ Erledigt |
+| 7d.13 | Registrierung: Fortschrittsbalken (1/3, 2/3, 3/3) | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
 
