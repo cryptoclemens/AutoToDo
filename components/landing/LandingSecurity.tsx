@@ -1,7 +1,7 @@
 'use client'
 
+import Link from 'next/link'
 import SecurityModal from '@/components/SecurityModal'
-import LegalModal from '@/components/legal/LegalModal'
 
 const TRUST_ITEMS = [
   { icon: '🔐', label: 'TLS 1.3 + HSTS', desc: 'Verschlüsselte Übertragung, erzwungen' },
@@ -72,18 +72,10 @@ export function LandingLegalFooter() {
       <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-gray-400">© 2026 vencly GmbH · Alle Rechte vorbehalten</p>
         <div className="flex items-center gap-4 text-sm text-gray-400">
-          <LegalModal initialTab="agb" trigger={
-            <span className="hover:text-gray-600 transition-colors cursor-pointer">AGB</span>
-          } />
-          <LegalModal initialTab="datenschutz" trigger={
-            <span className="hover:text-gray-600 transition-colors cursor-pointer">Datenschutzerklärung</span>
-          } />
-          <LegalModal initialTab="impressum" trigger={
-            <span className="hover:text-gray-600 transition-colors cursor-pointer">Impressum</span>
-          } />
-          <SecurityModal trigger={
-            <span className="hover:text-gray-600 transition-colors cursor-pointer">Datensicherheit</span>
-          } />
+          <Link href="/agb" className="hover:text-gray-600 transition-colors">AGB</Link>
+          <Link href="/datenschutz" className="hover:text-gray-600 transition-colors">Datenschutzerklärung</Link>
+          <Link href="/impressum" className="hover:text-gray-600 transition-colors">Impressum</Link>
+          <Link href="/datensicherheit" className="hover:text-gray-600 transition-colors">Datensicherheit</Link>
         </div>
       </div>
     </footer>

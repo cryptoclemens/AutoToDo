@@ -96,16 +96,18 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Preise</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: 'Free', price: '$0', features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer'], highlight: false },
-              { name: 'Starter', price: '$19/Monat', features: ['5 Projekte', 'Unbegrenzte Transkripte', '5 Nutzer', 'API-Zugang'], highlight: true },
-              { name: 'Pro', price: '$49/Monat', features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Webhooks'], highlight: false },
+              { name: 'Free', price: '$0', sub: null, features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer'], highlight: false },
+              { name: 'Starter', price: '$19/Monat', sub: 'zzgl. gesetzlicher MwSt.', features: ['5 Projekte', 'Unbegrenzte Transkripte', '5 Nutzer', 'API-Zugang'], highlight: true },
+              { name: 'Pro', price: '$49/Monat', sub: 'zzgl. gesetzlicher MwSt.', features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Webhooks'], highlight: false },
             ].map(plan => (
               <div key={plan.name} className={`bg-white rounded-xl border p-6 ${plan.highlight ? 'border-blue-500 shadow-md' : 'border-gray-200'}`}>
                 {plan.highlight && (
                   <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full mb-3 inline-block">Beliebt</span>
                 )}
                 <h3 className="font-bold text-lg text-gray-900">{plan.name}</h3>
-                <p className="text-2xl font-bold text-gray-900 mt-1 mb-4">{plan.price}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{plan.price}</p>
+                {plan.sub && <p className="text-xs text-gray-400 mt-0.5 mb-4">{plan.sub}</p>}
+                {!plan.sub && <div className="mb-4" />}
                 <ul className="space-y-2 mb-6">
                   {plan.features.map(f => (
                     <li key={f} className="text-sm text-gray-600 flex items-center gap-2">
@@ -120,6 +122,9 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <p className="text-xs text-center text-gray-400 mt-4">
+            Preise werden in USD angezeigt. Der EUR-Betrag wird beim Checkout berechnet.
+          </p>
         </div>
       </section>
 
