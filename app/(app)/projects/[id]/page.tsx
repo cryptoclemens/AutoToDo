@@ -78,10 +78,11 @@ export default async function ProjectPage({ params }: Props) {
   const doneTimes = (lopItems ?? [])
     .filter(i => i.status === 'abgeschlossen')
     .map(i => (new Date(i.updated_at).getTime() - new Date(i.created_at).getTime()) / 86_400_000)
-    .filter(d => d > 0)
-  const avgDays = doneTimes.length > 0
-    ? Math.round(doneTimes.reduce((a, b) => a + b, 0) / doneTimes.length)
+    .filter(d => d >= 0)
+  const avgDaysRaw = doneTimes.length > 0
+    ? doneTimes.reduce((a, b) => a + b, 0) / doneTimes.length
     : null
+  const avgDays = avgDaysRaw !== null ? Math.round(avgDaysRaw) : null
   const completionPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
   return (
@@ -121,7 +122,7 @@ export default async function ProjectPage({ params }: Props) {
             )}
             {avgDays !== null && (
               <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5 font-medium">
-                ⏱ Ø {avgDays} {avgDays === 1 ? 'Tag' : 'Tage'} Bearbeitungszeit
+                ⏱ Ø {avgDays === 0 ? '< 1 Tag' : `${avgDays} ${avgDays === 1 ? 'Tag' : 'Tage'}`} Bearbeitungszeit
               </span>
             )}
           </div>
