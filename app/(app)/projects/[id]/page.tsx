@@ -3,9 +3,8 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
-import LopTable from '@/components/lop/LopTable'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
-import ProjectInviteButton from '@/components/projects/ProjectInviteButton'
+import ProjectPageClient from '@/components/projects/ProjectPageClient'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -147,22 +146,14 @@ export default async function ProjectPage({ params }: Props) {
         </div>
       )}
 
-      {/* Mitglied einladen */}
-      {canAdmin && !project.archived_at && (
-        <div className="mb-6">
-          <ProjectInviteButton
-            workspaceId={workspace.id}
-            projectId={project.id}
-            projectName={project.name}
-          />
-        </div>
-      )}
-
-      {/* LOP-Tabelle */}
-      <LopTable
+      {/* Mitglied einladen + LOP-Punkt hinzufügen + LOP-Tabelle */}
+      <ProjectPageClient
         initialItems={lopItems ?? []}
         projectId={project.id}
+        projectName={project.name}
+        workspaceId={workspace.id}
         canEdit={canEdit && !project.archived_at}
+        canAdmin={canAdmin && !project.archived_at}
       />
     </div>
   )

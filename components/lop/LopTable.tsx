@@ -15,9 +15,11 @@ interface Props {
   initialItems: LopItem[]
   projectId: string
   canEdit: boolean
+  showAddForm?: boolean
+  onShowAddFormChange?: (v: boolean) => void
 }
 
-export default function LopTable({ initialItems, projectId, canEdit }: Props) {
+export default function LopTable({ initialItems, projectId, canEdit, showAddForm: externalShowAddForm, onShowAddFormChange }: Props) {
   const [items, setItems] = useState<LopItem[]>(initialItems)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
@@ -25,7 +27,10 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   const [filterSearch, setFilterSearch] = useState('')
   const [showReviewPanel, setShowReviewPanel] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LopItem | null>(null)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [internalShowAddForm, setInternalShowAddForm] = useState(false)
+
+  const showAddForm = externalShowAddForm ?? internalShowAddForm
+  const setShowAddForm = onShowAddFormChange ?? setInternalShowAddForm
 
   const reviewItems = items.filter(i => i.requires_review)
   const reviewCount = reviewItems.length
@@ -157,16 +162,6 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
         <span className="text-xs text-gray-400 ml-auto">
           {filtered.length} von {items.length} Punkte{items.length !== 1 ? 'n' : ''}
         </span>
-        {canEdit && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs shrink-0"
-            onClick={() => setShowAddForm(v => !v)}
-          >
-            + LOP-Punkt
-          </Button>
-        )}
       </div>
 
       {/* Tabelle */}
