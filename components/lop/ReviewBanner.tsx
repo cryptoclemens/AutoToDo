@@ -2,10 +2,11 @@
 
 interface Props {
   count: number
-  onShowReview: () => void
+  expanded: boolean
+  onToggle: () => void
 }
 
-export default function ReviewBanner({ count, onShowReview }: Props) {
+export default function ReviewBanner({ count, expanded, onToggle }: Props) {
   if (count === 0) return null
 
   return (
@@ -17,10 +18,10 @@ export default function ReviewBanner({ count, onShowReview }: Props) {
         </span>
       </div>
       <button
-        onClick={onShowReview}
+        onClick={onToggle}
         className="text-sm text-yellow-700 underline hover:text-yellow-900"
       >
-        Anzeigen
+        {expanded ? 'Schließen' : 'Anzeigen'}
       </button>
     </div>
   )

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import LopTableRow from './LopTableRow'
 import LopItemDialog, { type LopItem } from './LopItemDialog'
 import ReviewBanner from './ReviewBanner'
+import AiReviewPanel from './AiReviewPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -22,10 +23,11 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [filterResponsible, setFilterResponsible] = useState<string>('all')
   const [filterSearch, setFilterSearch] = useState('')
-  const [showReviewOnly, setShowReviewOnly] = useState(false)
+  const [showReviewPanel, setShowReviewPanel] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LopItem | null>(null)
 
-  const reviewCount = items.filter(i => i.requires_review).length
+  const reviewItems = items.filter(i => i.requires_review)
+  const reviewCount = reviewItems.length
 
   // Distinct responsible values for filter dropdown
   const responsibleOptions = useMemo(() => {
@@ -36,7 +38,6 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
   }, [items])
 
   const filtered = items.filter(item => {
-    if (showReviewOnly && !item.requires_review) return false
     if (filterStatus !== 'all' && item.status !== filterStatus) return false
     if (filterPriority !== 'all' && item.priority !== filterPriority) return false
     if (filterResponsible !== 'all' && item.responsible !== filterResponsible) return false
@@ -53,7 +54,6 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
 
   async function handleUpdate(id: string, changes: Partial<LopItem>) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i))
-    // Also update selectedItem if it's open
     setSelectedItem(prev => prev?.id === id ? { ...prev, ...changes } : prev)
 
     const res = await fetch(`/api/lop/${id}`, {
@@ -67,11 +67,24 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
     }
   }
 
+  async function handleAccept(id: string, changes: Partial<LopItem>) {
+    await handleUpdate(id, changes)
+    // Close panel if no more review items remain
+    setItems(prev => {
+      const remaining = prev.filter(i => i.id !== id ? i.requires_review : false)
+      if (remaining.length === 0) setShowReviewPanel(false)
+      return prev
+    })
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Diesen LOP-Punkt wirklich löschen?')) return
+    await deleteItem(id)
+  }
+
+  async function deleteItem(id: string) {
     setItems(prev => prev.filter(i => i.id !== id))
     if (selectedItem?.id === id) setSelectedItem(null)
-
     const res = await fetch(`/api/lop/${id}`, { method: 'DELETE' })
     if (!res.ok) setItems(initialItems)
   }
@@ -84,8 +97,18 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
     <div>
       <ReviewBanner
         count={reviewCount}
-        onShowReview={() => setShowReviewOnly(v => !v)}
+        expanded={showReviewPanel}
+        onToggle={() => setShowReviewPanel(v => !v)}
       />
+
+      {showReviewPanel && (
+        <AiReviewPanel
+          items={reviewItems}
+          canEdit={canEdit}
+          onAccept={handleAccept}
+          onReject={deleteItem}
+        />
+      )}
 
       {/* Filter-Leiste */}
       <div className="flex flex-wrap gap-2 mb-4 items-center">
@@ -129,14 +152,6 @@ export default function LopTable({ initialItems, projectId, canEdit }: Props) {
               ))}
             </SelectContent>
           </Select>
-        )}
-        {showReviewOnly && (
-          <button
-            onClick={() => setShowReviewOnly(false)}
-            className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full border border-yellow-200"
-          >
-            ⚠ Nur Review-Punkte ✕
-          </button>
         )}
         <span className="text-xs text-gray-400 ml-auto">
           {filtered.length} von {items.length} Punkte{items.length !== 1 ? 'n' : ''}
