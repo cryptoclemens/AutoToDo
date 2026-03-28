@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 2.8 (E-Mail-Digest & Verantwortlichen-Verknüpfung) | Stand: März 2026 · v0.1.41
+**Version:** 3.2 (Layout-Optimierung, Mehrsprachigkeit, Webhooks & Audit) | Stand: März 2026 · v0.1.61
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -353,27 +353,29 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Einstellungen-Hub `/settings`: Konto (E-Mail/Passwort), Workspace, Team, KI, API-Keys
 - Vercel-Deployment + Single-Domain-Fixes
 
-### Phase 2 – SaaS-Features (nächste Schritte)
-- **E-Mail-Digest (M7e):** Tägliche Zusammenfassung offener LOP-Punkte je Verantwortlichem; Verantwortliche aus eingeladenen Mitgliedern wählen (Freitext → Dropdown mit E-Mail)
-- Webhook-System (Registrierung + Delivery + HMAC-SHA256-Signatur + Retry)
-- Audit-Log UI
-- Rollenverwaltung UI
-- Subdomain-Routing (`[slug].autotodo.app`)
+### Phase 2 – SaaS-Features ✅ Abgeschlossen
+- E-Mail-Digest (M7e): Tägliche Zusammenfassung offener LOP-Punkte je Verantwortlichem (Resend, Vercel Cron)
+- Webhook-System (M8): Registrierung + Delivery + HMAC-SHA256-Signatur + Retry (3x, exponential backoff)
+- Audit-Log UI (M8.4): Letzte 100 Änderungen mit Typ, Titel, Projekt, Zeitstempel
+- Rollenverwaltung UI (M8.5): Rolle per Dropdown ändern, Mitglied entfernen
+- Rechtliches & Compliance (M7b): AGB, Datenschutz, Impressum, AVV-PDF, Cookie-Banner, Consent-Timestamp
 
-### Phase 3 – Wachstum (optional)
+### Phase 3 – Wachstum (offen)
 - Stripe-Billing (Free/Pro/Enterprise)
 - Custom Domain (CNAME-Support)
 - E-Mail-Benachrichtigungen (Fälligkeits-Reminder)
 - Slack/Teams-Integration via Webhook
-- Mehrsprachigkeit (DE/EN)
 - SSO (SAML für Enterprise)
 
-### Phase 4 – UX-Polish & Legal
-- Landing Page: Hero, Features, Pricing
-- App-Layout: Sidebar, Mobile-Ansicht, Dark Mode
-- Dashboard: Statistik-Karten
-- LOP-Tabelle: visuelles Redesign
-- Impressum-Seite, AVV als PDF, Cookie-Consent
+### Phase 4 – UX-Polish & Legal ✅ Teilweise abgeschlossen
+- ✅ Mehrsprachigkeit DE/EN via `next-intl` (cookie-basiert, kein URL-Routing)
+- ✅ Dashboard Statistik-Karten (offen, überfällig, erledigt, gesamt)
+- ✅ WorkspaceNav: Icons + Mobile Hamburger-Menu
+- ✅ LOP-Tabelle: überfällige Daten rot + Warnsymbol; erledigte Items ausgegraut + nach unten sortiert
+- ✅ Skeleton-Screens für Dashboard + Projektseite
+- ✅ Impressum, AVV-PDF, Cookie-Consent, AGB, Datenschutz
+- 🔲 Landing Page: Hero-Illustration, Feature-Screenshots, erweiterte Pricing-Tabelle
+- 🔲 Dark Mode
 
 ---
 

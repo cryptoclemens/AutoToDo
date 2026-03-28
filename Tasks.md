@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abgeschlossen
+Letzte Aktualisierung: März 2026 · Version 0.1.61 · Meilensteine 1–8, 9.5 (teilw.), 10 (teilw.) abgeschlossen
 
 ---
 
@@ -262,6 +262,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 | 9.5.7 | Einstellungsseiten & Einladungs-E-Mails auf Englisch | 🔲 Offen |
 | 9.5.8 | „How to"-Popup auf Englisch | ✅ Erledigt |
 | 9.5.9 | Fehlermeldungen & Toast-Nachrichten lokalisiert | 🔲 Offen |
+| 9.5.10 | JSON-Translations: deutsche Anführungszeichen `„text"` mit `»text«` ersetzen (JSON-Parse-Fehler) | ✅ Erledigt |
 
 ---
 
@@ -274,16 +275,28 @@ Letzte Aktualisierung: März 2026 · Version 0.1.41 · Meilensteine 1–7d abges
 | 10.1 | Landing Page: Hero-Sektion mit Illustration/Animation | 🔲 Offen |
 | 10.2 | Landing Page: Feature-Sektion (Screenshots, Icons, Beschreibungen) | 🔲 Offen |
 | 10.3 | Landing Page: Pricing-Tabelle (Free / Starter / Pro / Enterprise) | 🔲 Offen |
-| 10.4 | App-Layout: Sidebar-Navigation verfeinern (Icons, aktiver Zustand, Kollaps) | 🔲 Offen |
-| 10.5 | App-Layout: Responsive Mobile-Ansicht (Hamburger-Menu, Drawer) | 🔲 Offen |
-| 10.6 | Dashboard: Statistik-Karten (offene Punkte, fällige Aufgaben, Aktivität) | 🔲 Offen |
-| 10.7 | LOP-Tabelle: visuelles Redesign (bessere Badges, Hover-States, Farbkodierung) | 🔲 Offen |
-| 10.8 | Loading-States & Skeleton-Screens (Transition-Feedback) | 🔲 Offen |
+| 10.4 | App-Layout: Navigation verfeinern (Icons, aktiver Zustand) | ✅ Erledigt |
+| 10.5 | App-Layout: Responsive Mobile-Ansicht (Hamburger-Menu, Drawer) | ✅ Erledigt |
+| 10.6 | Dashboard: Statistik-Karten (offene Punkte, überfällig, erledigt, gesamt) | ✅ Erledigt |
+| 10.7 | LOP-Tabelle: überfällige Fälligkeitsdaten rot + Warnsymbol | ✅ Erledigt |
+| 10.8 | Loading-States & Skeleton-Screens (dashboard/loading.tsx, projects/[id]/loading.tsx) | ✅ Erledigt |
 | 10.9 | Dark-Mode-Unterstützung (optional) | 🔲 Offen |
-| 10.10 | Impressum-Seite (`/impressum`) | 🔲 Offen |
-| 10.11 | Datenschutzerklärung (`/datenschutz`) | 🔲 Offen |
-| 10.12 | Footer auf Landing Page (Links: Impressum, Datenschutz, Kontakt) | 🔲 Offen |
-| 10.13 | Cookie-Hinweis / Consent-Banner (DSGVO) | 🔲 Offen |
+| 10.10 | Impressum-Seite (`/impressum`) | ✅ Erledigt (M7b.9) |
+| 10.11 | Datenschutzerklärung (`/datenschutz`) | ✅ Erledigt (M7b.3) |
+| 10.12 | Footer auf Landing Page (Links: Impressum, Datenschutz, Kontakt) | ✅ Erledigt (M7b.4) |
+| 10.13 | Cookie-Hinweis / Consent-Banner (DSGVO) | ✅ Erledigt (M7b.8) |
+
+### Bugfixes (außerhalb Meilensteine)
+
+| # | Aufgabe | Status |
+|---|---|---|
+| BF.1 | Bearbeitungszeit-KPI: 0-Tage-Items inkl., Anzeige „< 1 Tag" | ✅ Erledigt |
+| BF.2 | AiReviewPanel: Rohwerte `in_bearbeitung` → StatusBadge/PriorityBadge | ✅ Erledigt |
+| BF.3 | Logo-Upload: Cache-Busting per Timestamp-Dateiname, alte Logos werden gelöscht | ✅ Erledigt |
+| BF.4 | Logo-Upload: `logos`-Bucket wird beim ersten Upload automatisch angelegt | ✅ Erledigt |
+| BF.5 | Logo-Anzeige: Supabase-Storage-Domain in `next/image` remotePatterns freigeschaltet | ✅ Erledigt |
+| BF.6 | LOP-Punkte: erledigte Items sinken nach unten + opacity-60 ausgegraut | ✅ Erledigt |
+| BF.7 | E-Mail-Digest: Absender-Domain auf `@vencly.app` geändert | ✅ Erledigt |
 
 ---
 
