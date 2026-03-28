@@ -96,7 +96,7 @@ export default function BillingTab({ plan, planExpiresAt, seatCount, projectCoun
             <button
               disabled
               className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-medium opacity-50 cursor-not-allowed"
-              title="Stripe-Integration kommt bald"
+              title="Mollie-Zahlungsintegration kommt bald"
             >
               Plan ändern
             </button>
@@ -155,7 +155,7 @@ export default function BillingTab({ plan, planExpiresAt, seatCount, projectCoun
                   <button
                     disabled
                     className="mt-3 w-full text-xs bg-gray-800 text-white py-1.5 rounded-lg font-medium opacity-40 cursor-not-allowed"
-                    title="Stripe-Integration kommt bald"
+                    title="Mollie-Zahlungsintegration kommt bald"
                   >
                     Zu {PLAN_NAMES[u.plan]} upgraden
                   </button>
@@ -164,7 +164,7 @@ export default function BillingTab({ plan, planExpiresAt, seatCount, projectCoun
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">
-            Stripe-Zahlungsintegration in Kürze verfügbar.
+            Mollie-Zahlungsintegration in Kürze verfügbar.
           </p>
         </div>
       )}
