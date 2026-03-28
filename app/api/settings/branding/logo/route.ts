@@ -41,6 +41,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ungültiges Dateiformat. Erlaubt: PNG, JPG, WebP, SVG.' }, { status: 400 })
   }
 
+  // Bucket anlegen falls er nicht existiert (idempotent)
+  await supabase.storage.createBucket('logos', {
+    public: true,
+    fileSizeLimit: 2 * 1024 * 1024,
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'],
+  })
+  // Fehler ignorieren – tritt auf wenn Bucket bereits existiert
+
   const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
   // Unique filename per upload → busts browser/CDN/next-image cache
   const path = `${workspace.id}/logo_${Date.now()}.${ext}`
