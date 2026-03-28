@@ -41,19 +41,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ungültiges Dateiformat. Erlaubt: PNG, JPG, WebP, SVG.' }, { status: 400 })
   }
 
-  const ext = file.name.split('.').pop() ?? 'png'
-  const path = `${workspace.id}/logo.${ext}`
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  // Unique filename per upload → busts browser/CDN/next-image cache
+  const path = `${workspace.id}/logo_${Date.now()}.${ext}`
+
+  // Delete all previous logos for this workspace first
+  const { data: existing } = await supabase.storage.from('logos').list(workspace.id)
+  if (existing && existing.length > 0) {
+    const oldPaths = existing.map(f => `${workspace.id}/${f.name}`)
+    await supabase.storage.from('logos').remove(oldPaths)
+  }
 
   const arrayBuffer = await file.arrayBuffer()
   const { error: uploadError } = await supabase.storage
     .from('logos')
     .upload(path, arrayBuffer, {
       contentType: file.type,
-      upsert: true,
+      upsert: false,
     })
 
   if (uploadError) {
-    return NextResponse.json({ error: 'Upload fehlgeschlagen.' }, { status: 500 })
+    console.error('Logo upload error:', uploadError)
+    return NextResponse.json({ error: `Upload fehlgeschlagen: ${uploadError.message}` }, { status: 500 })
   }
 
   const { data: urlData } = supabase.storage.from('logos').getPublicUrl(path)
@@ -87,9 +96,11 @@ export async function DELETE(_request: NextRequest) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 
-  // Logo aus Storage entfernen (alle gängigen Endungen versuchen)
-  for (const ext of ['png', 'jpg', 'jpeg', 'webp', 'svg']) {
-    await supabase.storage.from('logos').remove([`${workspace.id}/logo.${ext}`])
+  // Alle Logo-Dateien dieses Workspace entfernen
+  const { data: existing } = await supabase.storage.from('logos').list(workspace.id)
+  if (existing && existing.length > 0) {
+    const paths = existing.map(f => `${workspace.id}/${f.name}`)
+    await supabase.storage.from('logos').remove(paths)
   }
 
   await supabase.from('workspaces').update({ logo_url: null }).eq('id', workspace.id)
