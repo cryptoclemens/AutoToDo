@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspace } from '@/lib/workspace'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import ProjectPageClient from '@/components/projects/ProjectPageClient'
+import XlsxImportDialog from '@/components/projects/XlsxImportDialog'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -136,6 +137,9 @@ export default async function ProjectPage({ params }: Props) {
           <a href={`/api/lop/export?projectId=${project.id}`}>
             <Button variant="outline" size="sm">↓ XLSX</Button>
           </a>
+          {canEdit && !project.archived_at && (
+            <XlsxImportDialog projectId={project.id} />
+          )}
           {canAdmin && !project.archived_at && (
             <ArchiveButton projectId={project.id} />
           )}

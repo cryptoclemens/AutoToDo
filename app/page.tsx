@@ -33,14 +33,14 @@ export default async function LandingPage() {
         { q: 'What AI models are supported?', a: 'AutoToDo uses your own API key (BYOK) — Claude (Anthropic), GPT-4o (OpenAI), or Azure OpenAI. You control your data and costs.' },
         { q: 'Can I invite external guests without an account?', a: 'Yes, from Solo onwards. Share a read-only link with guests — no registration required.' },
         { q: 'Is my transcript data secure?', a: 'Transcripts are encrypted at rest (AES-256-GCM) and stored in your Supabase project. AutoToDo staff has no access.' },
-        { q: 'When is Stripe billing available?', a: 'Payment processing is coming soon. Until then, all existing users remain on beta (unlimited) access.' },
+        { q: 'When is billing available?', a: 'Payment processing via Mollie is coming soon. Until then, all existing users remain on beta (unlimited) access.' },
       ]
     : [
         { q: 'Brauche ich eine Kreditkarte zum Start?', a: 'Nein. Der Free-Plan erfordert keine Zahlungsdaten. Upgrade jederzeit, wenn Sie mehr benötigen.' },
         { q: 'Welche KI-Modelle werden unterstützt?', a: 'AutoToDo nutzt Ihren eigenen API-Key (BYOK) – Claude (Anthropic), GPT-4o (OpenAI) oder Azure OpenAI. Sie behalten die Kontrolle über Daten und Kosten.' },
         { q: 'Kann ich externe Gäste ohne Account einladen?', a: 'Ja, ab Solo. Teilen Sie einen Lesezugriff-Link mit Gästen – keine Registrierung erforderlich.' },
         { q: 'Sind meine Transkriptdaten sicher?', a: 'Transkripte werden verschlüsselt gespeichert (AES-256-GCM) in Ihrem Supabase-Projekt. AutoToDo-Mitarbeiter haben keinen Zugriff.' },
-        { q: 'Wann ist Stripe-Abrechnung verfügbar?', a: 'Die Zahlungsabwicklung kommt in Kürze. Bis dahin haben alle bestehenden Nutzer weiterhin Beta-Zugang (unbegrenzt).' },
+        { q: 'Wann ist die Abrechnung verfügbar?', a: 'Die Zahlungsabwicklung über Mollie kommt in Kürze. Bis dahin haben alle bestehenden Nutzer weiterhin Beta-Zugang (unbegrenzt).' },
       ]
 
   const steps = isEn
@@ -73,8 +73,31 @@ export default async function LandingPage() {
         { icon: '📊', title: 'XLSX-Export', desc: 'LOP als Excel exportieren mit Workspace-Branding.' },
       ]
 
+  const featureColors = [
+    'bg-yellow-50 text-yellow-500',
+    'bg-blue-50 text-blue-500',
+    'bg-orange-50 text-orange-500',
+    'bg-purple-50 text-purple-500',
+    'bg-emerald-50 text-emerald-600',
+    'bg-teal-50 text-teal-600',
+  ]
+
   return (
     <div className="min-h-screen bg-white">
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        @keyframes slide-in-row {
+          from { opacity: 0; transform: translateX(-8px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .row-1 { animation: slide-in-row 0.4s ease 0.6s both; }
+        .row-2 { animation: slide-in-row 0.4s ease 1.0s both; }
+        .row-3 { animation: slide-in-row 0.4s ease 1.4s both; }
+      `}</style>
       {/* Nav */}
       <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-40">
         <div className="flex items-center gap-4">
@@ -97,7 +120,12 @@ export default async function LandingPage() {
       </nav>
 
       {/* Hero – 2-column */}
-      <section className="max-w-6xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative overflow-hidden">
+        {/* Decorative gradient blobs */}
+        <div className="absolute -top-40 -right-32 w-[500px] h-[500px] bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
+        <div className="absolute top-20 -left-24 w-80 h-80 bg-indigo-100 rounded-full blur-3xl opacity-40 pointer-events-none" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-sky-50 rounded-full blur-2xl opacity-60 pointer-events-none" />
+      <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center relative">
         <div>
           <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-blue-200">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
@@ -129,8 +157,8 @@ export default async function LandingPage() {
         </div>
 
         {/* App Mockup */}
-        <div className="hidden md:block">
-          <div className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="hidden md:block animate-float">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden ring-1 ring-gray-100">
             {/* Mockup Header */}
             <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-300" />
@@ -168,7 +196,7 @@ export default async function LandingPage() {
                 { title: isEn ? 'Update customer contract' : 'Kundenvertrag aktualisieren', owner: 'S. Weber', prio: isEn ? 'Medium' : 'Mittel', status: isEn ? 'Open' : 'Offen', statusColor: 'bg-gray-100 text-gray-600', due: '01.04.', overdue: true },
                 { title: isEn ? 'Set up onboarding' : 'Onboarding einrichten', owner: 'J. Klein', prio: isEn ? 'Low' : 'Niedrig', status: isEn ? 'Done' : 'Erledigt', statusColor: 'bg-green-100 text-green-700', due: '20.03.', overdue: false },
               ].map((row, i) => (
-                <div key={i} className={`flex items-center gap-2 py-2 border-b border-gray-50 last:border-0 ${row.status === (isEn ? 'Done' : 'Erledigt') ? 'opacity-50' : ''}`}>
+                <div key={i} className={`flex items-center gap-2 py-2 border-b border-gray-50 last:border-0 row-${i + 1} ${row.status === (isEn ? 'Done' : 'Erledigt') ? 'opacity-50' : ''}`}>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-gray-800 truncate">{row.title}</p>
                     <p className="text-xs text-gray-400">{row.owner}</p>
@@ -191,6 +219,7 @@ export default async function LandingPage() {
             </div>
           </div>
         </div>
+      </div>
       </section>
 
       {/* Logos / Social Proof */}
@@ -218,10 +247,10 @@ export default async function LandingPage() {
           </p>
           <div className="grid md:grid-cols-3 gap-8 relative">
             {/* Connector line */}
-            <div className="hidden md:block absolute top-8 left-[calc(16.7%)] right-[calc(16.7%)] h-px bg-gray-200" />
+            <div className="hidden md:block absolute top-8 left-[calc(16.7%)] right-[calc(16.7%)] h-px bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200" />
             {steps.map((step, i) => (
               <div key={i} className="text-center relative">
-                <div className="w-14 h-14 rounded-full bg-blue-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-5 relative z-10 shadow-md">
+                <div className="w-14 h-14 rounded-full bg-blue-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-5 relative z-10 shadow-lg ring-4 ring-blue-100">
                   {step.n}
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">{step.title}</h3>
@@ -242,9 +271,11 @@ export default async function LandingPage() {
             {isEn ? 'Built for consulting teams, project managers and engineering leads.' : 'Entwickelt für Beratungsteams, Projektleiter und Engineering-Leads.'}
           </p>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {featureList.map(f => (
-              <div key={f.title} className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-sm transition-shadow">
-                <div className="text-2xl mb-3">{f.icon}</div>
+            {featureList.map((f, i) => (
+              <div key={f.title} className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+                <div className={`w-11 h-11 rounded-xl ${featureColors[i % featureColors.length]} flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-200`}>
+                  {f.icon}
+                </div>
                 <h3 className="font-semibold text-gray-900 mb-1.5 text-sm">{f.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
               </div>
