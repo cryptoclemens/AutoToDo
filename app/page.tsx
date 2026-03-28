@@ -15,15 +15,15 @@ export default async function LandingPage() {
 
   const plans = isEn
     ? [
-        { name: 'Free', price: '$0', sub: null, badge: null, features: ['1 project', '10 transcripts/month', '1 user', 'XLSX export'], highlight: false },
-        { name: 'Starter', price: '$19', period: '/mo', sub: 'plus applicable VAT', badge: 'Popular', features: ['5 projects', 'Unlimited transcripts', '5 users', 'API access', 'Webhooks'], highlight: true },
-        { name: 'Pro', price: '$49', period: '/mo', sub: 'plus applicable VAT', badge: null, features: ['Unlimited projects', '20 users', 'Custom branding', 'Priority support', 'Audit log'], highlight: false },
+        { name: 'Free', price: '€0', sub: null, badge: null, features: ['1 project', '10 transcripts/month', '1 user', 'XLSX export'], highlight: false },
+        { name: 'Starter', price: '€19', period: '/mo', sub: 'plus applicable VAT', badge: 'Popular', features: ['5 projects', 'Unlimited transcripts', '5 users', 'API access', 'Webhooks'], highlight: true },
+        { name: 'Pro', price: '€49', period: '/mo', sub: 'plus applicable VAT', badge: null, features: ['Unlimited projects', '20 users', 'Custom branding', 'Priority support', 'Audit log'], highlight: false },
         { name: 'Enterprise', price: null, period: null, sub: 'Custom pricing', badge: null, features: ['Unlimited everything', 'SSO / SAML', 'Dedicated support', 'SLA', 'On-premise option'], highlight: false },
       ]
     : [
-        { name: 'Free', price: '$0', period: null, sub: null, badge: null, features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer', 'XLSX-Export'], highlight: false },
-        { name: 'Starter', price: '$19', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: 'Beliebt', features: ['5 Projekte', 'Unbegrenzte Transkripte', '5 Nutzer', 'API-Zugang', 'Webhooks'], highlight: true },
-        { name: 'Pro', price: '$49', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Priority-Support', 'Audit-Log'], highlight: false },
+        { name: 'Free', price: '€0', period: null, sub: null, badge: null, features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer', 'XLSX-Export'], highlight: false },
+        { name: 'Starter', price: '€19', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: 'Beliebt', features: ['5 Projekte', 'Unbegrenzte Transkripte', '5 Nutzer', 'API-Zugang', 'Webhooks'], highlight: true },
+        { name: 'Pro', price: '€49', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Priority-Support', 'Audit-Log'], highlight: false },
         { name: 'Enterprise', price: null, period: null, sub: isEn ? 'Custom pricing' : 'Individuelles Angebot', badge: null, features: ['Alles unbegrenzt', 'SSO / SAML', 'Dedizierter Support', 'SLA', 'On-Premise-Option'], highlight: false },
       ]
 
@@ -303,8 +303,8 @@ export default async function LandingPage() {
           </div>
           <p className="text-xs text-center text-gray-400 mt-6">
             {isEn
-              ? 'Prices in USD. EUR equivalent calculated at checkout. Annual billing available (20% discount).'
-              : 'Preise in USD. EUR-Betrag wird beim Checkout berechnet. Jahresabrechnung möglich (20% Rabatt).'}
+              ? 'Prices in EUR, plus applicable VAT. Annual billing available (20% discount).'
+              : 'Preise in EUR, zzgl. gesetzl. MwSt. Jahresabrechnung möglich (20% Rabatt).'}
           </p>
         </div>
       </section>
