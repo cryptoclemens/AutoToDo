@@ -1,17 +1,25 @@
 # CLAUDE.md – Projektregeln für AutoToDo
 
-## Pflichtworkflow vor jedem Push
+> Global rules (Execution Style, Session Resilience, Build & Validation, Agent Rules, Task Management)
+> are defined in `~/.claude/CLAUDE.md` and apply here automatically.
 
-**Immer zuerst lokal builden:**
-```bash
-npm run build
-```
-Erst wenn der Build grün ist, pushen. Das fängt alle TypeScript-, ESLint- und Prerendering-Fehler ab, die sonst erst bei Vercel sichtbar werden.
+---
 
-**Hinweis:** `npm run build` schlägt lokal fehl wegen fehlendem Internetzugang (Google Fonts). TypeScript-Fehler trotzdem vorab prüfen mit:
+## Build & Validation (Projekt-spezifisch)
+
+`npm run build` schlägt lokal fehl wegen fehlendem Internetzugang (Google Fonts).
+TypeScript-Fehler vorab prüfen mit:
 ```bash
 npx tsc --noEmit
 ```
+Erst wenn TypeScript sauber ist, pushen. Build-Fehler müssen vor jedem Push behoben sein.
+
+---
+
+## Task-Tracking (dieses Projekt)
+
+- Offene Aufgaben: `Tasks.md` (Meilenstein-Tracking)
+- Lessons learned: `learning.md` (projektübergreifend nutzbar)
 
 ---
 
@@ -23,6 +31,7 @@ npx tsc --noEmit
   - `app/(auth)/` — Login, Register, Update-Password
   - `app/(app)/` — Dashboard, Projekte (auth-geschützt via Middleware)
   - `app/(onboarding)/` — Onboarding-Wizard
+  - `app/(guest)/` — Gast-Ansicht (öffentlich, kein Login)
   - `app/page.tsx` — Landing Page (direkt in app/, KEIN Route-Group)
   - `app/auth/callback/` — Supabase E-Mail-Bestätigungs-Handler
 - **Migrations:** `supabase/migrations/` (011 Dateien, alle deployed)
