@@ -25,7 +25,10 @@ npx tsc --noEmit
   - `app/(onboarding)/` — Onboarding-Wizard
   - `app/page.tsx` — Landing Page (direkt in app/, KEIN Route-Group)
   - `app/auth/callback/` — Supabase E-Mail-Bestätigungs-Handler
-- **Migrations:** `supabase/migrations/` (5 Dateien, alle deployed)
+- **Migrations:** `supabase/migrations/` (011 Dateien, alle deployed)
+- **Zahlungsdienstleister:** Mollie (EU, SEPA, DSGVO-konform) — Infrastruktur in `lib/mollie.ts`, `/api/mollie/`
+- **Mehrsprachigkeit:** `next-intl` (cookie-basiert), Messages in `messages/de.json` + `messages/en.json`
+- **Gast-System:** `app/(guest)/guest/[token]/page.tsx` (öffentlich, kein Login)
 - **Storage Bucket:** `logos` (öffentlich, für Workspace-Logos), `transcripts` (privat)
 
 ---
@@ -136,6 +139,23 @@ Für LLM-API-Key-Speicherung ist `ENCRYPTION_SECRET` (64-Hex-Zeichen) zwingend e
 openssl rand -hex 32
 ```
 
+### 12. next-intl – Neue Übersetzungsschlüssel
+Client Components: `useTranslations('namespace')` → `t('key')`
+Server Components: `await getTranslations('namespace')` → `t('key')`
+**Niemals** hardcodierte deutsche Strings in Komponenten — immer über `messages/de.json` + `messages/en.json`.
+JSON validieren nach jeder Änderung: `python3 -c "import json; json.load(open('messages/de.json'))"`
+
+### 13. Plan-Gates für Freemium
+Beim Erstellen von Projekten / Transkripten / Einladungen **immer** `checkProjectLimit` / `checkTranscriptLimit` / `checkSeatLimit` aus `lib/plan-gate.ts` aufrufen → bei Limit HTTP 402 zurückgeben.
+Workspace-Plan immer als `ws?.plan ?? 'beta'` mit `'beta'` als sicheren Default lesen.
+
+### 14. Mollie-Webhook verifizieren
+Mollie signiert Webhooks **nicht** mit einem Header. Verifizierung durch Fetch der Ressource direkt vom Mollie-API:
+```ts
+const payment = await mollie.payments.get(paymentId) // Mollie API
+// Nur wenn payment.status === 'paid' → Workspace upgraden
+```
+
 ---
 
 ## Git-Workflow
@@ -157,7 +177,7 @@ openssl rand -hex 32
 ## Supabase
 
 - **Migrations anwenden:** `supabase db push` (lokal: `supabase migration up`)
-- **Neue Migration:** Datei in `supabase/migrations/` anlegen, Nummerierung fortführen (006_, 007_, …)
+- **Neue Migration:** Datei in `supabase/migrations/` anlegen, Nummerierung fortführen (012_, 013_, …)
 - **Auth Redirect URLs** müssen im Supabase Dashboard unter Authentication → URL Configuration stehen:
   - Site URL: `https://deine-app.vercel.app`
   - Redirect URLs: `https://deine-app.vercel.app/auth/callback`

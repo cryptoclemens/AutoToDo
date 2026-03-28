@@ -1,7 +1,7 @@
 # AutoToDo – Projektbrief
 
-**Version:** 4.0 (Freemium-Modell, Gast-System, Stripe-Infrastruktur) | Stand: März 2026 · v0.1.64
-**Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
+**Version:** 4.1 (M9.5 i18n komplett, Mollie statt Mollie) | Stand: März 2026 · v0.1.69
+**Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Mollie (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
 ---
@@ -361,7 +361,7 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - Rechtliches & Compliance (M7b): AGB, Datenschutz, Impressum, AVV-PDF, Cookie-Banner, Consent-Timestamp
 
 ### Phase 3 – Wachstum (offen)
-- Stripe-Billing (Free/Pro/Enterprise)
+- Mollie-Billing (Free/Pro/Enterprise)
 - Custom Domain (CNAME-Support)
 - E-Mail-Benachrichtigungen (Fälligkeits-Reminder)
 - Slack/Teams-Integration via Webhook
@@ -405,10 +405,10 @@ Jahresabo: 2 Monate gratis (≈ 17% Rabatt). Alle Preise netto, zzgl. gesetzl. M
 - Gast-Seite `/guest/[token]` – kein Login, LOP read-only, viraler CTA-Banner
 - `project_guests`-Tabelle mit RLS, 30-Tage Ablauf
 
-### Stripe-Infrastruktur (vorbereitet, kein aktives Billing)
+### Mollie-Infrastruktur (vorbereitet, kein aktives Billing)
 
 - `lib/stripe.ts`, `app/api/stripe/webhook/route.ts`, `app/api/stripe/checkout/route.ts`
-- Env-Variablen dokumentiert in `.env.local` (alle leer bis Stripe-Account eingerichtet)
+- Env-Variablen dokumentiert in `.env.local` (alle leer bis Mollie-Account eingerichtet)
 
 ---
 

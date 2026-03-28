@@ -1,6 +1,6 @@
 # AutoToDo
 
-**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.41
+**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.69
 
 AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
 
@@ -15,7 +15,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 | KI | Anthropic Claude / OpenAI GPT / Azure OpenAI (BYOK – Bring Your Own Key) |
 | Deployment | Vercel (maxDuration 60s für LLM-Verarbeitung) |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
-| Billing | Stripe (geplant) |
+| Billing | Mollie (geplant) |
 
 ---
 
@@ -178,7 +178,7 @@ Supabase Storage:
 |---|---|
 | **M7e** | E-Mail-Digest: tägliche Zusammenfassung offener Punkte je Verantwortlichem; Verantwortliche aus eingeladenen Mitgliedern auswählen (Dropdown mit E-Mail) |
 | **M8** | Webhooks (HMAC-SHA256, Retry) + Audit-Log UI |
-| **Phase 3** | Stripe-Billing, Subdomain-Routing, Slack/Teams-Integration |
+| **Phase 3** | Mollie-Billing aktivieren, Subdomain-Routing, Slack/Teams-Integration |
 
 ## Entwicklungsstand
 

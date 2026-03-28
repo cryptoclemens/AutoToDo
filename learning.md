@@ -239,6 +239,7 @@ Für vollständige Funktion braucht AutoToDo auf Vercel:
 - `ENCRYPTION_SECRET` (64 Hex-Zeichen, `openssl rand -hex 32`)
 - `CRON_SECRET` (32 alphanumerische Zeichen)
 - `RESEND_API_KEY` (optional, für E-Mail-Versand)
+- `MOLLIE_API_KEY` (optional, für Zahlungsabwicklung)
 
 ---
 
@@ -258,6 +259,93 @@ ON CONFLICT (id) DO NOTHING;
 
 ### 8.3 `get_workspace_members_with_email` als SECURITY DEFINER RPC
 Um E-Mail-Adressen aus `auth.users` zu lesen (die nur als Superuser zugänglich sind), Postgres-Funktion mit `SECURITY DEFINER` erstellen.
+
+---
+
+---
+
+## 9. Freemium-Modell & Plan-Gates
+
+### 9.1 Zentrale Limit-Konfiguration
+Alle Plan-Limits in einer einzigen Datei (`lib/plans.ts`) definieren – keine hardcodierten Zahlen in Routen oder Komponenten. Grandfathering über `planExpiresAt`: solange in der Zukunft → Beta-Limits gelten.
+
+### 9.2 Gate-Funktionen pattern
+```ts
+export async function checkProjectLimit(supabase, workspaceId, plan, planExpiresAt?): Promise<GateResult>
+// GateResult: { allowed: true } | { allowed: false; reason: string; upgradeHint: Plan }
+```
+Bei `!gate.allowed` → HTTP 402 zurückgeben. Frontend kann darauf mit UpgradeNudge reagieren.
+
+### 9.3 Monatliche Nutzungs-Counter
+`workspace_usage`-Tabelle mit `period_start DATE` und `transcripts_month INTEGER`. Reset durch Upsert:
+```sql
+INSERT INTO workspace_usage (workspace_id, transcripts_month, period_start)
+VALUES (id, 1, date_trunc('month', now()))
+ON CONFLICT (workspace_id) DO UPDATE SET
+  transcripts_month = CASE WHEN excluded.period_start > workspace_usage.period_start
+    THEN 1 ELSE workspace_usage.transcripts_month + 1 END,
+  period_start = GREATEST(excluded.period_start, workspace_usage.period_start)
+```
+
+### 9.4 Gast-System (tokenbasiert)
+`project_guests`-Tabelle mit UUID-Token, 30-Tage-Ablauf. Öffentliche Seite `/guest/[token]` ohne Login – kein Middleware-Schutz nötig (eigener Route-Group `(guest)`). Viral CTA am Ende der Seite.
+
+---
+
+## 10. Zahlungsdienstleister: Mollie statt Stripe
+
+### 10.1 Warum Mollie für DACH-SaaS
+- EU-Unternehmen (Niederlande) → einfachere DSGVO-Compliance (kein US-Datentransfer)
+- Nativ SEPA-Lastschrift, Klarna, iDEAL – Standard in DE/NL
+- Günstigere EUR-Transaktionen, kein Währungskonvertierungs-Aufschlag
+- Mollie Subscriptions API: `POST /v2/subscriptions` (Customer-basiert)
+
+### 10.2 Mollie Webhook-Verifizierung
+Mollie signiert Webhooks **nicht** mit HMAC (anders als Stripe). Verifizierung durch Fetch der Ressource:
+```ts
+const payment = await mollieClient.payments.get(paymentId)
+// Nur wenn payment.status === 'paid' → DB updaten
+```
+Eigenen Webhook-Secret via Custom Header oder Metadata-Token für Basis-Schutz.
+
+### 10.3 Mollie Checkout Flow
+1. `POST /v2/payments` → Response enthält `_links.checkout.href`
+2. Nutzer zu `checkoutUrl` redirecten
+3. Mollie → `webhookUrl` (POST mit `id=pay_xxx`)
+4. Mollie → `redirectUrl` (GET, nach Bezahlung)
+
+---
+
+## 11. next-intl – Vollständige i18n-Abdeckung
+
+### 11.1 Alle Strings aus Komponenten auslagern
+Toast-Nachrichten, Confirm-Dialoge, Button-Labels, Platzhalter – **alles** in `messages/de.json` + `messages/en.json`. Regel: Kein deutsches Wort direkt im JSX/TSX außer Eigennamen.
+
+### 11.2 Server vs. Client Components
+- Server Component (async): `const t = await getTranslations('namespace')` (aus `next-intl/server`)
+- Client Component: `const t = useTranslations('namespace')` (aus `next-intl`)
+- `getTranslations` in Server Components **nicht** aus `next-intl` importieren (nur aus `next-intl/server`)
+
+### 11.3 Cookie-basiertes Locale ohne URL-Routing
+```ts
+// i18n/request.ts
+const locale = cookies().get('locale')?.value ?? 'de'
+```
+Kein Pathname-Präfix (`/de/`, `/en/`) nötig. Locale wird im Cookie gespeichert und pro Request gelesen.
+
+### 11.4 Pluralisierung in next-intl
+```ts
+// messages/de.json
+"success": "{count} Einladung erstellt.",
+"successPlural": "{count} Einladungen erstellt.",
+
+// Komponente
+toast.success(count === 1 ? t('success', { count }) : t('successPlural', { count }))
+```
+
+### 11.5 Rechtliche Seiten: Nur Shell übersetzen
+AGB/Datenschutz/Impressum unterliegen deutschem Recht → Inhalt bleibt auf Deutsch.
+Nur `LegalPageShell` (Nav-Buttons, Footer) wird via `useTranslations('legal')` lokalisiert.
 
 ---
 

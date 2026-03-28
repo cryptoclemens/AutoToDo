@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 · Version 0.1.61 · Meilensteine 1–8, 9.5 (teilw.), 10 (teilw.) abgeschlossen
+Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett abgeschlossen
 
 ---
 
@@ -243,7 +243,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.61 · Meilensteine 1–8, 9.5 (
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 9.1 | Stripe-Billing (Free/Pro/Enterprise) | 🔄 In Bearbeitung (Infrastruktur vorbereitet, kein aktives Billing) |
+| 9.1 | Mollie-Billing (Free/Solo/Team/Business) | 🔄 In Bearbeitung (Infrastruktur vorbereitet, kein aktives Billing) |
 | 9.2 | Custom Domain (CNAME-Support) | 🔲 Offen |
 | 9.3 | E-Mail-Benachrichtigungen (Resend) | ✅ Erledigt (Invite + Digest) |
 | 9.4 | Slack/Teams-Integration via Webhook | 🔲 Offen |
