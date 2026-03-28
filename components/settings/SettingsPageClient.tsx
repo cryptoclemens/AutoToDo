@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import BrandingForm from '@/app/(app)/settings/branding/BrandingForm'
 import WorkspaceInviteForm from '@/app/(app)/settings/members/WorkspaceInviteForm'
 import { LlmSettingsForm } from '@/app/(app)/settings/llm/LlmSettingsForm'
@@ -58,18 +59,19 @@ interface Props {
   apiKeys: ApiKey[]
 }
 
-const TABS: Array<{ id: Tab; label: string; adminOnly?: boolean }> = [
-  { id: 'konto', label: 'Konto' },
-  { id: 'workspace', label: 'Workspace', adminOnly: true },
-  { id: 'team', label: 'Team', adminOnly: true },
-  { id: 'ki', label: 'KI-Konfiguration', adminOnly: true },
-  { id: 'api', label: 'API-Keys', adminOnly: true },
-  { id: 'webhooks', label: 'Webhooks', adminOnly: true },
-  { id: 'audit', label: 'Audit-Log', adminOnly: true },
+const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
+  { id: 'konto' },
+  { id: 'workspace', adminOnly: true },
+  { id: 'team', adminOnly: true },
+  { id: 'ki', adminOnly: true },
+  { id: 'api', adminOnly: true },
+  { id: 'webhooks', adminOnly: true },
+  { id: 'audit', adminOnly: true },
 ]
 
 export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
+  const ts = useTranslations('settings')
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
   const [digestSaving, setDigestSaving] = useState(false)
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>(
@@ -113,11 +115,11 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
     }
   }
 
-  const visibleTabs = TABS.filter(t => !t.adminOnly || isAdmin)
+  const visibleTabs = TAB_IDS.filter(t => !t.adminOnly || isAdmin)
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Einstellungen</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{ts('title')}</h1>
 
       {/* Tab Bar */}
       <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1 mb-8 w-fit">
@@ -128,7 +130,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
             className={`px-4 py-1.5 text-sm rounded-md font-medium transition-colors whitespace-nowrap
               ${tab === t.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            {t.label}
+            {ts(`tabs.${t.id}`)}
           </button>
         ))}
       </div>
@@ -142,17 +144,14 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
       {tab === 'workspace' && isAdmin && (
         <div className="space-y-8">
           <div>
-            <p className="text-sm text-gray-500 mb-6">Logo und Akzentfarbe deines Workspaces anpassen.</p>
+            <p className="text-sm text-gray-500 mb-6">{ts('workspaceDesc')}</p>
             <BrandingForm workspace={workspace} />
           </div>
 
           {/* E-Mail-Digest */}
           <div className="border-t pt-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">E-Mail-Benachrichtigungen</h3>
-            <p className="text-xs text-gray-500 mb-4">
-              Werktäglich um 17 Uhr erhalten alle Verantwortlichen eine Zusammenfassung ihrer offenen LOP-Punkte per E-Mail.
-              Voraussetzung: <code className="bg-gray-100 px-1 rounded text-xs">RESEND_API_KEY</code> muss gesetzt sein.
-            </p>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">{ts('digestTitle')}</h3>
+            <p className="text-xs text-gray-500 mb-4">{ts('digestDesc')}</p>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -172,7 +171,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
                 />
               </button>
               <span className="text-sm text-gray-700">
-                Täglicher E-Mail-Digest {digestEnabled ? 'aktiv' : 'deaktiviert'}
+                {ts('digestLabel')} {digestEnabled ? ts('digestActive') : ts('digestDisabled')}
               </span>
             </div>
           </div>
@@ -182,7 +181,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
       {/* Team */}
       {tab === 'team' && isAdmin && (
         <div className="space-y-4">
-          <p className="text-sm text-gray-500 mb-2">{members.length} Mitglieder in diesem Workspace</p>
+          <p className="text-sm text-gray-500 mb-2">{ts('teamCount', { count: members.length })}</p>
           <WorkspaceInviteForm workspaceId={workspace.id} />
           <div className="space-y-2">
             {members.map(m => {
@@ -231,9 +230,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
       {/* KI-Konfiguration */}
       {tab === 'ki' && isAdmin && (
         <div>
-          <p className="text-sm text-gray-500 mb-6">
-            Hinterlegen Sie Ihren eigenen API-Key (BYOK). Ihre Transkripte werden direkt an den gewählten Anbieter geschickt.
-          </p>
+          <p className="text-sm text-gray-500 mb-6">{ts('kiDesc')}</p>
           <LlmSettingsForm initial={llmInitial} />
         </div>
       )}
@@ -241,9 +238,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
       {/* API-Keys */}
       {tab === 'api' && isAdmin && (
         <div>
-          <p className="text-sm text-gray-500 mb-6">
-            Erstelle API-Keys für den programmatischen Zugriff auf AutoToDo.
-          </p>
+          <p className="text-sm text-gray-500 mb-6">{ts('apiDesc')}</p>
           <ApiKeyList initialKeys={apiKeys} />
         </div>
       )}

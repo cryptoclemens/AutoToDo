@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import LegalModal from '@/components/legal/LegalModal'
+import { useTranslations } from 'next-intl'
 
 const LLM_PROVIDERS = [
   {
@@ -54,6 +55,7 @@ function slugify(text: string) {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [step, setStep] = useState<'account' | 'workspace' | 'llm'>('account')
   const [existingUserId, setExistingUserId] = useState<string | null>(null)
 
@@ -106,8 +108,8 @@ export default function RegisterPage() {
     e.preventDefault()
 
     if (step === 'account') {
-      if (password.length < 8) { setError('Passwort muss mindestens 8 Zeichen haben.'); return }
-      if (!agbAccepted) { setError('Bitte stimmen Sie den AGB und der Datenschutzerklärung zu.'); return }
+      if (password.length < 8) { setError(t('errorPasswordLength')); return }
+      if (!agbAccepted) { setError(t('errorAgbRequired')); return }
       setError('')
       setStep('workspace')
       return
@@ -130,7 +132,7 @@ export default function RegisterPage() {
           },
         })
         if (authError) { setError(authError.message); setLoading(false); return }
-        if (!authData.user) { setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.'); setLoading(false); return }
+        if (!authData.user) { setError(t('errorRegisterFailed')); setLoading(false); return }
         userId = authData.user.id
       }
 
@@ -145,7 +147,7 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         const { error: wsError } = await res.json()
-        setError(wsError ?? 'Workspace konnte nicht erstellt werden.')
+        setError(wsError ?? t('errorWorkspaceFailed'))
         setLoading(false)
         return
       }
@@ -198,11 +200,11 @@ export default function RegisterPage() {
             <div key={n} className={`h-1.5 rounded-full flex-1 transition-colors ${n <= stepNum ? 'bg-blue-600' : 'bg-gray-200'}`} />
           ))}
         </div>
-        <CardTitle>Kostenlos starten</CardTitle>
+        <CardTitle>{t('registerTitle')}</CardTitle>
         <CardDescription>
-          {step === 'account' && 'Schritt 1/3 – Konto erstellen'}
-          {step === 'workspace' && 'Schritt 2/3 – Workspace einrichten'}
-          {step === 'llm' && 'Schritt 3/3 – KI-Anbieter konfigurieren (optional)'}
+          {step === 'account' && t('step1')}
+          {step === 'workspace' && t('step2')}
+          {step === 'llm' && t('step3')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -212,16 +214,16 @@ export default function RegisterPage() {
             {step === 'account' ? (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Vollständiger Name</Label>
-                  <Input id="name" type="text" placeholder="Max Mustermann" value={name} onChange={e => setName(e.target.value)} required />
+                  <Label htmlFor="name">{t('fullName')}</Label>
+                  <Input id="name" type="text" placeholder={t('namePlaceholder')} value={name} onChange={e => setName(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-Mail</Label>
-                  <Input id="email" type="email" placeholder="max@firma.de" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+                  <Label htmlFor="email">{t('email')}</Label>
+                  <Input id="email" type="email" placeholder={t('emailPlaceholder')} value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Passwort</Label>
-                  <Input id="password" type="password" placeholder="Mindestens 8 Zeichen" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" />
+                  <Label htmlFor="password">{t('password')}</Label>
+                  <Input id="password" type="password" placeholder={t('passwordPlaceholder')} value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" />
                 </div>
                 <div className="flex items-start gap-3 pt-1">
                   <input
@@ -229,22 +231,21 @@ export default function RegisterPage() {
                     className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
                   />
                   <label htmlFor="agb" className="text-sm text-gray-600 cursor-pointer leading-snug">
-                    Ich habe die{' '}
-                    <LegalModal initialTab="agb" trigger={<span className="text-blue-600 hover:underline font-medium">AGB</span>} />{' '}
-                    und die{' '}
-                    <LegalModal initialTab="datenschutz" trigger={<span className="text-blue-600 hover:underline font-medium">Datenschutzerklärung</span>} />{' '}
-                    der vencly GmbH gelesen und stimme diesen zu.
+                    <LegalModal initialTab="agb" trigger={<span className="text-blue-600 hover:underline font-medium">{t('agbLink')}</span>} />{' '}
+                    {t('agbAnd')}{' '}
+                    <LegalModal initialTab="datenschutz" trigger={<span className="text-blue-600 hover:underline font-medium">{t('datenschutzLink')}</span>} />{' '}
+                    {t('agbSuffix')}
                   </label>
                 </div>
               </>
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="workspaceName">Workspace-Name</Label>
-                  <Input id="workspaceName" type="text" placeholder="z.B. ACME Consulting" value={workspaceName} onChange={e => handleWorkspaceNameChange(e.target.value)} required />
+                  <Label htmlFor="workspaceName">{t('workspaceName')}</Label>
+                  <Input id="workspaceName" type="text" placeholder={t('workspaceNamePlaceholder')} value={workspaceName} onChange={e => handleWorkspaceNameChange(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="slug">Subdomain</Label>
+                  <Label htmlFor="slug">{t('subdomain')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="slug" type="text" placeholder="acme-consulting" value={slug}
@@ -253,7 +254,7 @@ export default function RegisterPage() {
                     />
                     <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.app</span>
                   </div>
-                  <p className="text-xs text-gray-400">Nur Kleinbuchstaben, Zahlen und Bindestriche.</p>
+                  <p className="text-xs text-gray-400">{t('subdomainHint')}</p>
                 </div>
               </>
             )}
@@ -262,10 +263,10 @@ export default function RegisterPage() {
 
             <div className="flex gap-2">
               {step === 'workspace' && (
-                <Button type="button" variant="outline" onClick={() => setStep('account')} className="flex-1">Zurück</Button>
+                <Button type="button" variant="outline" onClick={() => setStep('account')} className="flex-1">{t('back')}</Button>
               )}
               <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? 'Wird erstellt…' : step === 'account' ? 'Weiter' : 'Weiter'}
+                {loading ? t('creating') : t('continue')}
               </Button>
             </div>
           </form>
@@ -275,14 +276,11 @@ export default function RegisterPage() {
         {step === 'llm' && (
           <div className="space-y-4">
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <p className="text-xs text-blue-700">
-                Hinterlegen Sie Ihren eigenen KI-API-Key, um Transkripte automatisch zu verarbeiten.
-                Sie können diesen Schritt auch überspringen und den Key später unter <strong>Einstellungen → KI-Konfiguration</strong> hinterlegen.
-              </p>
+              <p className="text-xs text-blue-700">{t('llmHint')}</p>
             </div>
 
             <div className="space-y-2">
-              <Label>KI-Anbieter</Label>
+              <Label>{t('llmProvider')}</Label>
               <select
                 value={llmProvider}
                 onChange={e => handleLlmProviderChange(e.target.value)}
@@ -295,7 +293,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Modell</Label>
+              <Label>{t('llmModel')}</Label>
               <select
                 value={llmModel}
                 onChange={e => setLlmModel(e.target.value)}
@@ -309,19 +307,19 @@ export default function RegisterPage() {
 
             {providerData.needsEndpoint && (
               <div className="space-y-2">
-                <Label>Endpoint-URL</Label>
+                <Label>{t('llmEndpoint')}</Label>
                 <Input
                   placeholder="https://mein-resource.openai.azure.com"
                   value={llmEndpoint}
                   onChange={e => setLlmEndpoint(e.target.value)}
                   className="font-mono text-sm"
                 />
-                <p className="text-xs text-gray-400">Azure Portal → Azure OpenAI → Schlüssel und Endpunkt</p>
+                <p className="text-xs text-gray-400">{t('llmEndpointHint')}</p>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label>API-Key</Label>
+              <Label>{t('llmApiKey')}</Label>
               <Input
                 type="password"
                 placeholder={providerData.placeholder}
@@ -329,17 +327,17 @@ export default function RegisterPage() {
                 onChange={e => setLlmApiKey(e.target.value)}
                 className="font-mono text-sm"
               />
-              <p className="text-xs text-gray-400">Wird AES-256-GCM verschlüsselt gespeichert.</p>
+              <p className="text-xs text-gray-400">{t('llmApiKeyHint')}</p>
             </div>
 
             {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
 
             <div className="flex gap-2">
               <Button type="button" variant="outline" className="flex-1" onClick={() => { router.push('/onboarding'); router.refresh() }}>
-                Überspringen
+                {t('skip')}
               </Button>
               <Button type="button" className="flex-1" disabled={llmSaving} onClick={handleLlmSave}>
-                {llmSaving ? 'Speichert…' : 'Speichern & Fertig'}
+                {llmSaving ? t('saving') : t('saveAndFinish')}
               </Button>
             </div>
           </div>
@@ -347,8 +345,8 @@ export default function RegisterPage() {
 
         {step === 'account' && (
           <p className="text-center text-sm text-gray-500 mt-4">
-            Bereits registriert?{' '}
-            <Link href="/login" className="text-blue-600 hover:underline font-medium">Anmelden</Link>
+            {t('alreadyRegistered')}{' '}
+            <Link href="/login" className="text-blue-600 hover:underline font-medium">{t('login')}</Link>
           </p>
         )}
       </CardContent>
