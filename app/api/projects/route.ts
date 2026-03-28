@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { checkProjectLimit } from '@/lib/plan-gate'
 
 const schema = z.object({
   workspaceId: z.string().uuid(),
@@ -38,6 +39,16 @@ export async function POST(request: NextRequest) {
   const allowedRoles = ['workspace_owner', 'workspace_admin', 'project_admin']
   if (!member || !allowedRoles.includes(member.role as string)) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  // Plan-Gate: Projekt-Limit prüfen
+  const { data: ws } = await supabase
+    .from('workspaces').select('plan, plan_expires_at').eq('id', workspaceId).single() as {
+      data: { plan: string; plan_expires_at: string | null } | null
+    }
+  const gate = await checkProjectLimit(supabase, workspaceId, (ws?.plan ?? 'beta') as import('@/lib/plans').Plan, ws?.plan_expires_at)
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.reason, upgradeHint: gate.upgradeHint }, { status: 402 })
   }
 
   const { data, error } = await supabase

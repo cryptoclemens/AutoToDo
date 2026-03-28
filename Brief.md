@@ -1,6 +1,6 @@
 # AutoToDo – Projektbrief
 
-**Version:** 3.2 (Layout-Optimierung, Mehrsprachigkeit, Webhooks & Audit) | Stand: März 2026 · v0.1.61
+**Version:** 4.0 (Freemium-Modell, Gast-System, Stripe-Infrastruktur) | Stand: März 2026 · v0.1.64
 **Stack:** Next.js 14 · Supabase · Vercel · Claude API (BYOK) · Stripe (geplant)
 **Modell:** Multi-Tenant SaaS, Shared DB mit RLS-Isolation, Bring Your Own Key (LLM)
 
@@ -376,6 +376,39 @@ CREATE POLICY "workspace_members_read" ON workspace_members
 - ✅ Impressum, AVV-PDF, Cookie-Consent, AGB, Datenschutz
 - 🔲 Landing Page: Hero-Illustration, Feature-Screenshots, erweiterte Pricing-Tabelle
 - 🔲 Dark Mode
+
+---
+
+## Freemium-Modell (ab Phase 5)
+
+### Tier-Übersicht
+
+| Tier | Preis (netto) | Nutzer | Projekte | Gäste/LOP | BYOK | Branding |
+|---|---|---|---|---|---|---|
+| **Beta** | €0 | unbegrenzt | unbegrenzt | – | ✅ | ✅ |
+| **Free** | €0 | 1 | 2 | – | ✅ | – |
+| **Solo** | €12/Monat | 1 | unbegrenzt | 2 | ✅ | – |
+| **Team** | €29/Monat + €8/Seat | 3–20 | unbegrenzt | 2 | ✅ | ✅ |
+| **Business** | €99/Monat + €6/Seat | unbegrenzt | unbegrenzt | 2 | ✅ (oder Managed) | ✅ |
+
+Jahresabo: 2 Monate gratis (≈ 17% Rabatt). Alle Preise netto, zzgl. gesetzl. MwSt.
+
+### Plan-Limits (Single Source of Truth: `lib/plans.ts`)
+
+- `maxProjects`, `maxSeats`, `maxTranscriptsPerMonth`, `guestsPerLop`
+- Serverseitige Prüfung via `lib/plan-gate.ts` → HTTP 402 bei Überschreitung
+- Beta-Nutzer erhalten 90-Tage Grandfathering (Skript `scripts/migrate-beta-to-free.ts`)
+
+### Gast-System
+
+- Solo+ können bis zu 2 externe Gäste pro LOP-Liste einladen (E-Mail + UUID-Token)
+- Gast-Seite `/guest/[token]` – kein Login, LOP read-only, viraler CTA-Banner
+- `project_guests`-Tabelle mit RLS, 30-Tage Ablauf
+
+### Stripe-Infrastruktur (vorbereitet, kein aktives Billing)
+
+- `lib/stripe.ts`, `app/api/stripe/webhook/route.ts`, `app/api/stripe/checkout/route.ts`
+- Env-Variablen dokumentiert in `.env.local` (alle leer bis Stripe-Account eingerichtet)
 
 ---
 

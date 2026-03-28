@@ -186,6 +186,7 @@
       "account": "Konto",
       "workspace": "Workspace",
       "team": "Team",
+      "billing": "Abrechnung",
       "ki": "KI-Konfiguration",
       "ai": "KI-Konfiguration",
       "api": "API-Keys",

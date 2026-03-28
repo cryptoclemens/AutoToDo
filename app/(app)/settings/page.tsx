@@ -31,9 +31,9 @@ export default async function SettingsPage() {
 
   // Load workspace branding + digest setting
   const { data: ws } = await supabase
-    .from('workspaces').select('id, name, brand_color, logo_url, digest_enabled')
+    .from('workspaces').select('id, name, brand_color, logo_url, digest_enabled, plan, plan_expires_at')
     .eq('id', workspace.id).single() as {
-      data: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean } | null
+      data: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; plan: string; plan_expires_at: string | null } | null
     }
 
   // Load members with email via RPC (SECURITY DEFINER, joins auth.users)
@@ -50,6 +50,14 @@ export default async function SettingsPage() {
           data: { provider: string; model: string; endpoint: string | null } | null
         }
     : { data: null }
+
+  // Load billing usage data
+  const plan = (ws?.plan ?? 'beta') as import('@/lib/plans').Plan
+  const [{ count: projectCount }, { count: seatCount }, { data: usageData }] = await Promise.all([
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('workspace_id', workspace.id).is('archived_at', null),
+    supabase.from('workspace_members').select('user_id', { count: 'exact', head: true }).eq('workspace_id', workspace.id),
+    supabase.from('workspace_usage').select('transcripts_month').eq('workspace_id', workspace.id).maybeSingle(),
+  ])
 
   // Load API keys (admin only)
   const { data: apiKeys } = isAdmin
@@ -73,10 +81,17 @@ export default async function SettingsPage() {
     <SettingsPageClient
       userEmail={user.email ?? ''}
       isAdmin={isAdmin}
-      workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null, digest_enabled: true }}
+      workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null, digest_enabled: true, plan: 'beta', plan_expires_at: null }}
       members={members ?? []}
       llmInitial={llmInitial}
       apiKeys={apiKeys ?? []}
+      billing={{
+        plan,
+        planExpiresAt: ws?.plan_expires_at ?? null,
+        seatCount: seatCount ?? 0,
+        projectCount: projectCount ?? 0,
+        transcriptsThisMonth: (usageData as { transcripts_month?: number } | null)?.transcripts_month ?? 0,
+      }}
     />
   )
 }

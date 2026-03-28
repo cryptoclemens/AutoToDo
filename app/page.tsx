@@ -15,16 +15,32 @@ export default async function LandingPage() {
 
   const plans = isEn
     ? [
-        { name: 'Free', price: '€0', sub: null, badge: null, features: ['1 project', '10 transcripts/month', '1 user', 'XLSX export'], highlight: false },
-        { name: 'Starter', price: '€19', period: '/mo', sub: 'plus applicable VAT', badge: 'Popular', features: ['5 projects', 'Unlimited transcripts', '5 users', 'API access', 'Webhooks'], highlight: true },
-        { name: 'Pro', price: '€49', period: '/mo', sub: 'plus applicable VAT', badge: null, features: ['Unlimited projects', '20 users', 'Custom branding', 'Priority support', 'Audit log'], highlight: false },
-        { name: 'Enterprise', price: null, period: null, sub: 'Custom pricing', badge: null, features: ['Unlimited everything', 'SSO / SAML', 'Dedicated support', 'SLA', 'On-premise option'], highlight: false },
+        { name: 'Free', price: '€0', period: null, sub: null, badge: null, features: ['1 user', '2 projects', '10 transcripts/month', 'AI extraction', 'XLSX export'], highlight: false },
+        { name: 'Solo', price: '€12', period: '/mo', sub: 'plus applicable VAT', badge: 'Popular', features: ['1 user', 'Unlimited projects', 'Unlimited transcripts', '2 guests/project', 'API access'], highlight: true },
+        { name: 'Team', price: '€29', period: '/mo + €8/seat', sub: 'plus applicable VAT', badge: null, features: ['Up to 20 users', 'Everything in Solo', 'Custom branding', 'Webhooks', 'Audit log'], highlight: false },
+        { name: 'Business', price: '€99', period: '/mo + €6/seat', sub: 'plus applicable VAT', badge: null, features: ['Unlimited users', 'Everything in Team', 'SSO / SAML', 'Priority support', 'SLA'], highlight: false },
       ]
     : [
-        { name: 'Free', price: '€0', period: null, sub: null, badge: null, features: ['1 Projekt', '10 Transkripte/Monat', '1 Nutzer', 'XLSX-Export'], highlight: false },
-        { name: 'Starter', price: '€19', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: 'Beliebt', features: ['5 Projekte', 'Unbegrenzte Transkripte', '5 Nutzer', 'API-Zugang', 'Webhooks'], highlight: true },
-        { name: 'Pro', price: '€49', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Unbegrenzte Projekte', '20 Nutzer', 'Custom Branding', 'Priority-Support', 'Audit-Log'], highlight: false },
-        { name: 'Enterprise', price: null, period: null, sub: isEn ? 'Custom pricing' : 'Individuelles Angebot', badge: null, features: ['Alles unbegrenzt', 'SSO / SAML', 'Dedizierter Support', 'SLA', 'On-Premise-Option'], highlight: false },
+        { name: 'Free', price: '€0', period: null, sub: null, badge: null, features: ['1 Nutzer', '2 Projekte', '10 Transkripte/Monat', 'KI-Extraktion', 'XLSX-Export'], highlight: false },
+        { name: 'Solo', price: '€12', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: 'Beliebt', features: ['1 Nutzer', 'Unbegrenzte Projekte', 'Unbegrenzte Transkripte', '2 Gäste/Projekt', 'API-Zugang'], highlight: true },
+        { name: 'Team', price: '€29', period: '/Monat + €8/Seat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Bis 20 Nutzer', 'Alles aus Solo', 'Custom Branding', 'Webhooks', 'Audit-Log'], highlight: false },
+        { name: 'Business', price: '€99', period: '/Monat + €6/Seat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Unbegrenzte Nutzer', 'Alles aus Team', 'SSO / SAML', 'Priority-Support', 'SLA'], highlight: false },
+      ]
+
+  const faqItems = isEn
+    ? [
+        { q: 'Do I need a credit card to start?', a: 'No. The Free plan requires no payment details. Upgrade anytime when you need more.' },
+        { q: 'What AI models are supported?', a: 'AutoToDo uses your own API key (BYOK) — Claude (Anthropic), GPT-4o (OpenAI), or Azure OpenAI. You control your data and costs.' },
+        { q: 'Can I invite external guests without an account?', a: 'Yes, from Solo onwards. Share a read-only link with guests — no registration required.' },
+        { q: 'Is my transcript data secure?', a: 'Transcripts are encrypted at rest (AES-256-GCM) and stored in your Supabase project. AutoToDo staff has no access.' },
+        { q: 'When is Stripe billing available?', a: 'Payment processing is coming soon. Until then, all existing users remain on beta (unlimited) access.' },
+      ]
+    : [
+        { q: 'Brauche ich eine Kreditkarte zum Start?', a: 'Nein. Der Free-Plan erfordert keine Zahlungsdaten. Upgrade jederzeit, wenn Sie mehr benötigen.' },
+        { q: 'Welche KI-Modelle werden unterstützt?', a: 'AutoToDo nutzt Ihren eigenen API-Key (BYOK) – Claude (Anthropic), GPT-4o (OpenAI) oder Azure OpenAI. Sie behalten die Kontrolle über Daten und Kosten.' },
+        { q: 'Kann ich externe Gäste ohne Account einladen?', a: 'Ja, ab Solo. Teilen Sie einen Lesezugriff-Link mit Gästen – keine Registrierung erforderlich.' },
+        { q: 'Sind meine Transkriptdaten sicher?', a: 'Transkripte werden verschlüsselt gespeichert (AES-256-GCM) in Ihrem Supabase-Projekt. AutoToDo-Mitarbeiter haben keinen Zugriff.' },
+        { q: 'Wann ist Stripe-Abrechnung verfügbar?', a: 'Die Zahlungsabwicklung kommt in Kürze. Bis dahin haben alle bestehenden Nutzer weiterhin Beta-Zugang (unbegrenzt).' },
       ]
 
   const steps = isEn
@@ -265,9 +281,18 @@ export default async function LandingPage() {
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
             {isEn ? 'Simple pricing' : 'Transparente Preise'}
           </h2>
-          <p className="text-center text-gray-500 mb-12">
+          <p className="text-center text-gray-500 mb-8">
             {isEn ? 'Start free. Scale as you grow.' : 'Kostenlos starten. Mit dem Team wachsen.'}
           </p>
+
+          {/* Beta banner */}
+          <div className="bg-purple-50 border border-purple-200 rounded-xl px-5 py-3 mb-8 flex items-center gap-3 justify-center text-sm text-purple-800">
+            <span className="text-purple-500">🎉</span>
+            {isEn
+              ? 'Beta users get unlimited access for free. Paid plans launching soon.'
+              : 'Beta-Nutzer erhalten kostenlosen Vollzugang. Bezahlpläne starten bald.'}
+          </div>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {plans.map(plan => (
               <div key={plan.name} className={`bg-white rounded-xl border p-6 flex flex-col ${plan.highlight ? 'border-blue-500 shadow-lg ring-1 ring-blue-500' : 'border-gray-200'}`}>
@@ -279,9 +304,8 @@ export default async function LandingPage() {
                 {!plan.badge && <div className="mb-[22px]" />}
                 <h3 className="font-bold text-base text-gray-900">{plan.name}</h3>
                 <div className="mt-2 mb-1">
-                  {plan.price
-                    ? <><span className="text-3xl font-bold text-gray-900">{plan.price}</span><span className="text-gray-400 text-sm">{plan.period}</span></>
-                    : <span className="text-lg font-semibold text-gray-500">{isEn ? 'Contact us' : 'Auf Anfrage'}</span>}
+                  <span className="text-3xl font-bold text-gray-900">{plan.price}</span>
+                  {plan.period && <span className="text-gray-400 text-sm ml-1">{plan.period}</span>}
                 </div>
                 {plan.sub && <p className="text-xs text-gray-400 mb-4">{plan.sub}</p>}
                 {!plan.sub && <div className="mb-4" />}
@@ -292,11 +316,9 @@ export default async function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={plan.price === null ? 'mailto:info@vencly.com' : '/register'}
+                <Link href="/register"
                   className={`block w-full text-center py-2 rounded-md text-sm font-medium transition-colors ${plan.highlight ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-700'}`}>
-                  {plan.price === null
-                    ? (isEn ? 'Contact us' : 'Kontakt aufnehmen')
-                    : (isEn ? 'Get started' : 'Starten')}
+                  {isEn ? 'Get started' : 'Starten'}
                 </Link>
               </div>
             ))}
@@ -306,6 +328,23 @@ export default async function LandingPage() {
               ? 'Prices in EUR, plus applicable VAT. Annual billing available (20% discount).'
               : 'Preise in EUR, zzgl. gesetzl. MwSt. Jahresabrechnung möglich (20% Rabatt).'}
           </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-white py-16">
+        <div className="max-w-2xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+            {isEn ? 'Frequently asked questions' : 'Häufige Fragen'}
+          </h2>
+          <div className="space-y-4">
+            {faqItems.map(item => (
+              <div key={item.q} className="border border-gray-200 rounded-xl px-5 py-4">
+                <p className="font-medium text-gray-900 text-sm">{item.q}</p>
+                <p className="text-sm text-gray-500 mt-1.5">{item.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

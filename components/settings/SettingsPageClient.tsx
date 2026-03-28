@@ -12,8 +12,10 @@ import ApiKeyList from '@/app/(app)/settings/api/ApiKeyList'
 import { AccountSettings } from './AccountSettings'
 import WebhooksSettings from './WebhooksSettings'
 import AuditLog from './AuditLog'
+import BillingTab from './BillingTab'
+import { Plan } from '@/lib/plans'
 
-type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit'
+type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing'
 
 const ROLE_LABELS: Record<string, string> = {
   workspace_owner: 'Inhaber',
@@ -47,7 +49,7 @@ interface ApiKey {
 interface Props {
   userEmail: string
   isAdmin: boolean
-  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean }
+  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; plan?: string; plan_expires_at?: string | null }
   members: Member[]
   llmInitial: {
     configured: boolean
@@ -57,19 +59,27 @@ interface Props {
     apiKeyMasked?: string
   }
   apiKeys: ApiKey[]
+  billing?: {
+    plan: Plan
+    planExpiresAt: string | null
+    seatCount: number
+    projectCount: number
+    transcriptsThisMonth: number
+  }
 }
 
 const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
   { id: 'konto' },
   { id: 'workspace', adminOnly: true },
   { id: 'team', adminOnly: true },
+  { id: 'billing', adminOnly: true },
   { id: 'ki', adminOnly: true },
   { id: 'api', adminOnly: true },
   { id: 'webhooks', adminOnly: true },
   { id: 'audit', adminOnly: true },
 ]
 
-export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys }: Props) {
+export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys, billing }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
@@ -225,6 +235,17 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
             })}
           </div>
         </div>
+      )}
+
+      {/* Billing */}
+      {tab === 'billing' && isAdmin && billing && (
+        <BillingTab
+          plan={billing.plan}
+          planExpiresAt={billing.planExpiresAt}
+          seatCount={billing.seatCount}
+          projectCount={billing.projectCount}
+          transcriptsThisMonth={billing.transcriptsThisMonth}
+        />
       )}
 
       {/* KI-Konfiguration */}

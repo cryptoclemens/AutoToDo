@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { encrypt } from '@/lib/encryption'
 import { resolveWorkspace } from '@/lib/workspace'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
+import { checkTranscriptLimit, incrementTranscriptUsage } from '@/lib/plan-gate'
 
 // Allow up to 60s for LLM processing on Vercel
 export const maxDuration = 60
@@ -52,6 +53,16 @@ export async function POST(req: NextRequest) {
     }
   if (!member || member.role === 'viewer') {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  // Plan-Gate: Transkript-Limit prüfen
+  const { data: ws } = await supabase
+    .from('workspaces').select('plan, plan_expires_at').eq('id', workspace.id).single() as {
+      data: { plan: string; plan_expires_at: string | null } | null
+    }
+  const transcriptGate = await checkTranscriptLimit(supabase, workspace.id, (ws?.plan ?? 'beta') as import('@/lib/plans').Plan, ws?.plan_expires_at)
+  if (!transcriptGate.allowed) {
+    return NextResponse.json({ error: transcriptGate.reason, upgradeHint: transcriptGate.upgradeHint }, { status: 402 })
   }
 
   const formData = await req.formData()
@@ -135,6 +146,9 @@ export async function POST(req: NextRequest) {
   if (dbError || !transcript) {
     return NextResponse.json({ error: 'Fehler beim Speichern.' }, { status: 500 })
   }
+
+  // Increment monthly usage counter
+  await incrementTranscriptUsage(supabase, workspace.id)
 
   // Process inline (awaited) – fire-and-forget fails on Vercel serverless
   const result = await runTranscriptProcessing(transcript.id)

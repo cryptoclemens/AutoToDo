@@ -243,11 +243,30 @@ Letzte Aktualisierung: März 2026 · Version 0.1.61 · Meilensteine 1–8, 9.5 (
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 9.1 | Stripe-Billing (Free/Pro/Enterprise) | 🔲 Offen |
+| 9.1 | Stripe-Billing (Free/Pro/Enterprise) | 🔄 In Bearbeitung (Infrastruktur vorbereitet, kein aktives Billing) |
 | 9.2 | Custom Domain (CNAME-Support) | 🔲 Offen |
-| 9.3 | E-Mail-Benachrichtigungen (Resend) | 🔲 Offen |
+| 9.3 | E-Mail-Benachrichtigungen (Resend) | ✅ Erledigt (Invite + Digest) |
 | 9.4 | Slack/Teams-Integration via Webhook | 🔲 Offen |
-| 9.6 | SSO (SAML für Enterprise) | 🔲 Offen |
+| 9.6 | SSO (SAML für Enterprise) | 🔲 Offen (Business-Plan vorgesehen) |
+
+---
+
+## Phase 5 – Freemium-Monetarisierung
+
+### Meilenstein 11: Freemium-Modell
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 11.1 | Migration 011: `plan`-Spalte auf `workspaces`, `project_guests`, `workspace_usage` | ✅ Erledigt |
+| 11.2 | `lib/plans.ts`: Tier-Limits als zentrale Konfiguration (Beta/Free/Solo/Team/Business) | ✅ Erledigt |
+| 11.3 | `lib/plan-gate.ts`: Serverseitige Gate-Funktionen für Projekte, Transkripte, Seats, Gäste | ✅ Erledigt |
+| 11.4 | API Routes mit Plan-Gates absichern (POST /api/projects, POST /api/transcripts, POST /api/settings/members) | ✅ Erledigt |
+| 11.5 | Gast-System: `POST /api/projects/[id]/guests`, Gast-Einladungsseite `/guest/[token]` | ✅ Erledigt |
+| 11.6 | Billing-Seite `/settings/billing`: Plan-Badge, Nutzungsbalken, Upgrade-Karten | ✅ Erledigt |
+| 11.7 | `UpgradeNudge`-Komponente für alle Gate-Punkte in der UI | ✅ Erledigt |
+| 11.8 | Landing Page Pricing: neue Tiers (Free/Solo/Team/Business), Beta-Banner, FAQ | ✅ Erledigt |
+| 11.9 | Stripe-Infrastruktur: Platzhalter `lib/stripe.ts`, Webhook- und Checkout-Routes | ✅ Erledigt |
+| 11.10 | `scripts/migrate-beta-to-free.ts`: Grandfathering-Skript (90 Tage) | ✅ Erledigt |
 
 ### Meilenstein 9.5: Mehrsprachigkeit (DE / EN)
 

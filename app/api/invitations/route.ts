@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createClient as createAuthClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { randomBytes } from 'crypto'
+import { checkSeatLimit } from '@/lib/plan-gate'
 
 const schema = z.object({
   workspaceId: z.string().uuid(),
@@ -39,6 +40,16 @@ export async function POST(request: NextRequest) {
 
   if (!member || !['workspace_owner', 'workspace_admin'].includes(member.role)) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  // Plan-Gate: Seat-Limit prüfen
+  const { data: ws } = await supabase
+    .from('workspaces').select('plan, plan_expires_at').eq('id', workspaceId).single() as {
+      data: { plan: string; plan_expires_at: string | null } | null
+    }
+  const seatGate = await checkSeatLimit(supabase, workspaceId, (ws?.plan ?? 'beta') as import('@/lib/plans').Plan, ws?.plan_expires_at)
+  if (!seatGate.allowed) {
+    return NextResponse.json({ error: seatGate.reason, upgradeHint: seatGate.upgradeHint }, { status: 402 })
   }
 
   // If projectId provided, validate project belongs to workspace
