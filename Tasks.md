@@ -276,11 +276,11 @@ Letzte Aktualisierung: März 2026 · Version 0.1.61 · Meilensteine 1–8, 9.5 (
 | 9.5.2 | Sprachumschalter in Nav (DE / EN, persistiert in Cookie) | ✅ Erledigt |
 | 9.5.3 | Landing Page vollständig auf Englisch (Hero, Features, Pricing, Footer) | ✅ Erledigt |
 | 9.5.4 | App-UI auf Englisch (Dashboard, LOP-Tabelle Filter/Header, StatusBadge, PriorityBadge, WorkspaceNav) | ✅ Erledigt |
-| 9.5.5 | Rechtliche Seiten auf Englisch (AGB, Datenschutz, Impressum) | 🔲 Offen |
-| 9.5.6 | Onboarding & Registrierung auf Englisch (LoginForm übersetzt) | 🔄 In Bearbeitung |
-| 9.5.7 | Einstellungsseiten & Einladungs-E-Mails auf Englisch | 🔲 Offen |
+| 9.5.5 | Rechtliche Seiten auf Englisch (LegalPageShell Nav/Footer übersetzt, Inhalt bleibt DE da deutsches Recht) | ✅ Erledigt |
+| 9.5.6 | Onboarding & Registrierung auf Englisch (Login-Titel/Subtitle via getTranslations) | ✅ Erledigt |
+| 9.5.7 | Einstellungsseiten vollständig übersetzt (Account, Branding, Invite, LLM, API-Keys, Rollen) | ✅ Erledigt |
 | 9.5.8 | „How to"-Popup auf Englisch | ✅ Erledigt |
-| 9.5.9 | Fehlermeldungen & Toast-Nachrichten lokalisiert | 🔲 Offen |
+| 9.5.9 | Fehlermeldungen & Toast-Nachrichten lokalisiert (alle Komponenten auf useTranslations) | ✅ Erledigt |
 | 9.5.10 | JSON-Translations: deutsche Anführungszeichen `„text"` mit `»text«` ersetzen (JSON-Parse-Fehler) | ✅ Erledigt |
 
 ---
