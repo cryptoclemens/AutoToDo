@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   workspace: {
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function BrandingForm({ workspace }: Props) {
+  const ts = useTranslations('settings')
   const router = useRouter()
   const [name, setName] = useState(workspace.name)
   const [brandColor, setBrandColor] = useState(workspace.brand_color ?? '#2563EB')
@@ -35,28 +37,28 @@ export default function BrandingForm({ workspace }: Props) {
       fd.append('logo', file)
       const res = await fetch('/api/settings/branding/logo', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Upload fehlgeschlagen.')
+      if (!res.ok) throw new Error(data.error ?? ts('branding.uploadError'))
       setLogoUrl(data.logo_url)
-      toast.success('Logo hochgeladen.')
+      toast.success(ts('branding.uploadSuccess'))
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Upload fehlgeschlagen.')
+      toast.error(err instanceof Error ? err.message : ts('branding.uploadError'))
     } finally {
       setUploading(false)
     }
   }
 
   async function handleLogoDelete() {
-    if (!confirm('Logo wirklich entfernen?')) return
+    if (!confirm(ts('branding.removeConfirm'))) return
     setUploading(true)
     try {
       const res = await fetch('/api/settings/branding/logo', { method: 'DELETE' })
       if (!res.ok) throw new Error()
       setLogoUrl(null)
-      toast.success('Logo entfernt.')
+      toast.success(ts('branding.removed'))
       router.refresh()
     } catch {
-      toast.error('Logo konnte nicht entfernt werden.')
+      toast.error(ts('branding.removeError'))
     } finally {
       setUploading(false)
     }
@@ -72,11 +74,11 @@ export default function BrandingForm({ workspace }: Props) {
         body: JSON.stringify({ name, brand_color: brandColor }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Speichern fehlgeschlagen.')
-      toast.success('Branding gespeichert.')
+      if (!res.ok) throw new Error(data.error ?? ts('branding.saveError'))
+      toast.success(ts('branding.saved'))
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Fehler beim Speichern.')
+      toast.error(err instanceof Error ? err.message : ts('branding.saveError'))
     } finally {
       setSaving(false)
     }
@@ -87,7 +89,7 @@ export default function BrandingForm({ workspace }: Props) {
 
       {/* Logo */}
       <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Workspace-Logo</h2>
+        <h2 className="text-sm font-semibold text-gray-900">{ts('branding.logoTitle')}</h2>
 
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 shrink-0">
@@ -117,7 +119,7 @@ export default function BrandingForm({ workspace }: Props) {
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
             >
-              {uploading ? 'Lädt hoch…' : 'Logo hochladen'}
+              {uploading ? ts('branding.uploading') : ts('branding.upload')}
             </Button>
             {logoUrl && (
               <Button
@@ -128,20 +130,20 @@ export default function BrandingForm({ workspace }: Props) {
                 onClick={handleLogoDelete}
                 disabled={uploading}
               >
-                Logo entfernen
+                {ts('branding.remove')}
               </Button>
             )}
-            <p className="text-xs text-gray-400">PNG, JPG, WebP oder SVG · max. 2 MB</p>
+            <p className="text-xs text-gray-400">{ts('branding.logoHint')}</p>
           </div>
         </div>
       </div>
 
       {/* Name & Farbe */}
       <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Workspace-Name & Akzentfarbe</h2>
+        <h2 className="text-sm font-semibold text-gray-900">{ts('branding.nameColorTitle')}</h2>
 
         <div className="space-y-1">
-          <Label className="text-xs">Workspace-Name</Label>
+          <Label className="text-xs">{ts('branding.nameLabel')}</Label>
           <Input
             value={name}
             onChange={e => setName(e.target.value)}
@@ -151,7 +153,7 @@ export default function BrandingForm({ workspace }: Props) {
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs">Akzentfarbe</Label>
+          <Label className="text-xs">{ts('branding.colorLabel')}</Label>
           <div className="flex items-center gap-3">
             <input
               type="color"
@@ -170,10 +172,10 @@ export default function BrandingForm({ workspace }: Props) {
               className="text-xs text-white px-3 py-1 rounded font-medium"
               style={{ backgroundColor: brandColor }}
             >
-              Vorschau
+              {ts('branding.preview')}
             </span>
           </div>
-          <p className="text-xs text-gray-400">Wird für Buttons, Badges und Highlights verwendet.</p>
+          <p className="text-xs text-gray-400">{ts('branding.colorHint')}</p>
         </div>
       </div>
 
@@ -185,7 +187,7 @@ export default function BrandingForm({ workspace }: Props) {
           style={{ backgroundColor: 'var(--brand)' }}
           className="text-white"
         >
-          {saving ? 'Speichert…' : 'Speichern'}
+          {saving ? ts('branding.saving') : ts('branding.save')}
         </Button>
       </div>
     </form>

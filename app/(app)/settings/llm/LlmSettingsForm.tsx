@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 const PROVIDERS = [
   {
@@ -49,6 +50,7 @@ interface Props {
 }
 
 export function LlmSettingsForm({ initial }: Props) {
+  const ts = useTranslations('settings')
   const [provider, setProvider] = useState(initial.provider ?? 'anthropic')
   const [model, setModel] = useState(initial.model ?? PROVIDERS[0].models[0].id)
   const [customModel, setCustomModel] = useState('')
@@ -73,15 +75,15 @@ export function LlmSettingsForm({ initial }: Props) {
 
   const handleSave = async () => {
     if (!apiKey && !initial.configured) {
-      toast.error('Bitte API-Key eingeben.')
+      toast.error(ts('llm.enterApiKey'))
       return
     }
     if (isAzure && !endpoint.trim()) {
-      toast.error('Bitte Endpoint-URL eingeben.')
+      toast.error(ts('llm.enterEndpoint'))
       return
     }
     if (!apiKey && initial.configured) {
-      toast.error('Bitte neuen API-Key eingeben.')
+      toast.error(ts('llm.enterNewApiKey'))
       return
     }
     setSaving(true)
@@ -100,7 +102,7 @@ export function LlmSettingsForm({ initial }: Props) {
         const d = await res.json() as { error?: string }
         throw new Error(d.error ?? 'Fehler beim Speichern')
       }
-      toast.success('LLM-Konfiguration gespeichert.')
+      toast.success(ts('llm.saved'))
       setApiKey('')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Fehler')
@@ -113,11 +115,11 @@ export function LlmSettingsForm({ initial }: Props) {
     setRemoving(true)
     try {
       await fetch('/api/settings/llm', { method: 'DELETE' })
-      toast.success('LLM-Konfiguration entfernt.')
+      toast.success(ts('llm.removed'))
       setApiKey('')
       setEndpoint('')
     } catch {
-      toast.error('Fehler beim Entfernen.')
+      toast.error(ts('llm.removeError'))
     } finally {
       setRemoving(false)
     }

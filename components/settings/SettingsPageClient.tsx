@@ -17,14 +17,6 @@ import { Plan } from '@/lib/plans'
 
 type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing'
 
-const ROLE_LABELS: Record<string, string> = {
-  workspace_owner: 'Inhaber',
-  workspace_admin: 'Admin',
-  project_admin: 'Projekt-Admin',
-  editor: 'Editor',
-  viewer: 'Betrachter',
-}
-
 const CHANGEABLE_ROLES = ['workspace_admin', 'project_admin', 'editor', 'viewer']
 
 interface Member {
@@ -100,10 +92,10 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
         body: JSON.stringify({ digest_enabled: next }),
       })
       if (!res.ok) throw new Error()
-      toast.success(next ? 'Täglicher Digest aktiviert.' : 'Täglicher Digest deaktiviert.')
+      toast.success(ts('digestSaved', { status: next ? ts('digestStatusActive') : ts('digestStatusDisabled') }))
     } catch {
       setDigestEnabled(!next)
-      toast.error('Fehler beim Speichern.')
+      toast.error(ts('digestError'))
     } finally {
       setDigestSaving(false)
     }
@@ -117,9 +109,9 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
       })
-      if (!res.ok) { toast.error('Fehler beim Speichern.'); return }
+      if (!res.ok) { toast.error(ts('roleError')); return }
       setMemberRoles(prev => ({ ...prev, [userId]: newRole }))
-      toast.success('Rolle aktualisiert.')
+      toast.success(ts('roleSaved'))
     } finally {
       setRolesSaving(prev => ({ ...prev, [userId]: false }))
     }
@@ -220,12 +212,12 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
                           className="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                           {CHANGEABLE_ROLES.map(r => (
-                            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                            <option key={r} value={r}>{ts(`changeableRoles.${r}`)}</option>
                           ))}
                         </select>
                       ) : (
                         <Badge variant="outline" className="text-xs">
-                          {ROLE_LABELS[currentRole] ?? currentRole}
+                          {ts(`roles.${currentRole}` as Parameters<typeof ts>[0]) ?? currentRole}
                         </Badge>
                       )}
                     </div>
@@ -272,7 +264,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
       {/* Audit-Log */}
       {tab === 'audit' && isAdmin && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-800 mb-4">Aktivitätsverlauf</h3>
+          <h3 className="text-sm font-semibold text-gray-800 mb-4">{ts('auditTitle')}</h3>
           <AuditLog />
         </div>
       )}

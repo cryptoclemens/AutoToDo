@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   projectId: string
@@ -15,6 +16,7 @@ interface Props {
 type InputMode = 'text' | 'file'
 
 export function TranscriptUploadForm({ projectId }: Props) {
+  const tt = useTranslations('transcript')
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<InputMode>('text')
@@ -37,11 +39,11 @@ export function TranscriptUploadForm({ projectId }: Props) {
     e.preventDefault()
 
     if (mode === 'text' && !pastedText.trim()) {
-      toast.error('Bitte Transkript einfügen.')
+      toast.error(tt('errorNoText'))
       return
     }
     if (mode === 'file' && !file) {
-      toast.error('Bitte Datei auswählen.')
+      toast.error(tt('errorNoFile'))
       return
     }
 
@@ -60,13 +62,13 @@ export function TranscriptUploadForm({ projectId }: Props) {
       const res = await fetch('/api/transcripts', { method: 'POST', body: fd })
       const data = await res.json() as { error?: string }
 
-      if (!res.ok) throw new Error(data.error ?? 'Upload fehlgeschlagen')
+      if (!res.ok) throw new Error(data.error ?? tt('uploadError'))
 
-      toast.success('Transkript eingereicht. Verarbeitung läuft…')
+      toast.success(tt('success'))
       handleClose()
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Fehler beim Upload')
+      toast.error(err instanceof Error ? err.message : tt('uploadError'))
     } finally {
       setUploading(false)
     }
@@ -80,7 +82,7 @@ export function TranscriptUploadForm({ projectId }: Props) {
         className="text-white"
         size="sm"
       >
-        ↑ Transkript hochladen
+        {tt('uploadButton')}
       </Button>
     )
   }
@@ -88,7 +90,7 @@ export function TranscriptUploadForm({ projectId }: Props) {
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 w-full max-w-xl">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 text-sm">Transkript einreichen</h3>
+        <h3 className="font-semibold text-gray-900 text-sm">{tt('headerTitle')}</h3>
         <button type="button" onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
       </div>
 
@@ -99,34 +101,34 @@ export function TranscriptUploadForm({ projectId }: Props) {
           onClick={() => setMode('text')}
           className={`px-3 py-1.5 rounded-md transition-colors ${mode === 'text' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
         >
-          Text einfügen
+          {tt('pasteMode')}
         </button>
         <button
           type="button"
           onClick={() => setMode('file')}
           className={`px-3 py-1.5 rounded-md transition-colors ${mode === 'file' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
         >
-          Datei hochladen
+          {tt('fileMode')}
         </button>
       </div>
 
       {/* Eingabe je nach Modus */}
       {mode === 'text' ? (
         <div className="space-y-1.5">
-          <Label className="text-xs">Transkript (Copy & Paste)</Label>
+          <Label className="text-xs">{tt('pasteLabel')}</Label>
           <Textarea
             value={pastedText}
             onChange={e => setPastedText(e.target.value)}
-            placeholder="Meeting-Protokoll oder Transkript hier einfügen…"
+            placeholder={tt('textPlaceholder')}
             rows={10}
             className="text-sm resize-y font-mono"
             autoFocus
           />
-          <p className="text-xs text-gray-400">{pastedText.length.toLocaleString('de-DE')} Zeichen</p>
+          <p className="text-xs text-gray-400">{pastedText.length.toLocaleString('de-DE')} {tt('characters')}</p>
         </div>
       ) : (
         <div className="space-y-1.5">
-          <Label className="text-xs">Datei (.txt oder .rtf)</Label>
+          <Label className="text-xs">{tt('fileLabel')}</Label>
           <Input
             ref={fileRef}
             type="file"
@@ -134,13 +136,13 @@ export function TranscriptUploadForm({ projectId }: Props) {
             onChange={e => setFile(e.target.files?.[0] ?? null)}
             className="text-xs"
           />
-          <p className="text-xs text-gray-400">Max. 500 KB · .txt oder .rtf · Wird verschlüsselt gespeichert</p>
+          <p className="text-xs text-gray-400">{tt('fileHint')}</p>
         </div>
       )}
 
       {/* Datum */}
       <div className="space-y-1.5">
-        <Label className="text-xs">Meeting-Datum (optional)</Label>
+        <Label className="text-xs">{tt('dateLabel')}</Label>
         <Input
           type="date"
           value={meetingDate}
@@ -157,10 +159,10 @@ export function TranscriptUploadForm({ projectId }: Props) {
           style={{ backgroundColor: 'var(--brand)' }}
           className="text-white"
         >
-          {uploading ? 'Wird eingereicht…' : 'Einreichen'}
+          {uploading ? tt('submitting') : tt('submit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
-          Abbrechen
+          {tt('cancel')}
         </Button>
       </div>
     </form>

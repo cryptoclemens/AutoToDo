@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   currentEmail: string
 }
 
 export function AccountSettings({ currentEmail }: Props) {
+  const ts = useTranslations('settings')
   const [newEmail, setNewEmail] = useState(currentEmail)
   const [newPw, setNewPw] = useState('')
   const [confirmPw, setConfirmPw] = useState('')
@@ -26,9 +28,9 @@ export function AccountSettings({ currentEmail }: Props) {
       const supabase = createClient()
       const { error } = await supabase.auth.updateUser({ email: newEmail })
       if (error) throw error
-      toast.success('Bestätigungs-E-Mail gesendet. Bitte prüfen Sie Ihren Posteingang.')
+      toast.success(ts('account.emailSuccess'))
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Fehler beim Ändern der E-Mail.')
+      toast.error(err instanceof Error ? err.message : ts('account.emailError'))
     } finally {
       setSavingEmail(false)
     }
@@ -36,18 +38,18 @@ export function AccountSettings({ currentEmail }: Props) {
 
   async function handlePasswordSave(e: React.FormEvent) {
     e.preventDefault()
-    if (newPw.length < 8) { toast.error('Passwort muss mindestens 8 Zeichen haben.'); return }
-    if (newPw !== confirmPw) { toast.error('Passwörter stimmen nicht überein.'); return }
+    if (newPw.length < 8) { toast.error(ts('account.passwordMin')); return }
+    if (newPw !== confirmPw) { toast.error(ts('account.passwordMismatch')); return }
     setSavingPw(true)
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.updateUser({ password: newPw })
       if (error) throw error
-      toast.success('Passwort erfolgreich geändert.')
+      toast.success(ts('account.passwordSuccess'))
       setNewPw('')
       setConfirmPw('')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Fehler beim Ändern des Passworts.')
+      toast.error(err instanceof Error ? err.message : ts('account.passwordError'))
     } finally {
       setSavingPw(false)
     }
@@ -57,10 +59,10 @@ export function AccountSettings({ currentEmail }: Props) {
     <div className="space-y-6 max-w-lg">
       {/* E-Mail */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">E-Mail-Adresse</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">{ts('account.emailTitle')}</h2>
         <form onSubmit={handleEmailSave} className="space-y-3">
           <div className="space-y-1">
-            <Label className="text-xs">E-Mail-Adresse</Label>
+            <Label className="text-xs">{ts('account.emailLabel')}</Label>
             <Input
               type="email"
               value={newEmail}
@@ -69,24 +71,24 @@ export function AccountSettings({ currentEmail }: Props) {
               className="text-sm"
             />
             <p className="text-xs text-gray-400">
-              Eine Bestätigungs-E-Mail wird an die neue Adresse gesendet.
+              {ts('account.emailHint')}
             </p>
           </div>
           <Button type="submit" size="sm" disabled={savingEmail || newEmail === currentEmail}>
-            {savingEmail ? 'Wird gesendet…' : 'E-Mail ändern'}
+            {savingEmail ? ts('account.emailSending') : ts('account.emailChange')}
           </Button>
         </form>
       </div>
 
       {/* Passwort */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Passwort ändern</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">{ts('account.passwordTitle')}</h2>
         <form onSubmit={handlePasswordSave} className="space-y-3">
           <div className="space-y-1">
-            <Label className="text-xs">Neues Passwort</Label>
+            <Label className="text-xs">{ts('account.passwordNew')}</Label>
             <Input
               type="password"
-              placeholder="Mindestens 8 Zeichen"
+              placeholder={ts('account.passwordPlaceholder')}
               value={newPw}
               onChange={e => setNewPw(e.target.value)}
               required
@@ -95,10 +97,10 @@ export function AccountSettings({ currentEmail }: Props) {
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Passwort bestätigen</Label>
+            <Label className="text-xs">{ts('account.passwordConfirm')}</Label>
             <Input
               type="password"
-              placeholder="Passwort wiederholen"
+              placeholder={ts('account.passwordRepeat')}
               value={confirmPw}
               onChange={e => setConfirmPw(e.target.value)}
               required
@@ -107,7 +109,7 @@ export function AccountSettings({ currentEmail }: Props) {
             />
           </div>
           <Button type="submit" size="sm" disabled={savingPw}>
-            {savingPw ? 'Wird geändert…' : 'Passwort ändern'}
+            {savingPw ? ts('account.passwordChanging') : ts('account.passwordChange')}
           </Button>
         </form>
       </div>
