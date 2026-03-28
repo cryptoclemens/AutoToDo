@@ -1,27 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { getMollieClient } from '@/lib/mollie'
 
 export const runtime = 'nodejs'
 
 /**
- * Mollie webhook handler (placeholder).
- * Will handle subscription events when Mollie billing goes live.
+ * Mollie webhook handler.
  *
- * Mollie sends a POST with `id` in the body when a payment/subscription changes.
- * Fetch the full object via GET /v2/payments/{id} or /v2/subscriptions/{id}.
+ * Mollie sends a POST with `id` in the body (application/x-www-form-urlencoded)
+ * when a payment status changes. There is no HMAC signature — verify by fetching
+ * the payment resource from the Mollie API.
  *
- * Expected events:
- * - payment.paid        → activate workspace plan
- * - subscription.active → confirm subscription active
- * - subscription.canceled → downgrade to free at period end
- * - payment.failed      → notify user, retry logic
+ * Handled events:
+ * - payment.paid    → activate workspace plan
+ * - payment.failed  → log (Mollie will retry; subscription cancels after failures)
+ * - payment.expired → log
  *
- * Verification: Mollie does not sign webhooks — verify by fetching the
- * resource from the Mollie API and checking its status.
+ * Must always return HTTP 200 — Mollie retries on any other status code.
  */
 export async function POST(req: NextRequest) {
+  // Always return 200 so Mollie doesn't retry on config errors
   if (!process.env.MOLLIE_API_KEY) {
-    return NextResponse.json({ error: 'Mollie nicht konfiguriert.' }, { status: 503 })
+    console.error('Mollie webhook received but MOLLIE_API_KEY not set')
+    return new NextResponse(null, { status: 200 })
   }
 
   const body = await req.text()
@@ -29,25 +30,61 @@ export async function POST(req: NextRequest) {
   const paymentId = params.get('id')
 
   if (!paymentId) {
-    return NextResponse.json({ error: 'Fehlende payment ID.' }, { status: 400 })
+    console.error('Mollie webhook: missing id in body')
+    return new NextResponse(null, { status: 200 })
   }
 
-  // TODO: Implement when Mollie billing goes live
-  // const mollie = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY })
-  // const payment = await mollie.payments.get(paymentId)
-  // const workspaceId = payment.metadata?.workspaceId
-  // switch (payment.status) {
-  //   case 'paid': → update workspace plan
-  //   case 'failed': → notify user
-  // }
+  try {
+    const mollie = getMollieClient()
+    const payment = await mollie.payments.get(paymentId)
 
-  const _supabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+    const metadata = payment.metadata as {
+      workspaceId?: string
+      plan?: string
+      seats?: string
+    } | null
 
-  console.log('Mollie webhook received (placeholder):', paymentId)
+    if (!metadata?.workspaceId || !metadata?.plan) {
+      console.error('Mollie webhook: missing metadata on payment', paymentId)
+      return new NextResponse(null, { status: 200 })
+    }
 
-  // Mollie expects HTTP 200 to confirm receipt
+    const supabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    if (payment.status === 'paid') {
+      // Activate the plan on the workspace
+      const { error } = await supabase
+        .from('workspaces')
+        .update({
+          plan: metadata.plan,
+          plan_expires_at: null, // clear any grandfathering expiry
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', metadata.workspaceId)
+
+      if (error) {
+        console.error('Mollie webhook: failed to update workspace plan', error)
+      } else {
+        console.log('Mollie webhook: plan activated', {
+          workspaceId: metadata.workspaceId,
+          plan: metadata.plan,
+          paymentId,
+        })
+      }
+    } else {
+      // Log other statuses (failed, expired, canceled) — Mollie handles retries
+      console.log('Mollie webhook: payment status', payment.status, {
+        paymentId,
+        workspaceId: metadata.workspaceId,
+      })
+    }
+  } catch (err) {
+    console.error('Mollie webhook error:', err)
+  }
+
+  // Always 200 — Mollie must not retry
   return new NextResponse(null, { status: 200 })
 }

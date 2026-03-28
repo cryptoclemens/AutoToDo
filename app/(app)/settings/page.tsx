@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
+import { isMollieConfigured } from '@/lib/mollie'
 
 export default async function SettingsPage() {
   const authClient = createClient()
@@ -85,6 +86,7 @@ export default async function SettingsPage() {
       members={members ?? []}
       llmInitial={llmInitial}
       apiKeys={apiKeys ?? []}
+      mollieEnabled={isMollieConfigured()}
       billing={{
         plan,
         planExpiresAt: ws?.plan_expires_at ?? null,

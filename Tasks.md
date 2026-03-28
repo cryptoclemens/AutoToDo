@@ -243,7 +243,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett a
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 9.1 | Mollie-Billing (Free/Solo/Team/Business) | 🔄 In Bearbeitung (Infrastruktur vorbereitet, kein aktives Billing) |
+| 9.1 | Mollie-Billing (Free/Solo/Team/Business) | ✅ Erledigt (Code vollständig; aktiviert sobald MOLLIE_API_KEY gesetzt) |
 | 9.2 | Custom Domain (CNAME-Support) | 🔲 Offen |
 | 9.3 | E-Mail-Benachrichtigungen (Resend) | ✅ Erledigt (Invite + Digest) |
 | 9.4 | Slack/Teams-Integration via Webhook | 🔲 Offen |

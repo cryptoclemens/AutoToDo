@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Plan, PLAN_NAMES, PLAN_LIMITS } from '@/lib/plans'
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
   seatCount: number
   projectCount: number
   transcriptsThisMonth: number
+  mollieEnabled: boolean
 }
 
 const PLAN_PRICES: Record<Plan, string> = {
@@ -67,10 +69,34 @@ function UsageBar({ label, current, max }: { label: string; current: number; max
   )
 }
 
-export default function BillingTab({ plan, planExpiresAt, seatCount, projectCount, transcriptsThisMonth }: Props) {
+export default function BillingTab({ plan, planExpiresAt, seatCount, projectCount, transcriptsThisMonth, mollieEnabled }: Props) {
   const limits = PLAN_LIMITS[plan]
   const isGrandfathered = planExpiresAt && new Date(planExpiresAt) > new Date()
   const planName = PLAN_NAMES[plan]
+  const [loading, setLoading] = useState<Plan | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function startCheckout(targetPlan: Plan) {
+    setLoading(targetPlan)
+    setError(null)
+    try {
+      const res = await fetch('/api/mollie/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: targetPlan }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Unbekannter Fehler')
+        return
+      }
+      window.location.href = data.checkoutUrl
+    } catch {
+      setError('Netzwerkfehler. Bitte versuche es erneut.')
+    } finally {
+      setLoading(null)
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -92,13 +118,13 @@ export default function BillingTab({ plan, planExpiresAt, seatCount, projectCoun
             </div>
             <p className="text-sm text-gray-500 mt-0.5">{PLAN_PRICES[plan]}</p>
           </div>
-          {plan !== 'beta' && (
+          {plan !== 'beta' && plan !== 'free' && mollieEnabled && (
             <button
-              disabled
-              className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-medium opacity-50 cursor-not-allowed"
-              title="Mollie-Zahlungsintegration kommt bald"
+              onClick={() => startCheckout('free')}
+              disabled={loading !== null}
+              className="text-sm border border-gray-300 text-gray-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Plan ändern
+              Auf Free downgraden
             </button>
           )}
         </div>
@@ -113,6 +139,13 @@ export default function BillingTab({ plan, planExpiresAt, seatCount, projectCoun
           <UsageBar label="Transkripte diesen Monat" current={transcriptsThisMonth} max={limits.maxTranscriptsPerMonth} />
         </div>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          {error}
+        </div>
+      )}
 
       {/* Upgrade Cards */}
       {plan !== 'business' && (
@@ -152,20 +185,32 @@ export default function BillingTab({ plan, planExpiresAt, seatCount, projectCoun
                   ))}
                 </ul>
                 {u.plan !== plan && (
-                  <button
-                    disabled
-                    className="mt-3 w-full text-xs bg-gray-800 text-white py-1.5 rounded-lg font-medium opacity-40 cursor-not-allowed"
-                    title="Mollie-Zahlungsintegration kommt bald"
-                  >
-                    Zu {PLAN_NAMES[u.plan]} upgraden
-                  </button>
+                  mollieEnabled ? (
+                    <button
+                      onClick={() => startCheckout(u.plan)}
+                      disabled={loading !== null}
+                      className="mt-3 w-full text-xs bg-gray-800 text-white py-1.5 rounded-lg font-medium hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {loading === u.plan ? 'Weiterleitung…' : `Zu ${PLAN_NAMES[u.plan]} upgraden`}
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="mt-3 w-full text-xs bg-gray-800 text-white py-1.5 rounded-lg font-medium opacity-40 cursor-not-allowed"
+                      title="Zahlungsintegration in Kürze verfügbar"
+                    >
+                      Zu {PLAN_NAMES[u.plan]} upgraden
+                    </button>
+                  )
                 )}
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-3 text-center">
-            Mollie-Zahlungsintegration in Kürze verfügbar.
-          </p>
+          {!mollieEnabled && (
+            <p className="text-xs text-gray-400 mt-3 text-center">
+              Mollie-Zahlungsintegration in Kürze verfügbar.
+            </p>
+          )}
         </div>
       )}
     </div>

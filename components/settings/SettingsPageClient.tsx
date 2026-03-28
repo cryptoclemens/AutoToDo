@@ -51,6 +51,7 @@ interface Props {
     apiKeyMasked?: string
   }
   apiKeys: ApiKey[]
+  mollieEnabled: boolean
   billing?: {
     plan: Plan
     planExpiresAt: string | null
@@ -71,7 +72,7 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
   { id: 'audit', adminOnly: true },
 ]
 
-export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys, billing }: Props) {
+export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys, mollieEnabled, billing }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
@@ -237,6 +238,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
           seatCount={billing.seatCount}
           projectCount={billing.projectCount}
           transcriptsThisMonth={billing.transcriptsThisMonth}
+          mollieEnabled={mollieEnabled}
         />
       )}
 
