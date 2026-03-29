@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap', preload: false })
+const inter = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-sans', weight: ['400', '500', '600', '700'], display: 'swap', preload: false })
 
 export const metadata: Metadata = {
   title: 'AutoToDo – KI-gestütztes LOP-Management',

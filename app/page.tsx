@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Zap, Pencil, Bell, Link2, Users, BarChart3 } from 'lucide-react'
 import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
 import CookieBanner from '@/components/CookieBanner'
 import LandingLanguageSwitcher from '@/components/LandingLanguageSwitcher'
@@ -82,21 +83,26 @@ export default async function LandingPage() {
     'bg-teal-50 text-teal-600',
   ]
 
+  // SVG icon components — one per feature, in order
+  const FEATURE_ICONS = [Zap, Pencil, Bell, Link2, Users, BarChart3]
+
   return (
     <div className="min-h-screen bg-white">
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+        @media (prefers-reduced-motion: no-preference) {
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+          }
+          .animate-float { animation: float 6s ease-in-out infinite; }
+          @keyframes slide-in-row {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+          }
+          .row-1 { animation: slide-in-row 0.4s ease 0.6s both; }
+          .row-2 { animation: slide-in-row 0.4s ease 1.0s both; }
+          .row-3 { animation: slide-in-row 0.4s ease 1.4s both; }
         }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        @keyframes slide-in-row {
-          from { opacity: 0; transform: translateX(-8px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        .row-1 { animation: slide-in-row 0.4s ease 0.6s both; }
-        .row-2 { animation: slide-in-row 0.4s ease 1.0s both; }
-        .row-3 { animation: slide-in-row 0.4s ease 1.4s both; }
       `}</style>
       {/* Nav */}
       <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-40">
@@ -271,15 +277,18 @@ export default async function LandingPage() {
             {isEn ? 'Built for consulting teams, project managers and engineering leads.' : 'Entwickelt für Beratungsteams, Projektleiter und Engineering-Leads.'}
           </p>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {featureList.map((f, i) => (
-              <div key={f.title} className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
-                <div className={`w-11 h-11 rounded-xl ${featureColors[i % featureColors.length]} flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-200`}>
-                  {f.icon}
+            {featureList.map((f, i) => {
+              const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length]
+              return (
+              <div key={f.title} className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200 group cursor-pointer">
+                <div className={`w-11 h-11 rounded-xl ${featureColors[i % featureColors.length]} flex items-center justify-center mb-4 transition-opacity duration-200 group-hover:opacity-80`}>
+                  <Icon className="w-5 h-5" aria-hidden="true" />
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-1.5 text-sm">{f.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

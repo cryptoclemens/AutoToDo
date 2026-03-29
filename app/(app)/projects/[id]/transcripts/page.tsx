@@ -72,7 +72,7 @@ export default async function TranscriptsPage({ params }: Props) {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-1 text-sm text-gray-400">
+      <div className="flex items-center gap-2 mb-1 text-sm text-gray-500">
         <Link href="/dashboard" className="hover:text-gray-600">Dashboard</Link>
         <span>/</span>
         <Link href={`/projects/${project.id}`} className="hover:text-gray-600">{project.name}</Link>

@@ -143,8 +143,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ?dry_run=true → diagnose without sending emails
+  const dryRun = new URL(request.url).searchParams.get('dry_run') === 'true'
+
   const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) {
+  if (!resendKey && !dryRun) {
     return NextResponse.json({ skipped: 'RESEND_API_KEY not set' })
   }
 
@@ -178,7 +181,7 @@ export async function GET(request: NextRequest) {
     .eq('digest_enabled', true) as { data: Array<{ id: string; name: string }> | null }
 
   if (!workspaces?.length) {
-    return NextResponse.json({ sent: 0, reason: 'No workspaces with digest enabled' })
+    return NextResponse.json({ sent: 0, dry_run: dryRun, reason: 'No workspaces with digest_enabled = true. Check Settings → Workspace → Digest toggle.' })
   }
 
   const workspaceIds = workspaces.map(w => w.id)
@@ -214,7 +217,12 @@ export async function GET(request: NextRequest) {
     }
 
   if (!items?.length) {
-    return NextResponse.json({ sent: 0, reason: 'No open items with responsible_user_id' })
+    return NextResponse.json({
+      sent: 0,
+      dry_run: dryRun,
+      reason: 'No open items with responsible_user_id set. Only items assigned via the member dropdown (not free-text) trigger the digest.',
+      debug: { workspacesFound: workspaces.length, projectsFound: projects?.length ?? 0 },
+    })
   }
 
   // 4. Gruppieren nach Nutzer
@@ -228,6 +236,7 @@ export async function GET(request: NextRequest) {
   // 5. Pro Nutzer E-Mail versenden
   let sent = 0
   const errors: string[] = []
+  const dryRunRecipients: Array<{ email: string; itemCount: number }> = []
 
   for (const [userId, userItems] of Object.entries(itemsByUser)) {
     try {
@@ -238,6 +247,11 @@ export async function GET(request: NextRequest) {
         (user.user_metadata?.full_name as string | undefined) ||
         (user.user_metadata?.name as string | undefined) ||
         user.email
+
+      if (dryRun) {
+        dryRunRecipients.push({ email: user.email, itemCount: userItems.length })
+        continue
+      }
 
       const html = buildDigestEmail(displayName, userItems, projectMap, workspaceNameMap, appUrl)
 
@@ -251,6 +265,15 @@ export async function GET(request: NextRequest) {
       errors.push(userId)
       console.error('[daily-digest] Error for user', userId, err)
     }
+  }
+
+  if (dryRun) {
+    return NextResponse.json({
+      dry_run: true,
+      would_send_to: dryRunRecipients,
+      total_users: dryRunRecipients.length,
+      total_items: items.length,
+    })
   }
 
   return NextResponse.json({ sent, errors: errors.length > 0 ? errors : undefined })

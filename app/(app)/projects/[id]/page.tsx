@@ -89,7 +89,7 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <div>
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-1 text-sm text-gray-400">
+      <div className="flex items-center gap-2 mb-1 text-sm text-gray-500">
         <Link href="/dashboard" className="hover:text-gray-600">Dashboard</Link>
         <span>/</span>
         <span className="text-gray-600">{project.name}</span>
