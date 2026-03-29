@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett abgeschlossen
+Letzte Aktualisierung: März 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komplett abgeschlossen
 
 ---
 
@@ -224,7 +224,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett a
 
 | # | Aufgabe | Quelle | Status |
 |---|---|---|---|
-| 7f.1 | XLSX-Reimport: offline bearbeitete LOP-Datei hochladen & mit bestehender LOP abgleichen (Spalten-Mapping, Konflikterkennung) | Feature-Wunsch 2026-03-27 | 🔲 Offen |
+| 7f.1 | XLSX-Reimport: offline bearbeitete LOP-Datei hochladen & mit bestehender LOP abgleichen (Spalten-Mapping, Konflikterkennung) | Feature-Wunsch 2026-03-27 | ✅ Erledigt |
 | 7f.2 | Statusanzeige: Rohwerte (`in_bearbeitung`) prüfen & überall durch lesbare Labels ersetzen – v. a. in Tooltips, XLSX-Spaltenköpfen, API-Responses | Bug 2026-03-27 | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
@@ -244,7 +244,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett a
 | # | Aufgabe | Status |
 |---|---|---|
 | 9.1 | Mollie-Billing (Free/Solo/Team/Business) | ✅ Erledigt (Code vollständig; aktiviert sobald MOLLIE_API_KEY gesetzt) |
-| 9.2 | Custom Domain (CNAME-Support) | 🔲 Offen |
+| 9.2 | Custom Domain `autotodo.vencly.com` | ✅ DNS konfiguriert (Cloudflare CNAME → Vercel, Supabase Redirect URLs gesetzt) |
 | 9.3 | E-Mail-Benachrichtigungen (Resend) | ✅ Erledigt (Invite + Digest) |
 | 9.4 | Slack/Teams-Integration via Webhook | 🔲 Offen |
 | 9.6 | SSO (SAML für Enterprise) | 🔲 Offen (Business-Plan vorgesehen) |
@@ -291,7 +291,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett a
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 10.1 | Landing Page: Hero-Sektion mit Illustration/Animation | 🔲 Offen |
+| 10.1 | Landing Page: Hero-Sektion mit Illustration/Animation | 🔄 Teilweise (CSS-Animationen + Gradient-Blobs live; Illustration offen) |
 | 10.2 | Landing Page: Feature-Sektion (Screenshots, Icons, Beschreibungen) | 🔲 Offen |
 | 10.3 | Landing Page: Pricing-Tabelle (Free / Starter / Pro / Enterprise) | 🔲 Offen |
 | 10.4 | App-Layout: Navigation verfeinern (Icons, aktiver Zustand) | ✅ Erledigt |
@@ -315,7 +315,27 @@ Letzte Aktualisierung: März 2026 · Version 0.1.69 · M1–M11, M9.5 komplett a
 | BF.4 | Logo-Upload: `logos`-Bucket wird beim ersten Upload automatisch angelegt | ✅ Erledigt |
 | BF.5 | Logo-Anzeige: Supabase-Storage-Domain in `next/image` remotePatterns freigeschaltet | ✅ Erledigt |
 | BF.6 | LOP-Punkte: erledigte Items sinken nach unten + opacity-60 ausgegraut | ✅ Erledigt |
-| BF.7 | E-Mail-Digest: Absender-Domain auf `@vencly.app` geändert | ✅ Erledigt |
+| BF.7 | E-Mail-Digest: Absender-Domain auf `@vencly.com` geändert | ✅ Erledigt |
+| BF.8 | E-Mail-Digest: `?dry_run=true`-Modus für Diagnose ohne E-Mail-Versand | ✅ Erledigt |
+| BF.9 | Landing Page UX: Plus Jakarta Sans, Lucide-Icons, reduzierte Hover-Effekte | ✅ Erledigt |
+| BF.10 | Deployment: `output: standalone` + `sharp` für Coolify/Docker | ✅ Erledigt |
+| BF.11 | App-URL Default auf `autotodo.vencly.com` gesetzt (alle API-Routes) | ✅ Erledigt |
+
+---
+
+---
+
+## Phase 6 – Infrastruktur & Migration
+
+| # | Aufgabe | Status |
+|---|---|---|
+| I.1 | Hetzner CX32 Migrationsplan erstellen (Self-hosted Supabase + Coolify + Warm Standby) | ✅ Erledigt (`docs/hetzner-migration-plan.md`) |
+| I.2 | Next.js `output: standalone` + `sharp` für Docker-Deploy aktivieren | ✅ Erledigt |
+| I.3 | Hetzner CX32 einrichten + Coolify installieren | 🔲 Offen |
+| I.4 | Self-hosted Supabase auf Hetzner deployen | 🔲 Offen |
+| I.5 | Datenmigration (Supabase Cloud → Self-hosted) | 🔲 Offen |
+| I.6 | AutoToDo in Coolify deployen + DNS umstellen | 🔲 Offen |
+| I.7 | Stündlichen pg_dump-Sync zu Supabase Cloud einrichten | 🔲 Offen |
 
 ---
 

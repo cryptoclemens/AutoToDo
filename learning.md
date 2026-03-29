@@ -349,4 +349,76 @@ Nur `LegalPageShell` (Nav-Buttons, Footer) wird via `useTranslations('legal')` l
 
 ---
 
+---
+
+## 12. Cloudflare DNS + Custom Domain
+
+### 12.1 Vercel + Cloudflare: Proxy ausschalten
+Für Vercel-Deployments muss der Cloudflare-Proxy auf **DNS-only** (graue Wolke) stehen.
+Vercel stellt das SSL-Zertifikat via ACME-Challenge aus — das funktioniert nur bei direktem DNS-Lookup.
+Mit orangener Wolke (proxied) schlägt die Zertifikat-Ausstellung fehl.
+
+### 12.2 CNAME-Record für Subdomain → Vercel
+```
+Typ:     CNAME
+Name:    autotodo        (→ autotodo.vencly.com)
+Inhalt:  cname.vercel-dns.com
+Proxy:   DNS-only (grau)
+```
+Zusätzlich in Vercel Dashboard → Settings → Domains hinzufügen.
+
+### 12.3 Supabase Redirect-URLs nach Domain-Wechsel
+Supabase → Authentication → URL Configuration aktualisieren:
+- Site URL: neue Domain
+- Redirect URLs: `https://neue-domain/auth/callback`
+Vergisst man das, schlagen E-Mail-Bestätigungen + Passwort-Reset fehl.
+
+### 12.4 NEXT_PUBLIC_* brauchen Redeploy
+`NEXT_PUBLIC_*`-Variablen werden zur **Build-Zeit** eingebettet, nicht zur Laufzeit.
+ENV-Var in Vercel ändern → danach Redeploy erzwingen, sonst bleibt der alte Wert aktiv.
+
+---
+
+## 13. E-Mail-Digest: Diagnose
+
+### 13.1 responsible_user_id vs. Freitext
+Der tägliche Digest filtert auf `.not('responsible_user_id', 'is', null)`.
+Nur LOP-Punkte, die über das **Mitglied-Dropdown** verknüpft sind, triggern E-Mails.
+Freitext im `responsible`-Feld reicht nicht — kein User, keine E-Mail.
+
+### 13.2 Dry-Run-Modus zur Diagnose
+```
+GET /api/cron/daily-digest?dry_run=true
+Authorization: Bearer <CRON_SECRET>
+```
+Gibt zurück, wer EINE E-Mail bekäme und für wie viele Items — ohne tatsächlich zu senden.
+
+---
+
+## 14. Self-hosted Deployment (Coolify/Docker)
+
+### 14.1 Next.js Standalone Output
+Für Docker-Deployments `output: 'standalone'` in `next.config.mjs` setzen.
+Next.js baut dann ein minimales `.next/standalone/`-Verzeichnis ohne `node_modules`.
+
+### 14.2 sharp als Production-Dependency
+`sharp` muss in `dependencies` (nicht `devDependencies`) stehen:
+```bash
+npm install sharp --save
+```
+Im standalone-Build wird `node_modules` nicht mitgeliefert — `sharp` fehlt sonst zur Laufzeit.
+
+### 14.3 NEXT_PUBLIC_* in Coolify als Build-Vars
+In Coolify unter Environment Variables müssen `NEXT_PUBLIC_*`-Vars als **Build Args** markiert sein.
+Reine Runtime-Vars werden von Next.js nicht in den Client-Bundle eingebettet.
+
+### 14.4 Self-hosted Supabase Fallback-Strategie
+Drei ENV-Vars tauschen = Fallback auf Supabase Cloud in ~10 Min:
+```
+NEXT_PUBLIC_SUPABASE_URL        → Supabase Cloud URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY   → Cloud Anon Key
+SUPABASE_SERVICE_ROLE_KEY       → Cloud Service Role Key
+```
+Alle anderen Vars (Resend, Mollie, Encryption, App URL) bleiben identisch.
+
 *Diese Datei bei neuen Projekten als Referenz nutzen und projektspezifische Learnings anhängen.*
