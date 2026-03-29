@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { z } from 'zod'
 import { resolveWorkspace } from '@/lib/workspace'
 import { dispatchWebhook } from '@/lib/webhook'
+import { notifySlackForLopEvent } from '@/lib/slack'
 
 const createSchema = z.object({
   projectId: z.string().uuid(),
@@ -71,8 +72,9 @@ export async function POST(request: NextRequest) {
     new_values: data,
   })
 
-  // Webhook (fire-and-forget)
+  // Webhook + Slack (fire-and-forget)
   dispatchWebhook(workspaceId, 'lop.item.created', data as Record<string, unknown>)
+  notifySlackForLopEvent(supabase, workspaceId, 'lop.item.created', data as Record<string, unknown>)
 
   return NextResponse.json(data, { status: 201 })
 }

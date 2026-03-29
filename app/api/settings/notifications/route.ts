@@ -5,9 +5,46 @@ import { headers } from 'next/headers'
 import { z } from 'zod'
 import { resolveWorkspace } from '@/lib/workspace'
 
-const schema = z.object({
-  digest_enabled: z.boolean(),
+const patchSchema = z.object({
+  digest_enabled: z.boolean().optional(),
+  slack_webhook_url: z.string().url().nullable().optional(),
 })
+
+async function getAdminWorkspace(user: { id: string }) {
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const slug = headers().get('x-workspace-slug') ?? ''
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspace) return null
+
+  const { data: member } = await supabase
+    .from('workspace_members').select('role')
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).single()
+
+  const adminRoles = ['workspace_owner', 'workspace_admin']
+  if (!member || !adminRoles.includes((member as { role: string }).role)) return null
+
+  return { supabase, workspace }
+}
+
+export async function GET(_request: NextRequest) {
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const ctx = await getAdminWorkspace(user)
+  if (!ctx) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+
+  const { data } = await ctx.supabase
+    .from('workspaces')
+    .select('digest_enabled, slack_webhook_url')
+    .eq('id', ctx.workspace.id)
+    .single()
+
+  return NextResponse.json(data ?? {})
+}
 
 export async function PATCH(request: NextRequest) {
   const authClient = createClient()
@@ -15,32 +52,20 @@ export async function PATCH(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
   const body = await request.json()
-  const parsed = schema.safeParse(body)
+  const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
 
-  const supabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const ctx = await getAdminWorkspace(user)
+  if (!ctx) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  const updates: Record<string, unknown> = {}
+  if (parsed.data.digest_enabled !== undefined) updates.digest_enabled = parsed.data.digest_enabled
+  if ('slack_webhook_url' in parsed.data) updates.slack_webhook_url = parsed.data.slack_webhook_url
 
-  // Admin-Check
-  const { data: member } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single()
-
-  const adminRoles = ['workspace_owner', 'workspace_admin']
-  if (!member || !adminRoles.includes((member as { role: string }).role)) {
-    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-  }
-
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from('workspaces')
-    .update({ digest_enabled: parsed.data.digest_enabled })
-    .eq('id', workspace.id)
+    .update(updates)
+    .eq('id', ctx.workspace.id)
 
   if (error) return NextResponse.json({ error: 'Fehler beim Speichern.' }, { status: 500 })
 

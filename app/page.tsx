@@ -102,6 +102,12 @@ export default async function LandingPage() {
           .row-1 { animation: slide-in-row 0.4s ease 0.6s both; }
           .row-2 { animation: slide-in-row 0.4s ease 1.0s both; }
           .row-3 { animation: slide-in-row 0.4s ease 1.4s both; }
+          @keyframes pop-in {
+            from { opacity: 0; transform: scale(0.85) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+          }
+          .badge-1 { animation: pop-in 0.5s ease 1.8s both; }
+          .badge-2 { animation: pop-in 0.5s ease 2.3s both; }
         }
       `}</style>
       {/* Nav */}
@@ -163,14 +169,14 @@ export default async function LandingPage() {
         </div>
 
         {/* App Mockup */}
-        <div className="hidden md:block animate-float">
+        <div className="hidden md:block animate-float relative">
           <div className="bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden ring-1 ring-gray-100">
             {/* Mockup Header */}
             <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-300" />
               <div className="w-3 h-3 rounded-full bg-yellow-300" />
               <div className="w-3 h-3 rounded-full bg-green-300" />
-              <span className="ml-3 text-xs text-gray-400 font-mono">autotodo.vercel.app/projects/...</span>
+              <span className="ml-3 text-xs text-gray-400 font-mono">autotodo.vencly.com/projects/…</span>
             </div>
             {/* Mockup Nav */}
             <div className="bg-white border-b border-gray-100 px-4 py-2 flex items-center gap-4">
@@ -224,6 +230,30 @@ export default async function LandingPage() {
               </span>
             </div>
           </div>
+
+          {/* Floating: Slack notification badge */}
+          <div className="badge-1 absolute -bottom-4 -left-6 bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2.5 flex items-center gap-2.5 w-56">
+            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 text-purple-600 fill-current" aria-hidden="true">
+                <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zm10.122 2.521a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zm-1.268 0a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zm-2.523 10.122a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zm0-1.268a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-gray-800 leading-tight">{isEn ? 'Slack notification sent' : 'Slack-Benachrichtigung'}</p>
+              <p className="text-xs text-gray-400 truncate">{isEn ? 'Q2 budget · M. Müller' : 'Q2-Budget · M. Müller'}</p>
+            </div>
+          </div>
+
+          {/* Floating: export badge */}
+          <div className="badge-2 absolute -top-3 -right-5 bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2.5 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+              <BarChart3 className="w-4 h-4 text-green-600" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-800">{isEn ? 'XLSX exported' : 'XLSX exportiert'}</p>
+              <p className="text-xs text-green-600">✓ {isEn ? '24 items' : '24 Punkte'}</p>
+            </div>
+          </div>
         </div>
       </div>
       </section>
@@ -235,7 +265,7 @@ export default async function LandingPage() {
             {isEn ? 'Works with' : 'Kompatibel mit'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8">
-            {['Anthropic Claude', 'OpenAI GPT-4o', 'Azure OpenAI', 'Resend', 'Supabase'].map(name => (
+            {['Anthropic Claude', 'OpenAI GPT-4o', 'Azure OpenAI', 'Slack', 'Microsoft Teams', 'Resend'].map(name => (
               <span key={name} className="text-sm text-gray-400 font-medium">{name}</span>
             ))}
           </div>
