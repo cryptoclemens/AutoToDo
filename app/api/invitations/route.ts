@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
   // E-Mail-Versand via Resend (optional, wenn RESEND_API_KEY gesetzt)
   if (process.env.RESEND_API_KEY) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.app'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.vencly.com'
     for (const inv of inserted) {
       const inviteUrl = `${appUrl}/invite/${inv.token}`
       await fetch('https://api.resend.com/emails', {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@autotodo.app>',
+          from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
           to: [inv.email],
           subject: 'Du wurdest zu AutoToDo eingeladen',
           html: `<p>Hallo,</p>

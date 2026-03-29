@@ -112,7 +112,7 @@ export async function POST(
 
   // Send guest invite email via Resend (optional)
   if (process.env.RESEND_API_KEY) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.app'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.vencly.com'
     const guestUrl = `${appUrl}/guest/${guest.token}`
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -121,7 +121,7 @@ export async function POST(
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@autotodo.app>',
+        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
         to: [guest.email],
         subject: 'Du wurdest als Gast zu einem Projekt eingeladen',
         html: `<p>Hallo,</p>

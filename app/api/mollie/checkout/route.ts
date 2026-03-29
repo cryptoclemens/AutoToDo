@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ungültiger Plan.' }, { status: 400 })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.app'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.vencly.com'
 
   try {
     const mollie = getMollieClient()

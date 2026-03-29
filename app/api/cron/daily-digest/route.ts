@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ skipped: 'RESEND_API_KEY not set' })
   }
 
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.app').replace(/\/$/, '')
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.vencly.com').replace(/\/$/, '')
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.app>',
+        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
         to,
         subject,
         html,
