@@ -2,6 +2,7 @@ import type { LlmConfig, ProcessTranscriptResult } from './types'
 import { processWithAnthropic } from './anthropic'
 import { processWithOpenAI } from './openai'
 import { processWithAzureOpenAI } from './azure'
+import { processWithPerplexity } from './perplexity'
 
 export async function processTranscriptWithLlm(
   config: LlmConfig,
@@ -15,6 +16,8 @@ export async function processTranscriptWithLlm(
       return processWithOpenAI(config, transcriptText, existingItems)
     case 'azure_openai':
       return processWithAzureOpenAI(config, transcriptText, existingItems)
+    case 'perplexity':
+      return processWithPerplexity(config, transcriptText, existingItems)
     default:
       throw new Error(`Unsupported LLM provider: ${(config as LlmConfig).provider}`)
   }

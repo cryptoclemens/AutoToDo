@@ -70,6 +70,7 @@ Letzte Aktualisierung: März 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 | 5.3 | LLM-Abstraktionsschicht (types, factory) | ✅ Erledigt |
 | 5.4 | Anthropic-Integration | ✅ Erledigt |
 | 5.5 | OpenAI-Integration | ✅ Erledigt |
+| 5.13 | Perplexity AI Integration (Sonar, Sonar Pro, Sonar Reasoning Pro) | ✅ Erledigt |
 | 5.6 | BYOK: LLM-Key speichern/abrufen (verschlüsselt) | ✅ Erledigt |
 | 5.7 | Verarbeitungs-Pipeline (processTranscript) | ✅ Erledigt |
 | 5.8 | Konfidenz-Schwellwert-System | ✅ Erledigt |

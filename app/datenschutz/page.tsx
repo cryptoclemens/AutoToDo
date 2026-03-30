@@ -75,9 +75,10 @@ export default function DatenschutzPage() {
           <li>Anthropic: <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">anthropic.com/privacy</a></li>
           <li>OpenAI: <a href="https://openai.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">openai.com/privacy</a></li>
           <li>Microsoft Azure OpenAI: <a href="https://privacy.microsoft.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">privacy.microsoft.com</a></li>
+          <li>Perplexity AI: <a href="https://www.perplexity.ai/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">perplexity.ai/privacy</a></li>
         </ul>
         <p>
-          Beide US-amerikanischen Anbieter (Anthropic, OpenAI) haben Standardvertragsklauseln
+          Die US-amerikanischen Anbieter (Anthropic, OpenAI, Perplexity AI) haben Standardvertragsklauseln
           mit der EU abgeschlossen. Die Datenübermittlung erfolgt auf Grundlage von
           Art. 46 Abs. 2 lit. c DSGVO.
         </p>

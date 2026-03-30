@@ -106,7 +106,7 @@ function AgbContent() {
 
       <Section title="§ 4 Bring Your Own Key (BYOK) – KI-Verarbeitung">
         <p>Die KI-Verarbeitung von Transkripten erfolgt über externe Drittanbieter (z. B. Anthropic,
-          OpenAI, Microsoft Azure OpenAI). Der Nutzer hinterlegt seinen eigenen API-Key des gewählten
+          OpenAI, Microsoft Azure OpenAI, Perplexity AI). Der Nutzer hinterlegt seinen eigenen API-Key des gewählten
           Anbieters. Für die Verarbeitung der Daten durch den Drittanbieter gelten ausschließlich
           dessen Nutzungsbedingungen und Datenschutzrichtlinien.</p>
         <p>Die vencly GmbH übernimmt keine Haftung für:</p>
@@ -235,7 +235,7 @@ function DatenschutzContent() {
           Datenschutzrichtlinie: supabase.com/privacy</p>
         <p><strong>Vercel Inc.</strong> (Hosting, CDN): Verarbeitung gemäß Vercel-AVV.
           Datenschutzrichtlinie: vercel.com/legal/privacy-policy</p>
-        <p><strong>KI-Anbieter (Anthropic, OpenAI, Microsoft Azure):</strong> Transkriptinhalte
+        <p><strong>KI-Anbieter (Anthropic, OpenAI, Microsoft Azure, Perplexity AI):</strong> Transkriptinhalte
           werden zur KI-Verarbeitung an den vom Workspace-Betreiber gewählten Anbieter übertragen.
           Die vencly GmbH ist in diesem Verhältnis kein Verantwortlicher für die Verarbeitung durch den
           KI-Anbieter. Der Workspace-Betreiber agiert als eigener Verantwortlicher gegenüber dem

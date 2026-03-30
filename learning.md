@@ -412,6 +412,17 @@ Im standalone-Build wird `node_modules` nicht mitgeliefert — `sharp` fehlt son
 In Coolify unter Environment Variables müssen `NEXT_PUBLIC_*`-Vars als **Build Args** markiert sein.
 Reine Runtime-Vars werden von Next.js nicht in den Client-Bundle eingebettet.
 
+### 14.5 Perplexity AI – OpenAI-kompatibler BYOK-Provider
+Perplexity nutzt die OpenAI SDK-Schnittstelle mit Custom `baseURL`:
+```ts
+const client = new OpenAI({ apiKey: config.apiKey, baseURL: 'https://api.perplexity.ai' })
+```
+Wichtig: Perplexity-Modelle (`sonar`, `sonar-pro`) unterstützen `response_format: { type: 'json_object' }` **nicht** zuverlässig — JSON-Zäune im Output stripping notwendig:
+```ts
+const jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+```
+API-Key-Format: `pplx-…`, erhältlich unter perplexity.ai/settings/api.
+
 ### 14.4 Self-hosted Supabase Fallback-Strategie
 Drei ENV-Vars tauschen = Fallback auf Supabase Cloud in ~10 Min:
 ```

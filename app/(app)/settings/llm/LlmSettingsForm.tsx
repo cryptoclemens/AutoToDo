@@ -17,6 +17,8 @@ const PROVIDERS = [
       { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (schnell & günstig)' },
     ],
     needsEndpoint: false,
+    keyPlaceholder: 'sk-ant-api03-…',
+    keyHint: 'Key aus console.anthropic.com',
   },
   {
     id: 'openai',
@@ -26,6 +28,8 @@ const PROVIDERS = [
       { id: 'gpt-4o-mini', label: 'GPT-4o mini (günstig)' },
     ],
     needsEndpoint: false,
+    keyPlaceholder: 'sk-…',
+    keyHint: 'Key aus platform.openai.com',
   },
   {
     id: 'azure_openai',
@@ -36,6 +40,20 @@ const PROVIDERS = [
       { id: 'gpt-4-turbo', label: 'gpt-4-turbo' },
     ],
     needsEndpoint: true,
+    keyPlaceholder: 'Azure API Key',
+    keyHint: 'Key aus Azure Portal → OpenAI Resource → Schlüssel und Endpunkt',
+  },
+  {
+    id: 'perplexity',
+    label: 'Perplexity AI',
+    models: [
+      { id: 'sonar-pro', label: 'Sonar Pro (empfohlen)' },
+      { id: 'sonar', label: 'Sonar (schnell & günstig)' },
+      { id: 'sonar-reasoning-pro', label: 'Sonar Reasoning Pro' },
+    ],
+    needsEndpoint: false,
+    keyPlaceholder: 'pplx-…',
+    keyHint: 'Key aus perplexity.ai/settings/api',
   },
 ]
 
@@ -61,6 +79,7 @@ export function LlmSettingsForm({ initial }: Props) {
 
   const providerData = PROVIDERS.find(p => p.id === provider) ?? PROVIDERS[0]
   const isAzure = provider === 'azure_openai'
+  const needsEndpoint = providerData.needsEndpoint
 
   // For Azure: effective model is customModel if set, otherwise selected model
   const effectiveModel = isAzure && customModel.trim() ? customModel.trim() : model
@@ -78,7 +97,7 @@ export function LlmSettingsForm({ initial }: Props) {
       toast.error(ts('llm.enterApiKey'))
       return
     }
-    if (isAzure && !endpoint.trim()) {
+    if (needsEndpoint && !endpoint.trim()) {
       toast.error(ts('llm.enterEndpoint'))
       return
     }
@@ -95,7 +114,7 @@ export function LlmSettingsForm({ initial }: Props) {
           provider,
           model: effectiveModel,
           apiKey,
-          endpoint: isAzure ? endpoint.trim() : undefined,
+          endpoint: needsEndpoint ? endpoint.trim() : undefined,
         }),
       })
       if (!res.ok) {
@@ -152,8 +171,8 @@ export function LlmSettingsForm({ initial }: Props) {
           </Select>
         </div>
 
-        {/* Endpoint nur für Azure */}
-        {isAzure && (
+        {/* Endpoint (nur für Provider, die eine URL benötigen, z. B. Azure) */}
+        {needsEndpoint && (
           <div className="space-y-1.5">
             <Label>Endpoint-URL</Label>
             <Input
@@ -162,14 +181,12 @@ export function LlmSettingsForm({ initial }: Props) {
               onChange={e => setEndpoint(e.target.value)}
               className="font-mono text-sm"
             />
-            <p className="text-xs text-gray-400">
-              Zu finden im Azure Portal unter: Azure OpenAI → Ihr Resource → Schlüssel und Endpunkt
-            </p>
+            <p className="text-xs text-gray-400">{providerData.keyHint}</p>
           </div>
         )}
 
         <div className="space-y-1.5">
-          <Label>{isAzure ? 'Deployment-Name' : 'Modell'}</Label>
+          <Label>{needsEndpoint ? 'Deployment-Name' : 'Modell'}</Label>
           <Select value={model} onValueChange={v => { setModel(v ?? providerData.models[0].id); setCustomModel('') }}>
             <SelectTrigger>
               <SelectValue />
@@ -180,7 +197,7 @@ export function LlmSettingsForm({ initial }: Props) {
               ))}
             </SelectContent>
           </Select>
-          {isAzure && (
+          {needsEndpoint && (
             <div className="space-y-1">
               <p className="text-xs text-gray-400">Oder eigenen Deployment-Namen eingeben:</p>
               <Input
@@ -197,13 +214,13 @@ export function LlmSettingsForm({ initial }: Props) {
           <Label>API-Key</Label>
           <Input
             type="password"
-            placeholder={initial.configured ? 'Neuen Key eingeben (leer = unverändert)' : 'sk-ant-... oder sk-... oder Azure-Key'}
+            placeholder={initial.configured ? 'Neuen Key eingeben (leer = unverändert)' : (providerData.keyPlaceholder ?? 'API Key')}
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
             className="font-mono text-sm"
           />
           <p className="text-xs text-gray-400">
-            Der Key wird AES-256-GCM verschlüsselt gespeichert. Kein Klartext in der Datenbank.
+            {providerData.keyHint} · Wird AES-256-GCM verschlüsselt gespeichert.
           </p>
         </div>
       </div>

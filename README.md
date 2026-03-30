@@ -12,7 +12,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 |---|---|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
-| KI | Anthropic Claude / OpenAI GPT / Azure OpenAI (BYOK – Bring Your Own Key) |
+| KI | Anthropic Claude / OpenAI GPT / Azure OpenAI / Perplexity AI Sonar (BYOK – Bring Your Own Key) |
 | Deployment | Vercel (maxDuration 60s für LLM-Verarbeitung) · Coolify/Docker (standalone) |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
 | Billing | Mollie (aktiv; aktiviert sobald `MOLLIE_API_KEY` gesetzt) |

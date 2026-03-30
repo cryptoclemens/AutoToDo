@@ -31,14 +31,14 @@ export default async function LandingPage() {
   const faqItems = isEn
     ? [
         { q: 'Do I need a credit card to start?', a: 'No. The Free plan requires no payment details. Upgrade anytime when you need more.' },
-        { q: 'What AI models are supported?', a: 'AutoToDo uses your own API key (BYOK) — Claude (Anthropic), GPT-4o (OpenAI), or Azure OpenAI. You control your data and costs.' },
+        { q: 'What AI models are supported?', a: 'AutoToDo uses your own API key (BYOK) — Claude (Anthropic), GPT-4o (OpenAI), Azure OpenAI, or Perplexity AI (Sonar). You control your data and costs.' },
         { q: 'Can I invite external guests without an account?', a: 'Yes, from Solo onwards. Share a read-only link with guests — no registration required.' },
         { q: 'Is my transcript data secure?', a: 'Transcripts are encrypted at rest (AES-256-GCM) and stored in your Supabase project. AutoToDo staff has no access.' },
         { q: 'When is billing available?', a: 'Payment processing via Mollie is coming soon. Until then, all existing users remain on beta (unlimited) access.' },
       ]
     : [
         { q: 'Brauche ich eine Kreditkarte zum Start?', a: 'Nein. Der Free-Plan erfordert keine Zahlungsdaten. Upgrade jederzeit, wenn Sie mehr benötigen.' },
-        { q: 'Welche KI-Modelle werden unterstützt?', a: 'AutoToDo nutzt Ihren eigenen API-Key (BYOK) – Claude (Anthropic), GPT-4o (OpenAI) oder Azure OpenAI. Sie behalten die Kontrolle über Daten und Kosten.' },
+        { q: 'Welche KI-Modelle werden unterstützt?', a: 'AutoToDo nutzt Ihren eigenen API-Key (BYOK) – Claude (Anthropic), GPT-4o (OpenAI), Azure OpenAI oder Perplexity AI (Sonar). Sie behalten die Kontrolle über Daten und Kosten.' },
         { q: 'Kann ich externe Gäste ohne Account einladen?', a: 'Ja, ab Solo. Teilen Sie einen Lesezugriff-Link mit Gästen – keine Registrierung erforderlich.' },
         { q: 'Sind meine Transkriptdaten sicher?', a: 'Transkripte werden verschlüsselt gespeichert (AES-256-GCM) in Ihrem Supabase-Projekt. AutoToDo-Mitarbeiter haben keinen Zugriff.' },
         { q: 'Wann ist die Abrechnung verfügbar?', a: 'Die Zahlungsabwicklung über Mollie kommt in Kürze. Bis dahin haben alle bestehenden Nutzer weiterhin Beta-Zugang (unbegrenzt).' },
@@ -47,12 +47,12 @@ export default async function LandingPage() {
   const steps = isEn
     ? [
         { n: '1', title: 'Upload transcript', desc: 'Paste text or upload a .txt / .rtf file from your meeting or call.' },
-        { n: '2', title: 'AI extracts tasks', desc: 'Claude, GPT-4o or Azure AI reads the transcript and creates structured action items with owner, deadline and priority.' },
+        { n: '2', title: 'AI extracts tasks', desc: 'Claude, GPT-4o, Azure AI or Perplexity Sonar reads the transcript and creates structured action items with owner, deadline and priority.' },
         { n: '3', title: 'Review & export', desc: 'Check AI suggestions, edit inline, set status — then export as XLSX with your branding.' },
       ]
     : [
         { n: '1', title: 'Transkript hochladen', desc: 'Text einfügen oder .txt / .rtf-Datei aus Ihrem Meeting oder Call hochladen.' },
-        { n: '2', title: 'KI extrahiert Aufgaben', desc: 'Claude, GPT-4o oder Azure AI liest das Transkript und erstellt strukturierte LOP-Punkte mit Verantwortlichem, Fälligkeit und Priorität.' },
+        { n: '2', title: 'KI extrahiert Aufgaben', desc: 'Claude, GPT-4o, Azure AI oder Perplexity Sonar liest das Transkript und erstellt strukturierte LOP-Punkte mit Verantwortlichem, Fälligkeit und Priorität.' },
         { n: '3', title: 'Prüfen & exportieren', desc: 'KI-Vorschläge prüfen, inline bearbeiten, Status setzen – dann als XLSX mit Ihrem Branding exportieren.' },
       ]
 
@@ -265,7 +265,7 @@ export default async function LandingPage() {
             {isEn ? 'Works with' : 'Kompatibel mit'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8">
-            {['Anthropic Claude', 'OpenAI GPT-4o', 'Azure OpenAI', 'Slack', 'Microsoft Teams', 'Resend'].map(name => (
+            {['Anthropic Claude', 'OpenAI GPT-4o', 'Azure OpenAI', 'Perplexity AI', 'Slack', 'Microsoft Teams', 'Resend'].map(name => (
               <span key={name} className="text-sm text-gray-400 font-medium">{name}</span>
             ))}
           </div>
