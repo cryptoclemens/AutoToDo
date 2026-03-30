@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import InviteAcceptForm from './InviteAcceptForm'
 
 interface Props {
@@ -9,7 +10,13 @@ interface Props {
 export default async function InvitePage({ params }: Props) {
   const supabase = createClient()
 
-  const { data: invitation } = await supabase
+  const serviceClient = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  // Service-Client nutzen, damit der Workspace-Join nicht an RLS scheitert
+  const { data: invitation } = await serviceClient
     .from('invitations')
     .select('*, workspaces(name, slug)')
     .eq('token', params.token)
@@ -22,22 +29,16 @@ export default async function InvitePage({ params }: Props) {
         email: string
         role: string
         invited_by: string | null
-        workspaces: { name: string; slug: string }
+        workspaces: { name: string; slug: string } | null
       } | null
     }
 
-  if (!invitation) notFound()
+  if (!invitation || !invitation.workspaces) notFound()
 
   const { data: { user } } = await supabase.auth.getUser()
 
   // Bereits eingeloggt → direkt akzeptieren
   if (user) {
-    // Service client for write operations
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    const serviceClient = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
     await serviceClient.from('workspace_members').insert({
       workspace_id: invitation.workspace_id,
       user_id: user.id,
@@ -53,12 +54,10 @@ export default async function InvitePage({ params }: Props) {
     redirect('/dashboard')
   }
 
-  const workspace = invitation.workspaces as { name: string; slug: string }
-
   return (
     <InviteAcceptForm
       token={params.token}
-      workspaceName={workspace.name}
+      workspaceName={invitation.workspaces.name}
       email={invitation.email}
       role={invitation.role}
     />
