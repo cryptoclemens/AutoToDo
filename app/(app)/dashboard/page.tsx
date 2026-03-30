@@ -17,14 +17,35 @@ export default async function DashboardPage() {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) redirect('/onboarding')
 
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id, name, description, created_at, archived_at')
+  // Check if workspace member
+  const { data: wsMember } = await supabase
+    .from('workspace_members')
+    .select('role')
     .eq('workspace_id', workspace.id)
-    .is('archived_at', null)
-    .order('created_at', { ascending: false }) as {
-      data: Array<{ id: string; name: string; description: string | null; created_at: string; archived_at: string | null }> | null
-    }
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  let projects: Array<{ id: string; name: string; description: string | null; created_at: string; archived_at: string | null }> | null
+
+  if (wsMember) {
+    // Full access: show all workspace projects
+    const { data } = await supabase
+      .from('projects')
+      .select('id, name, description, created_at, archived_at')
+      .eq('workspace_id', workspace.id)
+      .is('archived_at', null)
+      .order('created_at', { ascending: false })
+    projects = data as typeof projects
+  } else {
+    // Project-scoped: show only assigned projects
+    const { data: pmRows } = await supabase
+      .from('project_members')
+      .select('projects(id, name, description, created_at, archived_at)')
+      .eq('user_id', user.id)
+    projects = (pmRows ?? [])
+      .map(r => r.projects as unknown as { id: string; name: string; description: string | null; created_at: string; archived_at: string | null } | null)
+      .filter((p): p is NonNullable<typeof p> => p !== null && p.archived_at === null)
+  }
 
   // Workspace-weite LOP-Statistiken
   const projectIds = (projects ?? []).map(p => p.id)

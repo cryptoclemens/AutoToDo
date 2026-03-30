@@ -52,13 +52,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
   }
 
-  // Workspace-Mitgliedschaft eintragen (ignoriert Duplikat)
-  await supabase.from('workspace_members').upsert({
-    workspace_id: invitation.workspace_id,
-    user_id: userId,
-    role: invitation.role,
-    invited_by: invitation.invited_by,
-  }, { onConflict: 'workspace_id,user_id', ignoreDuplicates: true })
+  // Workspace membership only for workspace-level invites (no project_id)
+  if (!invitation.project_id) {
+    await supabase.from('workspace_members').upsert({
+      workspace_id: invitation.workspace_id,
+      user_id: userId,
+      role: invitation.role,
+      invited_by: invitation.invited_by,
+    }, { onConflict: 'workspace_id,user_id', ignoreDuplicates: true })
+  }
 
   // Projektspezifische Mitgliedschaft (falls projektbezogene Einladung)
   if (invitation.project_id) {

@@ -36,20 +36,30 @@ export default async function ProjectPage({ params }: Props) {
 
   if (!project) notFound()
 
-  // Mitglied-Rolle
-  const { data: member } = await supabase
+  // Check workspace membership first
+  const { data: wsMember } = await supabase
     .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle() as {
       data: { role: string } | null
     }
 
-  const canEdit = member
-    ? ['workspace_owner', 'workspace_admin', 'project_admin', 'editor'].includes(member.role)
-    : false
+  let canEdit = false
+  let canAdmin = false
 
-  const canAdmin = member
-    ? ['workspace_owner', 'workspace_admin', 'project_admin'].includes(member.role)
-    : false
+  if (wsMember) {
+    canEdit = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor'].includes(wsMember.role)
+    canAdmin = ['workspace_owner', 'workspace_admin', 'project_admin'].includes(wsMember.role)
+  } else {
+    // Check project-specific membership
+    const { data: pmMember } = await supabase
+      .from('project_members').select('role')
+      .eq('project_id', project.id).eq('user_id', user.id).maybeSingle() as {
+        data: { role: string } | null
+      }
+    if (!pmMember) notFound() // No access at all
+    canEdit = ['project_admin', 'editor'].includes(pmMember.role)
+    canAdmin = pmMember.role === 'project_admin'
+  }
 
   // LOP-Punkte laden
   const { data: lopItems } = await supabase

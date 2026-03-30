@@ -36,5 +36,24 @@ export async function resolveWorkspace(
     .limit(1)
     .maybeSingle()
 
-  return (data?.workspaces as unknown as WorkspaceRow | null) ?? null
+  if (data?.workspaces) return data.workspaces as unknown as WorkspaceRow
+
+  // Third fallback: project-scoped member
+  const { data: pmRow } = await supabase
+    .from('project_members')
+    .select('projects(workspace_id)')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle()
+
+  const wsId = (pmRow?.projects as unknown as { workspace_id: string } | null)?.workspace_id
+  if (wsId) {
+    const { data: ws } = await supabase
+      .from('workspaces')
+      .select(SELECT)
+      .eq('id', wsId)
+      .maybeSingle()
+    if (ws) return ws as WorkspaceRow
+  }
+  return null
 }

@@ -32,14 +32,28 @@ async function checkEditPermission(userId: string, itemId: string, supabase: Sup
   if (!item) return null
 
   const ws = item as { workspace_id: string; project_id: string; status: string; title: string }
-  const { data: member } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', ws.workspace_id).eq('user_id', userId).single()
 
   const editRoles = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor']
-  if (!member || !editRoles.includes((member as { role: string }).role)) return null
 
-  return ws
+  // Check workspace membership
+  const { data: wsMember } = await supabase
+    .from('workspace_members').select('role')
+    .eq('workspace_id', ws.workspace_id).eq('user_id', userId).maybeSingle()
+
+  if (wsMember && editRoles.includes((wsMember as { role: string }).role)) {
+    return ws
+  }
+
+  // Check project membership
+  const { data: pmMember } = await supabase
+    .from('project_members').select('role')
+    .eq('project_id', ws.project_id).eq('user_id', userId).maybeSingle()
+
+  if (pmMember && editRoles.includes((pmMember as { role: string }).role)) {
+    return ws
+  }
+
+  return null
 }
 
 export async function PATCH(

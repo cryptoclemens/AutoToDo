@@ -90,12 +90,15 @@ export async function PATCH(request: NextRequest) {
   if (!invitations?.length) return NextResponse.json({ ok: true })
 
   for (const inv of invitations) {
-    await supabase.from('workspace_members').upsert({
-      workspace_id: inv.workspace_id,
-      user_id: userId,
-      role: inv.role,
-      invited_by: inv.invited_by,
-    }, { onConflict: 'workspace_id,user_id', ignoreDuplicates: true })
+    // Workspace membership only for workspace-level invites (no project_id)
+    if (!inv.project_id) {
+      await supabase.from('workspace_members').upsert({
+        workspace_id: inv.workspace_id,
+        user_id: userId,
+        role: inv.role,
+        invited_by: inv.invited_by,
+      }, { onConflict: 'workspace_id,user_id', ignoreDuplicates: true })
+    }
 
     if (inv.project_id) {
       const projectRole = ['workspace_admin', 'workspace_owner'].includes(inv.role)

@@ -39,12 +39,22 @@ export async function POST(request: NextRequest) {
   const workspaceId = workspace.id
 
   // Berechtigung prüfen
-  const { data: member } = await supabase
+  const { data: wsMember } = await supabase
     .from('workspace_members').select('role')
-    .eq('workspace_id', workspaceId).eq('user_id', user.id).single()
+    .eq('workspace_id', workspaceId).eq('user_id', user.id).maybeSingle()
 
   const editRoles = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor']
-  if (!member || !editRoles.includes((member as { role: string }).role)) {
+  let hasAccess = wsMember !== null && editRoles.includes((wsMember as { role: string }).role)
+
+  if (!hasAccess) {
+    // Check project-specific membership
+    const { data: pmMember } = await supabase
+      .from('project_members').select('role')
+      .eq('project_id', parsed.data.projectId).eq('user_id', user.id).maybeSingle()
+    hasAccess = pmMember !== null && editRoles.includes((pmMember as { role: string }).role)
+  }
+
+  if (!hasAccess) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 
