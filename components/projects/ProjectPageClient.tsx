@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import LopTable from '@/components/lop/LopTable'
 import ProjectInviteButton from './ProjectInviteButton'
+import ProjectMembersDialog from './ProjectMembersDialog'
 import { Button } from '@/components/ui/button'
 import type { LopItem } from '@/components/lop/LopItemDialog'
 
@@ -35,6 +36,9 @@ export default function ProjectPageClient({
               projectId={projectId}
               projectName={projectName}
             />
+          )}
+          {canAdmin && (
+            <ProjectMembersDialog projectId={projectId} />
           )}
           {canEdit && (
             <Button

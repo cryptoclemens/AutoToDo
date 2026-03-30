@@ -57,7 +57,7 @@ function WebhookHelpPopover() {
               <li>Klicke auf <strong>···</strong> (Mehr Optionen) neben dem Kanalnamen</li>
               <li>Wähle <strong>Connectors</strong> (oder <strong>Workflows</strong> in neuen Teams-Versionen)</li>
               <li>Suche nach <strong>Incoming Webhook</strong> und klicke <strong>Konfigurieren</strong></li>
-              <li>Vergib einen Namen (z.B. "AutoToDo"), optional ein Logo hochladen</li>
+              <li>Vergib einen Namen (z.B. &ldquo;AutoToDo&rdquo;), optional ein Logo hochladen</li>
               <li>Auf <strong>Erstellen</strong> klicken</li>
               <li>Die generierte URL (<code className="bg-gray-100 px-1 rounded">https://…webhook.office.com/…</code>) kopieren und hier einfügen</li>
             </ol>
