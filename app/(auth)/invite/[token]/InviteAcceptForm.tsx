@@ -13,9 +13,10 @@ interface Props {
   workspaceName: string
   email: string
   role: string
+  alreadyAccepted?: boolean
 }
 
-export default function InviteAcceptForm({ token, workspaceName, email, role }: Props) {
+export default function InviteAcceptForm({ token, workspaceName, email, role, alreadyAccepted }: Props) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -30,6 +31,15 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
     setError('')
 
     const supabase = createClient()
+
+    // Already-accepted: just sign in and go to dashboard
+    if (alreadyAccepted) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInError) { setError(signInError.message); setLoading(false); return }
+      router.push('/dashboard')
+      router.refresh()
+      return
+    }
 
     if (!isLoginMode) {
       const { error: signUpError } = await supabase.auth.signUp({
@@ -82,6 +92,43 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
     // New users → onboarding (LLM setup); existing users → dashboard
     router.push(isLoginMode ? '/dashboard' : '/onboarding')
     router.refresh()
+  }
+
+  if (alreadyAccepted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Einladung bereits angenommen</CardTitle>
+          <CardDescription>
+            Diese Einladung zu <strong>{workspaceName}</strong> wurde bereits verwendet.
+            Melde dich an, um auf deinen Workspace zuzugreifen.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAccept} className="space-y-4">
+            <div className="space-y-2">
+              <Label>E-Mail</Label>
+              <Input value={email} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Passwort</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Wird angemeldet…' : 'Anmelden'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
