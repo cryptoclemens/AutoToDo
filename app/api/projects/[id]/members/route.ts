@@ -57,7 +57,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (error) return NextResponse.json({ error: 'Fehler beim Laden.' }, { status: 500 })
 
   // Enrich with user emails
-  const userIds = (data ?? []).map(m => m.user_id)
   const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 })
   const userMap = Object.fromEntries(users.map(u => [u.id, { email: u.email, display_name: u.user_metadata?.display_name ?? u.user_metadata?.full_name ?? null }]))
 
