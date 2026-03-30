@@ -38,11 +38,21 @@ interface ApiKey {
   revoked_at: string | null
 }
 
+interface PendingInvitation {
+  id: string
+  email: string
+  role: string
+  created_at: string
+  expires_at: string
+  project_id: string | null
+}
+
 interface Props {
   userEmail: string
   isAdmin: boolean
   workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; plan?: string; plan_expires_at?: string | null }
   members: Member[]
+  pendingInvitations: PendingInvitation[]
   llmInitial: {
     configured: boolean
     provider?: string
@@ -72,7 +82,7 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
   { id: 'audit', adminOnly: true },
 ]
 
-export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llmInitial, apiKeys, mollieEnabled, billing }: Props) {
+export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
@@ -80,7 +90,11 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>(
     Object.fromEntries(members.map(m => [m.user_id, m.role]))
   )
+  const [memberList, setMemberList] = useState(members)
   const [rolesSaving, setRolesSaving] = useState<Record<string, boolean>>({})
+  const [removingMember, setRemovingMember] = useState<string | null>(null)
+  const [invitations, setInvitations] = useState(pendingInvitations)
+  const [revokingInvite, setRevokingInvite] = useState<string | null>(null)
 
   async function handleDigestToggle() {
     const next = !digestEnabled
@@ -115,6 +129,30 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
       toast.success(ts('roleSaved'))
     } finally {
       setRolesSaving(prev => ({ ...prev, [userId]: false }))
+    }
+  }
+
+  async function handleRemoveMember(userId: string) {
+    setRemovingMember(userId)
+    try {
+      const res = await fetch(`/api/settings/members/${userId}`, { method: 'DELETE' })
+      if (!res.ok) { toast.error('Mitglied konnte nicht entfernt werden.'); return }
+      setMemberList(prev => prev.filter(m => m.user_id !== userId))
+      toast.success('Mitglied entfernt.')
+    } finally {
+      setRemovingMember(null)
+    }
+  }
+
+  async function handleRevokeInvitation(invitationId: string) {
+    setRevokingInvite(invitationId)
+    try {
+      const res = await fetch(`/api/invitations?id=${invitationId}`, { method: 'DELETE' })
+      if (!res.ok) { toast.error('Einladung konnte nicht widerrufen werden.'); return }
+      setInvitations(prev => prev.filter(i => i.id !== invitationId))
+      toast.success('Einladung widerrufen.')
+    } finally {
+      setRevokingInvite(null)
     }
   }
 
@@ -183,50 +221,102 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, llm
 
       {/* Team */}
       {tab === 'team' && isAdmin && (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500 mb-2">{ts('teamCount', { count: members.length })}</p>
-          <WorkspaceInviteForm workspaceId={workspace.id} />
-          <div className="space-y-2">
-            {members.map(m => {
-              const currentRole = memberRoles[m.user_id] ?? m.role
-              const canChange = currentRole !== 'workspace_owner'
-              return (
-                <Card key={m.user_id}>
-                  <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm text-gray-800 font-medium truncate">
-                        {m.display_name ?? m.email ?? `${m.user_id.slice(0, 8)}…`}
-                      </p>
-                      {m.email && m.display_name && (
-                        <p className="text-xs text-gray-400 truncate">{m.email}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-gray-400">
-                        {new Date(m.joined_at).toLocaleDateString('de-DE')}
-                      </span>
-                      {canChange ? (
-                        <select
-                          value={currentRole}
-                          disabled={rolesSaving[m.user_id]}
-                          onChange={e => handleRoleChange(m.user_id, e.target.value)}
-                          className="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-                          {CHANGEABLE_ROLES.map(r => (
-                            <option key={r} value={r}>{ts(`changeableRoles.${r}`)}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
-                          {ts(`roles.${currentRole}` as Parameters<typeof ts>[0]) ?? currentRole}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+        <div className="space-y-6">
+          <div>
+            <p className="text-sm text-gray-500 mb-2">{ts('teamCount', { count: memberList.length })}</p>
+            <WorkspaceInviteForm workspaceId={workspace.id} />
           </div>
+
+          {/* Aktive Mitglieder */}
+          <div>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Mitglieder</h3>
+            <div className="space-y-2">
+              {memberList.map(m => {
+                const currentRole = memberRoles[m.user_id] ?? m.role
+                const canChange = currentRole !== 'workspace_owner'
+                return (
+                  <Card key={m.user_id}>
+                    <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-800 font-medium truncate">
+                          {m.display_name ?? m.email ?? `${m.user_id.slice(0, 8)}…`}
+                        </p>
+                        {m.email && m.display_name && (
+                          <p className="text-xs text-gray-400 truncate">{m.email}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-gray-400">
+                          {new Date(m.joined_at).toLocaleDateString('de-DE')}
+                        </span>
+                        {canChange ? (
+                          <select
+                            value={currentRole}
+                            disabled={rolesSaving[m.user_id]}
+                            onChange={e => handleRoleChange(m.user_id, e.target.value)}
+                            className="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          >
+                            {CHANGEABLE_ROLES.map(r => (
+                              <option key={r} value={r}>{ts(`changeableRoles.${r}`)}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            {ts(`roles.${currentRole}` as Parameters<typeof ts>[0]) ?? currentRole}
+                          </Badge>
+                        )}
+                        {canChange && (
+                          <button
+                            onClick={() => handleRemoveMember(m.user_id)}
+                            disabled={removingMember === m.user_id}
+                            className="text-xs text-red-500 hover:text-red-700 disabled:opacity-40 ml-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            title="Mitglied entfernen"
+                          >
+                            {removingMember === m.user_id ? '…' : 'Entfernen'}
+                          </button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Ausstehende Einladungen */}
+          {invitations.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Ausstehende Einladungen ({invitations.length})
+              </h3>
+              <div className="space-y-2">
+                {invitations.map(inv => (
+                  <Card key={inv.id} className="border-dashed border-amber-200 bg-amber-50/50">
+                    <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-800 font-medium truncate">{inv.email}</p>
+                        <p className="text-xs text-gray-400">
+                          {inv.role}{inv.project_id ? ' · Projekteinladung' : ''} · läuft ab {new Date(inv.expires_at).toLocaleDateString('de-DE')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50">
+                          Ausstehend
+                        </Badge>
+                        <button
+                          onClick={() => handleRevokeInvitation(inv.id)}
+                          disabled={revokingInvite === inv.id}
+                          className="text-xs text-red-500 hover:text-red-700 disabled:opacity-40 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                        >
+                          {revokingInvite === inv.id ? '…' : 'Widerrufen'}
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

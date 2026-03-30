@@ -60,6 +60,19 @@ export default async function SettingsPage() {
     supabase.from('workspace_usage').select('transcripts_month').eq('workspace_id', workspace.id).maybeSingle(),
   ])
 
+  // Load pending invitations (admin only)
+  const { data: pendingInvitations } = isAdmin
+    ? await supabase
+        .from('invitations')
+        .select('id, email, role, created_at, expires_at, project_id')
+        .eq('workspace_id', workspace.id)
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false }) as {
+          data: Array<{ id: string; email: string; role: string; created_at: string; expires_at: string; project_id: string | null }> | null
+        }
+    : { data: null }
+
   // Load API keys (admin only)
   const { data: apiKeys } = isAdmin
     ? await supabase.from('api_keys')
@@ -84,6 +97,7 @@ export default async function SettingsPage() {
       isAdmin={isAdmin}
       workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null, digest_enabled: true, plan: 'beta', plan_expires_at: null }}
       members={members ?? []}
+      pendingInvitations={pendingInvitations ?? []}
       llmInitial={llmInitial}
       apiKeys={apiKeys ?? []}
       mollieEnabled={isMollieConfigured()}

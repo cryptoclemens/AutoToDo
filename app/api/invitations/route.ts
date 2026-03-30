@@ -109,3 +109,44 @@ export async function POST(request: NextRequest) {
     tokens: inserted.map((i: { email: string; token: string }) => ({ email: i.email, token: i.token })),
   })
 }
+
+/** DELETE /api/invitations?id=<uuid> — Einladung widerrufen */
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const invitationId = searchParams.get('id')
+  if (!invitationId) return NextResponse.json({ error: 'Fehlende ID.' }, { status: 400 })
+
+  const authClient = createAuthClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  // Einladung laden und prüfen ob der User Admin des zugehörigen Workspaces ist
+  const { data: invitation } = await supabase
+    .from('invitations')
+    .select('workspace_id')
+    .eq('id', invitationId)
+    .is('accepted_at', null)
+    .single()
+
+  if (!invitation) return NextResponse.json({ error: 'Einladung nicht gefunden.' }, { status: 404 })
+
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', invitation.workspace_id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || !['workspace_owner', 'workspace_admin'].includes((member as { role: string }).role)) {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  await supabase.from('invitations').delete().eq('id', invitationId)
+
+  return NextResponse.json({ ok: true })
+}
