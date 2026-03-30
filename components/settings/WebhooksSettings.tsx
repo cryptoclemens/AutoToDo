@@ -6,6 +6,71 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
+function WebhookHelpPopover() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <span className="relative inline-block align-middle ml-1">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold hover:bg-gray-300 leading-none flex items-center justify-center"
+        aria-label="Hilfe"
+      >
+        ?
+      </button>
+      {open && (
+        <div className="absolute z-50 left-0 top-6 w-80 bg-white border border-gray-200 rounded-xl shadow-lg p-4 text-xs text-gray-700 space-y-4">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-base leading-none"
+          >
+            ×
+          </button>
+
+          {/* Slack */}
+          <div>
+            <p className="font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+              <span className="text-base">📢</span> Slack – Webhook-URL einrichten
+            </p>
+            <ol className="list-decimal list-inside space-y-1 leading-relaxed">
+              <li>Öffne <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">api.slack.com/apps</a> und klicke <strong>Create New App</strong></li>
+              <li>Wähle <strong>From scratch</strong>, gib einen Namen ein und wähle deinen Workspace</li>
+              <li>Links unter <strong>Features</strong> auf <strong>Incoming Webhooks</strong> klicken</li>
+              <li>Schalter <strong>Activate Incoming Webhooks</strong> aktivieren</li>
+              <li>Unten auf <strong>Add New Webhook to Workspace</strong> klicken</li>
+              <li>Kanal auswählen → <strong>Allow</strong></li>
+              <li>Die generierte URL (<code className="bg-gray-100 px-1 rounded">https://hooks.slack.com/services/…</code>) kopieren und hier einfügen</li>
+            </ol>
+          </div>
+
+          <div className="border-t border-gray-100" />
+
+          {/* Teams */}
+          <div>
+            <p className="font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+              <span className="text-base">💬</span> Microsoft Teams – Webhook-URL einrichten
+            </p>
+            <ol className="list-decimal list-inside space-y-1 leading-relaxed">
+              <li>Öffne den gewünschten Teams-<strong>Kanal</strong></li>
+              <li>Klicke auf <strong>···</strong> (Mehr Optionen) neben dem Kanalnamen</li>
+              <li>Wähle <strong>Connectors</strong> (oder <strong>Workflows</strong> in neuen Teams-Versionen)</li>
+              <li>Suche nach <strong>Incoming Webhook</strong> und klicke <strong>Konfigurieren</strong></li>
+              <li>Vergib einen Namen (z.B. "AutoToDo"), optional ein Logo hochladen</li>
+              <li>Auf <strong>Erstellen</strong> klicken</li>
+              <li>Die generierte URL (<code className="bg-gray-100 px-1 rounded">https://…webhook.office.com/…</code>) kopieren und hier einfügen</li>
+            </ol>
+            <p className="mt-1.5 text-gray-500 italic">
+              Neuere Teams-Versionen: Connectors → <strong>Workflows</strong> → &ldquo;Post to a channel when a webhook request is received&rdquo;
+            </p>
+          </div>
+        </div>
+      )}
+    </span>
+  )
+}
+
 function SlackTeamsSection() {
   const [webhookUrl, setWebhookUrl] = useState('')
   const [saving, setSaving] = useState(false)
@@ -37,34 +102,41 @@ function SlackTeamsSection() {
     }
   }
 
+  const isTeams = webhookUrl.includes('webhook.office.com') || webhookUrl.includes('office365.com')
+  const isSlack = webhookUrl.includes('hooks.slack.com')
+
   if (!loaded) return <p className="text-sm text-gray-400">Lädt…</p>
 
   return (
     <form onSubmit={handleSave} className="space-y-3">
       <p className="text-xs text-gray-500">
-        Slack- oder Microsoft Teams-Benachrichtigungen bei neuen und geänderten LOP-Punkten.
-        Erstellen Sie einen{' '}
-        <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noopener noreferrer"
-          className="text-blue-600 underline">Slack Incoming Webhook</a>{' '}
-        oder einen{' '}
-        <a href="https://learn.microsoft.com/de-de/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
-          target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Teams Incoming Webhook</a>.
+        Benachrichtigungen bei neuen und geänderten LOP-Punkten — für Slack und Microsoft Teams.
+        <WebhookHelpPopover />
       </p>
       <div className="flex gap-2">
-        <Input
-          type="url"
-          placeholder="https://hooks.slack.com/services/… oder Teams-URL"
-          value={webhookUrl}
-          onChange={e => setWebhookUrl(e.target.value)}
-          className="flex-1"
-        />
+        <div className="relative flex-1">
+          <Input
+            type="url"
+            placeholder="https://hooks.slack.com/… oder https://…webhook.office.com/…"
+            value={webhookUrl}
+            onChange={e => setWebhookUrl(e.target.value)}
+            className="flex-1 pr-16"
+          />
+          {(isSlack || isTeams) && (
+            <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium px-1.5 py-0.5 rounded ${
+              isTeams ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'
+            }`}>
+              {isTeams ? 'Teams' : 'Slack'}
+            </span>
+          )}
+        </div>
         <Button type="submit" size="sm" disabled={saving}>
           {saving ? 'Speichert…' : 'Speichern'}
         </Button>
       </div>
       {webhookUrl && (
         <p className="text-xs text-green-600">
-          ✓ Aktiv – LOP-Events werden an diese URL gesendet.
+          ✓ Aktiv – LOP-Events werden {isTeams ? 'an Microsoft Teams' : isSlack ? 'an Slack' : 'an diese URL'} gesendet.
         </p>
       )}
     </form>
