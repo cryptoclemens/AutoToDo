@@ -182,7 +182,7 @@ export default function ApiKeyList({ initialKeys }: Props) {
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700 space-y-1">
         <p className="font-semibold">{ts('apiKeys.apiAccess')}</p>
-        <p>Basis-URL: <code className="font-mono">https://autotodo.app/api/v1</code></p>
+        <p>Basis-URL: <code className="font-mono">https://autotodo.vencly.com/api/v1</code></p>
         <p>Header: <code className="font-mono">Authorization: Bearer ak_live_…</code></p>
         <p>Endpunkte: <code className="font-mono">GET /projects</code> · <code className="font-mono">GET /lop?projectId=…</code> · <code className="font-mono">POST /transcripts</code></p>
       </div>

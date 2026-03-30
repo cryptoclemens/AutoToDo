@@ -94,8 +94,8 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 Im DNS-Provider (z.B. Cloudflare):
 ```
 # Neuen A-Record anlegen (noch NICHT auf neue IP zeigen)
-autotodo.app     A  <alte-vercel-ip>   TTL: 300  ← noch alt
-api.autotodo.app A  <alte-vercel-ip>   TTL: 300
+autotodo.vencly.com     A  <alte-vercel-ip>   TTL: 300  ← noch alt
+api.autotodo.vencly.com A  <alte-vercel-ip>   TTL: 300
 
 # TTL auf 5 Minuten senken — 24h vor Cutover
 # Damit DNS-Wechsel beim Cutover schnell wirkt
@@ -158,8 +158,8 @@ ANON_KEY=<aus-supabase-cloud>
 SERVICE_ROLE_KEY=<aus-supabase-cloud>
 
 # Site URL für Auth-Redirects
-SITE_URL=https://autotodo.app
-ADDITIONAL_REDIRECT_URLS=https://autotodo.app/auth/callback
+SITE_URL=https://autotodo.vencly.com
+ADDITIONAL_REDIRECT_URLS=https://autotodo.vencly.com/auth/callback
 
 # SMTP für Auth-Emails (Resend SMTP-Bridge oder direkter SMTP)
 SMTP_HOST=smtp.resend.com
@@ -202,8 +202,8 @@ docker compose ps  # alle Services healthy?
 
 In Coolify: Traefik-Route für Supabase einrichten:
 ```
-db.autotodo.app    → Port 8000 (Kong API Gateway)
-studio.autotodo.app → Port 3000 (Supabase Studio)
+db.autotodo.vencly.com    → Port 8000 (Kong API Gateway)
+studio.autotodo.vencly.com → Port 3000 (Supabase Studio)
 ```
 
 ---
@@ -283,12 +283,12 @@ Port: 3000
 
 ```bash
 # Supabase → auf self-hosted zeigen
-NEXT_PUBLIC_SUPABASE_URL=https://db.autotodo.app
+NEXT_PUBLIC_SUPABASE_URL=https://db.autotodo.vencly.com
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
 # App
-NEXT_PUBLIC_APP_URL=https://autotodo.app
+NEXT_PUBLIC_APP_URL=https://autotodo.vencly.com
 ENCRYPTION_SECRET=<64-hex-chars>
 
 # Mollie
@@ -314,7 +314,7 @@ http:
           X-Timeout: "120s"
   routers:
     autotodo:
-      rule: "Host(`autotodo.app`)"
+      rule: "Host(`autotodo.vencly.com`)"
       middlewares:
         - long-timeout
 ```
@@ -329,7 +329,7 @@ traefik.http.middlewares.timeout.headers.customrequestheaders.X-Timeout: 120s
 ```
 Coolify → Server → Scheduled Tasks → New Task
 Name:     daily-digest
-URL:      https://autotodo.app/api/cron/daily-digest
+URL:      https://autotodo.vencly.com/api/cron/daily-digest
 Method:   GET
 Schedule: 0 16 * * 1-5   (Mo–Fr, 16:00 UTC)
 Header:   Authorization: Bearer <CRON_SECRET>
@@ -423,9 +423,9 @@ SUPABASE_SERVICE_ROLE_KEY=<original-cloud-service-role-key>
 # Port: 3001
 
 # Monitore einrichten:
-# - Self-hosted Supabase API: https://db.autotodo.app/rest/v1/ (alle 60s)
-# - AutoToDo App: https://autotodo.app (alle 60s)
-# - Supabase Studio: https://studio.autotodo.app (alle 5 Min)
+# - Self-hosted Supabase API: https://db.autotodo.vencly.com/rest/v1/ (alle 60s)
+# - AutoToDo App: https://autotodo.vencly.com (alle 60s)
+# - Supabase Studio: https://studio.autotodo.vencly.com (alle 5 Min)
 # - Alert via E-Mail (Resend) oder Telegram bei Ausfall
 ```
 

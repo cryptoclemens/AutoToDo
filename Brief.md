@@ -41,7 +41,7 @@ Die App läuft aktuell auf Single-Domain (Vercel). Workspace-Auflösung erfolgt 
 1. Wenn ein `x-workspace-slug`-Header gesetzt ist (Subdomain-Routing): Workspace per Slug suchen
 2. Fallback: ersten Workspace des eingeloggten Nutzers per Membership ermitteln
 
-Ziel: Subdomain-Routing mit `[slug].autotodo.app` über Vercel Wildcard Domain (Phase 2).
+Ziel: Subdomain-Routing mit `[slug].autotodo.vencly.com` über Vercel Wildcard Domain (Phase 2).
 
 ### Rollenmodell
 
@@ -204,14 +204,14 @@ Das Feld „Verantwortlich" in LOP-Tabelle und Detail-Dialog wird von einem Frei
 
 ### Direktlink in der E-Mail
 
-Jeder LOP-Punkt enthält einen Link der Form `https://autotodo.app/projects/[id]`, der direkt zur Projektseite mit der entsprechenden LOP-Liste führt.
+Jeder LOP-Punkt enthält einen Link der Form `https://autotodo.vencly.com/projects/[id]`, der direkt zur Projektseite mit der entsprechenden LOP-Liste führt.
 
 ---
 
 ## Public API & Webhooks
 
 ### REST API (implementiert ab M7)
-Basis-URL: `https://autotodo.app/api/v1`
+Basis-URL: `https://autotodo.vencly.com/api/v1`
 Authentifizierung: `Authorization: Bearer ak_live_...`
 
 **Implementierte Endpunkte:**

@@ -5,7 +5,7 @@ const PROTECTED_PATHS = ['/dashboard', '/projects', '/settings', '/onboarding']
 
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') ?? ''
-  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'autotodo.app'
+  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'autotodo.vencly.com'
   const pathname = request.nextUrl.pathname
 
   // Workspace subdomain only when hostname is truly <slug>.appDomain

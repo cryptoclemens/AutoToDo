@@ -259,7 +259,7 @@ export default function RegisterPage() {
                       onChange={e => { setSlug(slugify(e.target.value)); setSlugManuallyEdited(true) }}
                       required className="flex-1"
                     />
-                    <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.app</span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.vencly.com</span>
                   </div>
                   <p className="text-xs text-gray-400">{t('subdomainHint')}</p>
                 </div>

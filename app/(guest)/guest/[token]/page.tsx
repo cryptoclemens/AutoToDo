@@ -178,7 +178,7 @@ export default async function GuestPage({ params }: Props) {
             </p>
           </div>
           <a
-            href={process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.app'}
+            href={process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.vencly.com'}
             className="shrink-0 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Kostenlos starten →
