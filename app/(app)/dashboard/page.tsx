@@ -76,13 +76,15 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{workspace.name}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{wsMember ? workspace.name : 'Projektmitglied'}</p>
         </div>
-        <Link href="/projects/new">
-          <Button style={{ backgroundColor: 'var(--brand)' }}>
-            + {t('newProject')}
-          </Button>
-        </Link>
+        {wsMember && (
+          <Link href="/projects/new">
+            <Button style={{ backgroundColor: 'var(--brand)' }}>
+              + {t('newProject')}
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Statistik-Karten */}
