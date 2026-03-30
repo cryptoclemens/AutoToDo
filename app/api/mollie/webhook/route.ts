@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { getMollieClient } from '@/lib/mollie'
+import { createAndSendInvoice } from '@/lib/invoice'
+import type { Plan } from '@/lib/plans'
 
 export const runtime = 'nodejs'
 
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
 
     const metadata = payment.metadata as {
       workspaceId?: string
+      userId?: string
       plan?: string
       seats?: string
     } | null
@@ -74,6 +77,18 @@ export async function POST(req: NextRequest) {
           plan: metadata.plan,
           paymentId,
         })
+
+        // Rechnung erstellen und per E-Mail verschicken
+        const amountGross = parseFloat(payment.amount.value)
+        const currency = payment.amount.currency
+        createAndSendInvoice(supabase, {
+          paymentId,
+          workspaceId: metadata.workspaceId,
+          userId: metadata.userId ?? '',
+          plan: metadata.plan as Plan,
+          amountGross,
+          currency,
+        }).catch(err => console.error('Mollie webhook: invoice error', err))
       }
     } else {
       // Log other statuses (failed, expired, canceled) — Mollie handles retries
