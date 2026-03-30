@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -12,6 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
 import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
+
+interface ActivityInfo {
+  created: { name: string; date: string; byAi: boolean } | null
+  lastEdited: { name: string; date: string; byAi: boolean } | null
+}
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
@@ -39,13 +44,28 @@ interface Props {
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
 }
 
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 export default function LopItemDialog({ item, canEdit, members, onClose, onUpdate }: Props) {
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
+  const [activity, setActivity] = useState<ActivityInfo | null>(null)
 
   useEffect(() => {
     setDraft(item ? { ...item } : null)
+    setActivity(null)
   }, [item])
+
+  const loadActivity = useCallback(async (id: string) => {
+    const res = await fetch(`/api/lop/${id}/activity`)
+    if (res.ok) setActivity(await res.json())
+  }, [])
+
+  useEffect(() => {
+    if (item?.id) loadActivity(item.id)
+  }, [item?.id, loadActivity])
 
   async function handleSave() {
     if (!draft) return
@@ -211,6 +231,30 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
                       &ldquo;{draft.source_quote}&rdquo;
                     </p>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Aktivitäts-Footer */}
+            {activity && (activity.created || activity.lastEdited) && (
+              <div className="border-t pt-3 space-y-1">
+                {activity.created && (
+                  <p className="text-xs text-gray-400">
+                    Erstellt von{' '}
+                    <span className="font-medium text-gray-500">
+                      {activity.created.byAi ? 'KI' : activity.created.name}
+                    </span>
+                    {' · '}{fmtDate(activity.created.date)}
+                  </p>
+                )}
+                {activity.lastEdited && (
+                  <p className="text-xs text-gray-400">
+                    Zuletzt bearbeitet von{' '}
+                    <span className="font-medium text-gray-500">
+                      {activity.lastEdited.byAi ? 'KI' : activity.lastEdited.name}
+                    </span>
+                    {' · '}{fmtDate(activity.lastEdited.date)}
+                  </p>
                 )}
               </div>
             )}

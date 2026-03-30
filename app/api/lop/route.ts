@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
     .insert({
       workspace_id: workspaceId,
       project_id: projectId,
+      created_by: user.id,
       ...fields,
     })
     .select()

@@ -76,7 +76,7 @@ export async function PATCH(
 
   const { data, error } = await supabase
     .from('lop_items')
-    .update(parsed.data)
+    .update({ ...parsed.data, updated_by: user.id })
     .eq('id', params.id)
     .select()
     .single()
