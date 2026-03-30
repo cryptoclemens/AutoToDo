@@ -139,6 +139,13 @@ export default function RegisterPage() {
       // Legal consent speichern (fire-and-forget, non-blocking)
       fetch('/api/legal/consent', { method: 'POST' }).catch(() => {})
 
+      // Auto-accept any pending invitations for this email (fire-and-forget)
+      fetch('/api/workspaces', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      }).catch(() => {})
+
       const res = await fetch('/api/workspaces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

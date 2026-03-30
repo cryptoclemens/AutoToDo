@@ -21,6 +21,8 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // Invited users who already have an account switch to login mode
+  const [isLoginMode, setIsLoginMode] = useState(false)
 
   async function handleAccept(e: React.FormEvent) {
     e.preventDefault()
@@ -29,19 +31,41 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
 
     const supabase = createClient()
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name } },
-    })
+    if (!isLoginMode) {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name } },
+      })
 
-    if (signUpError) {
-      setError(signUpError.message)
-      setLoading(false)
-      return
+      if (signUpError) {
+        // User already has an account → switch to login mode
+        if (
+          signUpError.message.toLowerCase().includes('already registered') ||
+          signUpError.message.toLowerCase().includes('already been registered') ||
+          signUpError.message.toLowerCase().includes('user already exists')
+        ) {
+          setIsLoginMode(true)
+          setError('Du hast bereits ein Konto. Bitte melde dich mit deinem Passwort an.')
+          setLoading(false)
+          return
+        }
+        setError(signUpError.message)
+        setLoading(false)
+        return
+      }
+    } else {
+      // Login mode: sign in with existing credentials
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInError) {
+        setError(signInError.message)
+        setLoading(false)
+        return
+      }
     }
 
-    // Einladung serverseitig akzeptieren
+    // Accept the invitation server-side.
+    // The accept route resolves the user by session cookie or email lookup (fallback).
     const res = await fetch('/api/invitations/accept', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -49,13 +73,14 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
     })
 
     if (!res.ok) {
-      const { error } = await res.json()
-      setError(error ?? 'Einladung konnte nicht akzeptiert werden.')
+      const data = await res.json() as { error?: string }
+      setError(data.error ?? 'Einladung konnte nicht akzeptiert werden.')
       setLoading(false)
       return
     }
 
-    router.push('/dashboard')
+    // New users → onboarding (LLM setup); existing users → dashboard
+    router.push(isLoginMode ? '/dashboard' : '/onboarding')
     router.refresh()
   }
 
@@ -69,26 +94,30 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
       </CardHeader>
       <CardContent>
         <form onSubmit={handleAccept} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Ihr Name</Label>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-            />
-          </div>
+          {!isLoginMode && (
+            <div className="space-y-2">
+              <Label htmlFor="name">Ihr Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label>E-Mail</Label>
             <Input value={email} disabled />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Passwort wählen</Label>
+            <Label htmlFor="password">
+              {isLoginMode ? 'Ihr Passwort' : 'Passwort wählen'}
+            </Label>
             <Input
               id="password"
               type="password"
-              placeholder="Mindestens 8 Zeichen"
+              placeholder={isLoginMode ? '••••••••' : 'Mindestens 8 Zeichen'}
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
@@ -98,8 +127,17 @@ export default function InviteAcceptForm({ token, workspaceName, email, role }: 
             <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>
           )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Wird verarbeitet…' : 'Beitreten'}
+            {loading ? 'Wird verarbeitet…' : isLoginMode ? 'Anmelden & beitreten' : 'Beitreten'}
           </Button>
+          {isLoginMode && (
+            <button
+              type="button"
+              className="text-xs text-gray-500 hover:underline w-full text-center"
+              onClick={() => { setIsLoginMode(false); setError('') }}
+            >
+              Zurück zur Registrierung
+            </button>
+          )}
         </form>
       </CardContent>
     </Card>
