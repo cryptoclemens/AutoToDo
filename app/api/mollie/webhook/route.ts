@@ -56,12 +56,13 @@ export async function POST(req: NextRequest) {
 
     if (payment.status === 'paid') {
       // Activate the plan on the workspace
+      const seats = metadata.seats ? parseInt(metadata.seats, 10) : null
       const { error } = await supabase
         .from('workspaces')
         .update({
           plan: metadata.plan,
           plan_expires_at: null, // clear any grandfathering expiry
-          updated_at: new Date().toISOString(),
+          ...(seats && seats > 1 ? { plan_seats: seats } : {}),
         })
         .eq('id', metadata.workspaceId)
 

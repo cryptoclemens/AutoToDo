@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plan, PLAN_NAMES, PLAN_LIMITS } from '@/lib/plans'
+import { Plan, PLAN_NAMES, getPlanLimits } from '@/lib/plans'
 
 interface Props {
   plan: Plan
@@ -70,7 +70,7 @@ function UsageBar({ label, current, max }: { label: string; current: number; max
 }
 
 export default function BillingTab({ plan, planExpiresAt, seatCount, projectCount, transcriptsThisMonth, mollieEnabled }: Props) {
-  const limits = PLAN_LIMITS[plan]
+  const limits = getPlanLimits(plan, planExpiresAt)
   const isGrandfathered = planExpiresAt && new Date(planExpiresAt) > new Date()
   const planName = PLAN_NAMES[plan]
   const [loading, setLoading] = useState<Plan | null>(null)
