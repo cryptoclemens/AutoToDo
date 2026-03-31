@@ -1,15 +1,21 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
 import WorkspaceNav from '@/components/workspace/WorkspaceNav'
 import FeedbackButton from '@/components/FeedbackButton'
 import Image from 'next/image'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const slug = headers().get('x-workspace-slug') ?? ''
   const workspace = await resolveWorkspace(supabase, user.id, slug)
@@ -20,9 +26,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .select('role')
     .eq('workspace_id', workspace.id)
     .eq('user_id', user.id)
-    .single() as { data: { role: string } | null }
+    .maybeSingle() as { data: { role: string } | null }
 
-  if (!member) redirect('/onboarding')
+  // Project-scoped users are in project_members but not workspace_members — allow them through
+  if (!member) {
+    const { data: pm } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle()
+
+    if (!pm) redirect('/onboarding')
+  }
 
   const brandColor = workspace.brand_color ?? '#2563EB'
 
@@ -34,7 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen bg-gray-50">
         <WorkspaceNav
           workspace={workspace}
-          userRole={member.role}
+          userRole={member?.role ?? 'viewer'}
           userId={user.id}
         />
         <main className="max-w-7xl mx-auto px-4 py-8">
