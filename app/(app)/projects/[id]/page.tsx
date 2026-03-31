@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import ProjectPageClient from '@/components/projects/ProjectPageClient'
@@ -13,9 +14,14 @@ interface Props {
 }
 
 export default async function ProjectPage({ params }: Props) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const slug = headers().get('x-workspace-slug') ?? ''
   const workspace = await resolveWorkspace(supabase, user.id, slug)
