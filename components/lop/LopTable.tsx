@@ -240,6 +240,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
         members={members}
         onClose={() => setSelectedItem(null)}
         onUpdate={handleUpdate}
+        onDelete={handleDelete}
       />
     </div>
   )

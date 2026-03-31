@@ -42,13 +42,14 @@ interface Props {
   members: WorkspaceMember[]
   onClose: () => void
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
+  onDelete?: (id: string) => void
 }
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-export default function LopItemDialog({ item, canEdit, members, onClose, onUpdate }: Props) {
+export default function LopItemDialog({ item, canEdit, members, onClose, onUpdate, onDelete }: Props) {
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
@@ -261,20 +262,32 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
           </div>
         )}
 
-        {canEdit && (
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={onClose}>Abbrechen</Button>
+        <DialogFooter className="flex-row items-center gap-2">
+          {canEdit && onDelete && draft && (
             <Button
+              variant="outline"
               size="sm"
-              onClick={handleSave}
-              disabled={saving}
-              style={{ backgroundColor: 'var(--brand)' }}
-              className="text-white"
+              className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-700 mr-auto"
+              onClick={() => { onClose(); onDelete(draft.id) }}
             >
-              {saving ? 'Wird gespeichert…' : 'Speichern'}
+              Punkt löschen
             </Button>
-          </DialogFooter>
-        )}
+          )}
+          {canEdit && (
+            <>
+              <Button variant="outline" size="sm" onClick={onClose}>Abbrechen</Button>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={saving}
+                style={{ backgroundColor: 'var(--brand)' }}
+                className="text-white"
+              >
+                {saving ? 'Wird gespeichert…' : 'Speichern'}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
