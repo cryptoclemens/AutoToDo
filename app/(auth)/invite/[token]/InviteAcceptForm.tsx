@@ -89,8 +89,8 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
       return
     }
 
-    // New users → onboarding (LLM setup); existing users → dashboard
-    router.push(isLoginMode ? '/dashboard' : '/onboarding')
+    // Invited users always go to dashboard — no workspace setup needed
+    router.push('/dashboard')
     router.refresh()
   }
 

@@ -8,7 +8,6 @@ export default async function OnboardingPage() {
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
 
-  // Use service role to bypass self-referential RLS on workspace_members
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -26,7 +25,18 @@ export default async function OnboardingPage() {
       } | null
     }
 
-  if (!member) redirect('/register')
+  // Invited user with no own workspace → skip wizard, go straight to dashboard
+  if (!member) {
+    const { data: pm } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle()
+
+    if (pm) redirect('/dashboard')
+    redirect('/register')
+  }
 
   const workspace = member.workspaces
 
