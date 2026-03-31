@@ -18,9 +18,9 @@ export async function GET(
   // Verify user has access to this item
   const { data: item } = await supabase
     .from('lop_items')
-    .select('workspace_id, project_id, created_by, ai_confidence')
+    .select('workspace_id, project_id, ai_confidence')
     .eq('id', params.id)
-    .single() as { data: { workspace_id: string; project_id: string; created_by: string | null; ai_confidence: number | null } | null }
+    .single() as { data: { workspace_id: string; project_id: string; ai_confidence: number | null } | null }
 
   if (!item) return NextResponse.json({ error: 'Nicht gefunden.' }, { status: 404 })
 
@@ -65,7 +65,7 @@ export async function GET(
     return userMap[userId] ?? 'Unbekannt'
   }
 
-  const createdByAi = first.change_type === 'ai_create' || (item.ai_confidence !== null && !item.created_by)
+  const createdByAi = first.change_type === 'ai_create' || (item.ai_confidence !== null && !first.changed_by)
 
   return NextResponse.json({
     created: {
