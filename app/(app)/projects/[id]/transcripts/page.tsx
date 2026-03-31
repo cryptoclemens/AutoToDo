@@ -97,11 +97,27 @@ export default async function TranscriptsPage({ params }: Props) {
             {canUpload && (
               <p className="text-xs text-gray-300">Klicken Sie oben auf &quot;Transkript hochladen&quot;, um zu starten.</p>
             )}
+            <div className="mt-6 border-t border-gray-100 pt-5 text-left max-w-sm mx-auto">
+              <p className="text-xs font-medium text-gray-500 mb-1">Empfehlung: Audio-Mitschnitt</p>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                Für DSGVO-konforme Meetingaufnahmen empfehlen wir{' '}
+                <a
+                  href="https://meetily.ai/downloads"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline font-medium"
+                >
+                  Meetily
+                </a>
+                {' '}— lokale Transkription, keine Cloud, kostenlos nutzbar.
+              </p>
+            </div>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {transcripts.map(t => (
+        <>
+          <div className="space-y-3">
+            {transcripts.map(t => (
             <Card key={t.id}>
               <CardContent className="py-3 px-4">
                 <div className="flex items-start justify-between gap-3">
@@ -138,7 +154,20 @@ export default async function TranscriptsPage({ params }: Props) {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-4">
+            Tipp: DSGVO-konforme Meetingaufnahmen mit{' '}
+            <a
+              href="https://meetily.ai/downloads"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Meetily
+            </a>
+            {' '}— lokale Transkription, keine Cloud, kostenlos.
+          </p>
+        </>
       )}
     </div>
   )
