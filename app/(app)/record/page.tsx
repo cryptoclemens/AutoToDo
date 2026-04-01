@@ -114,7 +114,7 @@ export default function RecordPage() {
     return `${m}:${sec}`
   }
 
-  const canRecord = projectId && state === 'idle'
+  const canRecord = projectId && (state === 'idle' || state === 'error')
   const isRecording = state === 'recording'
   const isBusy = state === 'transcribing' || state === 'processing'
 
