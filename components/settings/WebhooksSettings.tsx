@@ -74,6 +74,7 @@ function WebhookHelpPopover() {
 function SlackTeamsSection() {
   const [webhookUrl, setWebhookUrl] = useState('')
   const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -99,6 +100,23 @@ function SlackTeamsSection() {
       toast.success('Gespeichert.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleTest() {
+    setTesting(true)
+    try {
+      const res = await fetch('/api/settings/notifications/test', { method: 'POST' })
+      const data = await res.json() as { ok?: boolean; platform?: string; error?: string }
+      if (!res.ok || !data.ok) {
+        toast.error(data.error ?? 'Test fehlgeschlagen.')
+      } else {
+        toast.success(`Test-Nachricht an ${data.platform} gesendet!`)
+      }
+    } catch {
+      toast.error('Verbindung fehlgeschlagen.')
+    } finally {
+      setTesting(false)
     }
   }
 
@@ -133,6 +151,18 @@ function SlackTeamsSection() {
         <Button type="submit" size="sm" disabled={saving}>
           {saving ? 'Speichert…' : 'Speichern'}
         </Button>
+        {webhookUrl && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={testing}
+            onClick={handleTest}
+            className="rounded-lg"
+          >
+            {testing ? 'Sende…' : 'Verbindung testen'}
+          </Button>
+        )}
       </div>
       {webhookUrl && (
         <p className="text-xs text-green-600">
