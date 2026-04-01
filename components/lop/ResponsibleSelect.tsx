@@ -121,7 +121,11 @@ export default function ResponsibleSelect({
       disabled={disabled}
     >
       <SelectTrigger className={className}>
-        <SelectValue placeholder={placeholder} />
+        {/* Render display name explicitly – base-ui resolves SelectValue lazily
+            from the portal, causing the raw UUID value to appear before dropdown opens */}
+        {matchedMember
+          ? <span className="flex-1 text-left truncate text-sm">{matchedMember.display_name}</span>
+          : <SelectValue placeholder={placeholder} />}
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={NONE}>– Keiner –</SelectItem>
