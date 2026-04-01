@@ -53,7 +53,7 @@ export default async function LandingPage() {
     : [
         { n: '1', title: 'Transkript hochladen', desc: 'Text einfügen oder .txt / .rtf-Datei aus Ihrem Meeting oder Call hochladen.' },
         { n: '2', title: 'KI extrahiert Aufgaben', desc: 'Claude, GPT-4o, Azure AI oder Perplexity Sonar liest das Transkript und erstellt strukturierte LOP-Punkte mit Verantwortlichem, Fälligkeit und Priorität.' },
-        { n: '3', title: 'Prüfen & exportieren', desc: 'KI-Vorschläge prüfen, inline bearbeiten, Status setzen – dann als XLSX mit Ihrem Branding exportieren.' },
+        { n: '3', title: 'Prüfen & exportieren', desc: 'KI-Vorschläge prüfen, inline bearbeiten, Status setzen – auf Wunsch als XLSX ex- und importierbar.' },
       ]
 
   const featureList = isEn
