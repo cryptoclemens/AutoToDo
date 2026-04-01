@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
@@ -84,17 +83,16 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
 ]
 
 export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial }: Props) {
-  const searchParams = useSearchParams()
-  const [tab, setTab] = useState<Tab>(() => {
-    const t = searchParams.get('tab') as Tab | null
-    return t ?? 'konto'
-  })
+  const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
 
+  // Read ?tab= param client-side after mount (useSearchParams is unreliable during SSR)
   useEffect(() => {
-    const t = searchParams.get('tab') as Tab | null
-    if (t) setTab(t)
-  }, [searchParams])
+    const params = new URLSearchParams(window.location.search)
+    const t = params.get('tab') as Tab | null
+    const valid = TAB_IDS.map(x => x.id)
+    if (t && valid.includes(t)) setTab(t)
+  }, [])
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
   const [digestSaving, setDigestSaving] = useState(false)
   const [digestTestSending, setDigestTestSending] = useState(false)
