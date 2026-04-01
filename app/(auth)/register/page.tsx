@@ -78,7 +78,6 @@ export default function RegisterPage() {
   // Workspace
   const [workspaceName, setWorkspaceName] = useState('')
   const [slug, setSlug] = useState('')
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [friendsCode, setFriendsCode] = useState('')
 
   // LLM (optional)
@@ -95,7 +94,7 @@ export default function RegisterPage() {
 
   function handleWorkspaceNameChange(value: string) {
     setWorkspaceName(value)
-    if (!slugManuallyEdited) setSlug(slugify(value))
+    setSlug(slugify(value))
   }
 
   function handleLlmProviderChange(v: string) {
@@ -260,18 +259,6 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="workspaceName">{t('workspaceName')}</Label>
                   <Input id="workspaceName" type="text" placeholder={t('workspaceNamePlaceholder')} value={workspaceName} onChange={e => handleWorkspaceNameChange(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">{t('subdomain')}</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="slug" type="text" placeholder="acme-consulting" value={slug}
-                      onChange={e => { setSlug(slugify(e.target.value)); setSlugManuallyEdited(true) }}
-                      required className="flex-1"
-                    />
-                    <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.vencly.com</span>
-                  </div>
-                  <p className="text-xs text-gray-400">{t('subdomainHint')}</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="friendsCode">
