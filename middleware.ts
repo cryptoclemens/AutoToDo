@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-const PROTECTED_PATHS = ['/dashboard', '/projects', '/settings', '/onboarding']
+const PROTECTED_PATHS = ['/dashboard', '/projects', '/settings', '/onboarding', '/admin']
 
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') ?? ''
