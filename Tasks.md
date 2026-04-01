@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: April 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komplett abgeschlossen
+Letzte Aktualisierung: April 2026 · Version 0.1.124 · M1–M11, M9.1, M9.5, M14 komplett abgeschlossen
 
 ---
 
@@ -337,6 +337,24 @@ Letzte Aktualisierung: April 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 | 13.8 | `app/(app)/layout.tsx`: CSS-Variable `--brand` — Projekt überschreibt via CSS-Kaskade auf Projekt-Page | ✅ Erledigt |
 | 13.9 | (Backlog) Subdomain-Routing entfernen als separater Meilenstein | 🔲 Offen |
 
+### Meilenstein 14: Notion-Integration & E-Mail-Digest-Infrastruktur
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 14.1 | Migration 018: `workspace_notion_configs`-Tabelle + RLS | ✅ Erledigt |
+| 14.2 | `lib/notion.ts`: `getNotionToken()` (verschlüsselt aus DB) | ✅ Erledigt |
+| 14.3 | `POST /api/settings/integrations/notion`: Token validieren, verschlüsseln, speichern | ✅ Erledigt |
+| 14.4 | `POST /api/transcripts/notion-import`: Notion-Seite → Text → Transkript-Pipeline | ✅ Erledigt |
+| 14.5 | `NotionIntegrationForm`: 5-Schritt-Anleitung + Token-Eingabe + Status-Banner | ✅ Erledigt |
+| 14.6 | Einstellungen: Integrations-Tab (Notion) in `SettingsPageClient` | ✅ Erledigt |
+| 14.7 | Transkript-Upload: dritter Tab „Notion" mit URL-Eingabe | ✅ Erledigt |
+| 14.8 | Landing Page: Notion-Feature-Karte + „Kompatibel mit"-Liste aktualisiert | ✅ Erledigt |
+| 14.9 | How-to-Popup: Schritt 7 für Notion-Import ergänzt | ✅ Erledigt |
+| 14.10 | Digest-Diagnose: Dry-Run-Button auf Steuerung-Seite (Super-Admin) | ✅ Erledigt |
+| 14.11 | Digest-Test: „Test-E-Mail senden"-Button in Workspace-Einstellungen | ✅ Erledigt |
+| 14.12 | Registrierung Schritt 2: Subdomain-Feld entfernt (Slug weiterhin auto-generiert) | ✅ Erledigt |
+| 14.13 | Registrierung Schritt 3: Provider-spezifische API-Key-Hinweise mit Direktlinks | ✅ Erledigt |
+
 ### Bugfixes (außerhalb Meilensteine)
 
 | # | Aufgabe | Status |
@@ -347,11 +365,16 @@ Letzte Aktualisierung: April 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 | BF.4 | Logo-Upload: `logos`-Bucket wird beim ersten Upload automatisch angelegt | ✅ Erledigt |
 | BF.5 | Logo-Anzeige: Supabase-Storage-Domain in `next/image` remotePatterns freigeschaltet | ✅ Erledigt |
 | BF.6 | LOP-Punkte: erledigte Items sinken nach unten + opacity-60 ausgegraut | ✅ Erledigt |
-| BF.7 | E-Mail-Digest: Absender-Domain auf `@vencly.com` geändert | ✅ Erledigt |
+| BF.7 | E-Mail-Digest: Absender-Domain auf `@vencly.app` korrigiert (war fälschlich `vencly.com`) | ✅ Erledigt |
 | BF.8 | E-Mail-Digest: `?dry_run=true`-Modus für Diagnose ohne E-Mail-Versand | ✅ Erledigt |
 | BF.9 | Landing Page UX: Plus Jakarta Sans, Lucide-Icons, reduzierte Hover-Effekte | ✅ Erledigt |
 | BF.10 | Deployment: `output: standalone` + `sharp` für Coolify/Docker | ✅ Erledigt |
 | BF.11 | App-URL Default auf `autotodo.vencly.com` gesetzt (alle API-Routes) | ✅ Erledigt |
+| BF.12 | UUID-Anzeige im Verantwortlich-Feld: `@base-ui/react` SelectValue lazy-resolution-Bug umgangen | ✅ Erledigt |
+| BF.13 | Landing Page Mobile: Login-Button war mit `hidden sm:block` ausgeblendet | ✅ Erledigt |
+| BF.14 | Registrierung: eingeloggter User mit Workspace-Mitgliedschaft wird zu Dashboard weitergeleitet statt Schritt 1 zu überspringen | ✅ Erledigt |
+| BF.15 | Button-Konsistenz: alle Sekundär-Buttons auf `variant="outline" size="sm" rounded-lg` vereinheitlicht | ✅ Erledigt |
+| BF.16 | `<a><Button>`-Verschachtelung im Export-Button behoben (invalid HTML) | ✅ Erledigt |
 
 ---
 

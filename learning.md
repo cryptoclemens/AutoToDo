@@ -432,4 +432,53 @@ SUPABASE_SERVICE_ROLE_KEY       → Cloud Service Role Key
 ```
 Alle anderen Vars (Resend, Mollie, Encryption, App URL) bleiben identisch.
 
+---
+
+## 15. @base-ui/react – Bekannte Bugs & Workarounds
+
+### 15.1 SelectValue löst Display-Text lazy auf
+**Problem:** `<SelectValue>` im `<SelectTrigger>` zeigt den rohen `value`-Prop (z. B. eine UUID) an, bis das Dropdown zum ersten Mal geöffnet wird. Erst dann rendert das Portal die `<SelectItem>`-Kinder und `SelectValue` kann den richtigen Label-Text ermitteln.
+**Fix:** Display-Text explizit im Trigger rendern statt auf `SelectValue` zu verlassen:
+```tsx
+<SelectTrigger>
+  {matchedMember
+    ? <span className="flex-1 text-left truncate text-sm">{matchedMember.display_name}</span>
+    : <SelectValue placeholder={placeholder} />}
+</SelectTrigger>
+```
+**Gilt für:** Alle `@base-ui/react` Select-Komponenten wenn der `value` ein technischer Identifier (UUID, Enum) ist.
+
+---
+
+## 16. Vercel – Env Var Änderungen
+
+### 16.1 Env Var Änderung erfordert Redeploy
+Ändert man in Vercel eine `RESEND_FROM`-Variable (oder jede andere), greift der neue Wert **nicht** automatisch. Es ist ein neuer Deployment-Vorgang nötig (Redeploy im Vercel-Dashboard oder ein neuer Push).
+**Ausnahme:** `NEXT_PUBLIC_*`-Vars werden zur Build-Zeit eingebettet → Redeploy zwingend. Server-seitige Vars werden zur Runtime gelesen → Redeploy ebenfalls nötig da Vercel Serverless Functions gecacht sind.
+
+### 16.2 RESEND_FROM Format in Vercel
+Wert muss das vollständige Format haben: `AutoToDo <noreply@vencly.app>`
+Nicht nur `noreply@vencly.app` – Resend akzeptiert zwar beide, aber mit Display-Namen ist die E-Mail professioneller.
+**Wichtiger:** Die Domain (`vencly.app`) muss in Resend unter Domains verifiziert sein.
+
+---
+
+## 17. Notion API – Internal Integration Token
+
+### 17.1 Internal Integration Token vs. OAuth
+Für einfache BYOK-Integrationen (Nutzer konfiguriert selbst) ist der Internal Integration Token (`secret_...`) deutlich einfacher als OAuth:
+- Nutzer erstellt Token unter `notion.so/profile/integrations`
+- Token teilt keine App-Registration-Kosten
+- Validierung gegen `GET https://api.notion.com/v1/users/me` mit `Authorization: Bearer <token>`
+
+### 17.2 Notion-Seiten müssen explizit geteilt werden
+Nach Token-Erstellung muss der Nutzer jede Seite/Datenbank in Notion explizit mit der Integration teilen (über das „..." Menü → „Connections"). Ohne das → 404 bei Block-Abfragen.
+
+### 17.3 Notion Blocks rekursiv fetchen
+Notion API gibt nur direkte Kinder zurück. Für verschachtelte Inhalte (Toggle-Listen, Sub-Pages) müssen `/v1/blocks/{id}/children` rekursiv bis zu einer sinnvollen Tiefe (z. B. 3) aufgerufen werden.
+
+### 17.4 Nur `export HTTP_METHODS` in Route Files
+**Problem:** `export async function getNotionToken(...)` in `app/api/settings/integrations/notion/route.ts` erzeugt Build-Fehler: *"Route files can only export HTTP methods"*
+**Fix:** Hilfsfunktionen in `lib/`-Dateien auslagern (`lib/notion.ts`) und von dort importieren.
+
 *Diese Datei bei neuen Projekten als Referenz nutzen und projektspezifische Learnings anhängen.*
