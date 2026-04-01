@@ -163,7 +163,12 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
         </button>
       </td>
       <td className="px-3 py-2.5 text-sm text-gray-600 whitespace-nowrap">
-        {item.responsible ?? <span className="text-gray-300">–</span>}
+        {(() => {
+          const resolved = item.responsible_user_id
+            ? (members.find(m => m.user_id === item.responsible_user_id)?.display_name ?? item.responsible)
+            : item.responsible
+          return resolved ?? <span className="text-gray-300">–</span>
+        })()}
       </td>
       <td className="px-3 py-2.5 text-sm whitespace-nowrap">
         {item.due_date

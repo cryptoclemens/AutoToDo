@@ -38,11 +38,11 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
   const [members, setMembers] = useState<WorkspaceMember[]>([])
 
   useEffect(() => {
-    fetch('/api/members')
+    fetch(`/api/members?projectId=${encodeURIComponent(projectId)}`)
       .then(r => r.ok ? r.json() : [])
       .then((data: WorkspaceMember[]) => setMembers(data))
       .catch(() => {})
-  }, [])
+  }, [projectId])
 
   const reviewItems = items.filter(i => i.requires_review)
   const reviewCount = reviewItems.length
