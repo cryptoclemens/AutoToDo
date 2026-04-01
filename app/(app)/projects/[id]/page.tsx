@@ -163,25 +163,22 @@ export default async function ProjectPage({ params }: Props) {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href={`/projects/${project.id}/transcripts`}>
-            <Button size="sm" style={{ backgroundColor: 'var(--brand)' }} className="text-white">
+            <Button size="sm" style={{ backgroundColor: 'var(--brand)' }} className="text-white rounded-lg">
               ↑ Transkript hochladen
             </Button>
           </Link>
           <a href={`/api/lop/export?projectId=${project.id}`}>
-            <Button variant="outline" size="sm">↓ XLSX</Button>
+            <Button variant="outline" size="sm" className="rounded-lg">↓ XLSX exportieren</Button>
           </a>
           {canEdit && !project.archived_at && (
             <XlsxImportDialog projectId={project.id} />
           )}
           {canAdmin && !project.archived_at && (
-            <Link href={`/settings/projects/${project.id}/branding`} title="Projekt-Branding anpassen">
-              <Button variant="outline" size="sm" className="px-2.5">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="7" cy="7" r="2" fill="currentColor" />
-                </svg>
+            <Link href={`/settings/projects/${project.id}/branding`}>
+              <Button variant="outline" size="sm" className="rounded-lg">
+                Branding
               </Button>
             </Link>
           )}
@@ -215,7 +212,7 @@ function ArchiveButton({ projectId }: { projectId: string }) {
   // Inline Server Action nicht möglich in dieser Konstellation – via API Route
   return (
     <form action={`/api/projects/${projectId}/archive`} method="POST">
-      <Button type="submit" variant="outline" size="sm" className="text-orange-600 border-orange-200">
+      <Button type="submit" variant="outline" size="sm" className="rounded-lg">
         Archivieren
       </Button>
     </form>

@@ -29,7 +29,7 @@ export default function ProjectPageClient({
   return (
     <>
       {(canAdmin || canEdit) && (
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {canAdmin && (
             <ProjectInviteButton
               workspaceId={workspaceId}
@@ -44,9 +44,10 @@ export default function ProjectPageClient({
             <Button
               variant="outline"
               size="sm"
+              className="rounded-lg"
               onClick={() => setShowAddForm(v => !v)}
             >
-              + LOP-Punkt manuell hinzufügen
+              + LOP-Punkt hinzufügen
             </Button>
           )}
         </div>

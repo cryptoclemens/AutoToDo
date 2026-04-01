@@ -58,7 +58,7 @@ export default function ProjectMembersDialog({ projectId }: Props) {
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setOpen(true)}>
         Mitglieder verwalten
       </Button>
 

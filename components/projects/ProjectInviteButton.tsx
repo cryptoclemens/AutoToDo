@@ -78,7 +78,7 @@ export default function ProjectInviteButton({ workspaceId, projectId, projectNam
 
   if (!open) {
     return (
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setOpen(true)}>
         + Mitglied einladen
       </Button>
     )
