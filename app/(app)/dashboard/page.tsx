@@ -32,23 +32,36 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  type ProjectRow = { id: string; name: string; description: string | null; created_at: string; archived_at: string | null; brand_color: string | null; logo_url: string | null; branding_inherited: boolean }
+  type ProjectRow = { id: string; name: string; description: string | null; created_at: string; archived_at: string | null; brand_color?: string | null; logo_url?: string | null; branding_inherited?: boolean }
   let projects: ProjectRow[] | null
 
   if (wsMember) {
     // Full access: show all workspace projects
-    const { data } = await supabase
+    // Note: brand_color/logo_url/branding_inherited require migration 016 — query without them if not yet deployed
+    const { data, error } = await supabase
       .from('projects')
       .select('id, name, description, created_at, archived_at, brand_color, logo_url, branding_inherited')
       .eq('workspace_id', workspace.id)
       .is('archived_at', null)
       .order('created_at', { ascending: false })
-    projects = data as typeof projects
+
+    if (error) {
+      // Fallback: query without branding columns (migration not yet deployed)
+      const { data: fallback } = await supabase
+        .from('projects')
+        .select('id, name, description, created_at, archived_at')
+        .eq('workspace_id', workspace.id)
+        .is('archived_at', null)
+        .order('created_at', { ascending: false })
+      projects = fallback as typeof projects
+    } else {
+      projects = data as typeof projects
+    }
   } else {
     // Project-scoped: show only assigned projects
     const { data: pmRows } = await supabase
       .from('project_members')
-      .select('projects(id, name, description, created_at, archived_at, brand_color, logo_url, branding_inherited)')
+      .select('projects(id, name, description, created_at, archived_at)')
       .eq('user_id', user.id)
     projects = (pmRows ?? [])
       .map(r => r.projects as unknown as ProjectRow | null)

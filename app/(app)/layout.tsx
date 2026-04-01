@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
+import { isSuperAdmin } from '@/lib/superAdmin'
 import WorkspaceNav from '@/components/workspace/WorkspaceNav'
 import FeedbackButton from '@/components/FeedbackButton'
 import Image from 'next/image'
@@ -41,6 +42,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const brandColor = workspace.brand_color ?? '#2563EB'
+  const superAdmin = await isSuperAdmin(user.id)
 
   return (
     <>
@@ -52,6 +54,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           workspace={workspace}
           userRole={member?.role ?? 'viewer'}
           userId={user.id}
+          isSuperAdmin={superAdmin}
         />
         <main className="max-w-7xl mx-auto px-4 py-8">
           {children}

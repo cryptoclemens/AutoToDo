@@ -79,6 +79,7 @@ export default function RegisterPage() {
   const [workspaceName, setWorkspaceName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [friendsCode, setFriendsCode] = useState('')
 
   // LLM (optional)
   const [llmProvider, setLlmProvider] = useState('anthropic')
@@ -157,6 +158,15 @@ export default function RegisterPage() {
         setError(wsError ?? t('errorWorkspaceFailed'))
         setLoading(false)
         return
+      }
+
+      // Redeem friends code if provided (non-blocking on error)
+      if (friendsCode.trim()) {
+        await fetch('/api/friends-code/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: friendsCode.trim().toUpperCase() }),
+        }).catch(() => {})
       }
 
       setLoading(false)
@@ -262,6 +272,24 @@ export default function RegisterPage() {
                     <span className="text-sm text-gray-500 whitespace-nowrap">.autotodo.vencly.com</span>
                   </div>
                   <p className="text-xs text-gray-400">{t('subdomainHint')}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="friendsCode">
+                    Friends-Code{' '}
+                    <span className="text-gray-400 font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="friendsCode"
+                    type="text"
+                    placeholder="FRIEND-XXXXXX"
+                    value={friendsCode}
+                    onChange={e => setFriendsCode(e.target.value.toUpperCase())}
+                    className="font-mono text-sm tracking-wider"
+                    autoComplete="off"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Hast du einen Friends-Code erhalten? Gib ihn hier ein und erhalte vollen Team-Zugang.
+                  </p>
                 </div>
               </>
             )}

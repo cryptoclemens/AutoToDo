@@ -22,6 +22,7 @@ interface Props {
   workspace: { id: string; name: string; slug: string; brand_color: string; logo_url: string | null }
   userRole: string
   userId: string
+  isSuperAdmin?: boolean
 }
 
 const isAdmin = (role: string) =>
@@ -47,7 +48,15 @@ function IconSettings() {
   )
 }
 
-export default function WorkspaceNav({ workspace, userRole, userId: _userId }: Props) {
+function IconSuperAdmin() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="inline-block">
+      <path d="M8 1l1.8 3.6L14 5.5l-3 2.9.7 4.1L8 10.4l-3.7 2.1.7-4.1L2 5.5l4.2-.9L8 1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export default function WorkspaceNav({ workspace, userRole, userId: _userId, isSuperAdmin }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('nav')
@@ -64,6 +73,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
   const navLinks = [
     { href: '/dashboard', label: t('dashboard'), icon: <IconDashboard /> },
     ...(isAdmin(userRole) ? [{ href: '/settings', label: t('settings'), icon: <IconSettings /> }] : []),
+    ...(isSuperAdmin ? [{ href: '/admin/steuerung', label: 'Steuerung', icon: <IconSuperAdmin /> }] : []),
   ]
 
   return (

@@ -29,19 +29,33 @@ export default async function ProjectPage({ params }: Props) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) redirect('/onboarding')
 
-  // Projekt laden
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id, name, description, archived_at, workspace_id, brand_color, logo_url, branding_inherited')
-    .eq('id', params.id)
-    .eq('workspace_id', workspace.id)
-    .single() as {
-      data: {
-        id: string; name: string; description: string | null
-        archived_at: string | null; workspace_id: string
-        brand_color: string | null; logo_url: string | null; branding_inherited: boolean
-      } | null
+  // Projekt laden — brand_color/logo_url/branding_inherited benötigen Migration 016
+  type ProjectData = {
+    id: string; name: string; description: string | null
+    archived_at: string | null; workspace_id: string
+    brand_color?: string | null; logo_url?: string | null; branding_inherited?: boolean
+  }
+  let project: ProjectData | null = null
+  {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, name, description, archived_at, workspace_id, brand_color, logo_url, branding_inherited')
+      .eq('id', params.id)
+      .eq('workspace_id', workspace.id)
+      .single() as { data: ProjectData | null; error: unknown }
+
+    if (error) {
+      const { data: fallback } = await supabase
+        .from('projects')
+        .select('id, name, description, archived_at, workspace_id')
+        .eq('id', params.id)
+        .eq('workspace_id', workspace.id)
+        .single() as { data: ProjectData | null }
+      project = fallback
+    } else {
+      project = data
     }
+  }
 
   if (!project) notFound()
 
