@@ -179,7 +179,14 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
                     }
                   />
                 ) : (
-                  <p className="text-sm text-gray-700">{draft.responsible ?? <span className="text-gray-400 italic">–</span>}</p>
+                  <p className="text-sm text-gray-700">
+                    {(() => {
+                      const resolved = draft.responsible_user_id
+                        ? (members.find(m => m.user_id === draft.responsible_user_id)?.display_name ?? draft.responsible)
+                        : (members.find(m => m.user_id === draft.responsible)?.display_name ?? draft.responsible)
+                      return resolved ?? <span className="text-gray-400 italic">–</span>
+                    })()}
+                  </p>
                 )}
               </div>
               <div className="space-y-1">

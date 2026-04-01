@@ -35,12 +35,20 @@ export default function ResponsibleSelect({
   placeholder = 'Verantwortlich',
   disabled,
 }: Props) {
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+  // Try to match by responsible_user_id first, then fall back to responsible if it looks like a UUID
   const matchedMember = responsibleUserId
     ? members.find(m => m.user_id === responsibleUserId)
-    : null
+    : (!responsibleUserId && responsible && UUID_RE.test(responsible))
+      ? members.find(m => m.user_id === responsible)
+      : null
 
-  // Legacy free-text: responsible is set but doesn't match any member
-  const isLegacy = !responsibleUserId && !!responsible && members.length > 0
+  // Effective userId for the select (may come from legacy responsible field)
+  const effectiveUserId = matchedMember?.user_id ?? null
+
+  // Legacy free-text: responsible is set, no member matched, not a UUID
+  const isLegacy = !matchedMember && !!responsible && members.length > 0 && !UUID_RE.test(responsible ?? '')
 
   const [showInput, setShowInput] = useState(isLegacy)
 
@@ -48,10 +56,12 @@ export default function ResponsibleSelect({
   useEffect(() => {
     const matched = responsibleUserId
       ? members.some(m => m.user_id === responsibleUserId)
-      : false
-    setShowInput(!matched && !!responsible && members.length > 0 && !responsibleUserId)
+      : (!responsibleUserId && responsible && UUID_RE.test(responsible))
+        ? members.some(m => m.user_id === responsible)
+        : false
+    setShowInput(!matched && !!responsible && members.length > 0 && !UUID_RE.test(responsible ?? '') && !responsibleUserId)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [responsibleUserId])
+  }, [responsibleUserId, responsible])
 
   // No members loaded yet → plain input
   if (members.length === 0) {
@@ -91,7 +101,7 @@ export default function ResponsibleSelect({
     )
   }
 
-  const selectValue = matchedMember ? responsibleUserId! : NONE
+  const selectValue = matchedMember ? effectiveUserId! : NONE
 
   return (
     <Select
