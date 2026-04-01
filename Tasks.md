@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: März 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komplett abgeschlossen
+Letzte Aktualisierung: April 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komplett abgeschlossen
 
 ---
 
@@ -319,6 +319,23 @@ Letzte Aktualisierung: März 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 | 12.7 | Daily Stand-up Modus: One-click Status-Toggle direkt in Zeile (ohne Dialog-Öffnen) | 🔲 Offen |
 | 12.8 | Ähnliche LOP-Punkte zusammenführen: Fuzzy-Similarity-Check nach Transkript-Verarbeitung | 🔲 Offen |
 | 12.9 | Ähnliche LOP-Punkte zusammenführen: Dialog „Punkte zusammenführen?" mit Vorschau | 🔲 Offen |
+
+### Meilenstein 13: Projekt-Level-Branding (Sanfte Evolution)
+
+> Workspace-Branding bleibt der Default. Projekte können optional eigenes Logo + Primärfarbe setzen.
+> Abwärtskompatibel: `branding_inherited = true` bis explizit überschrieben.
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 13.1 | Migration `016_project_branding.sql`: `brand_color`, `logo_url`, `branding_inherited BOOLEAN DEFAULT true` auf `projects` | 🔲 Offen |
+| 13.2 | `lib/branding.ts`: Helper `getProjectBranding(project, workspace)` mit Fallback-Kette | 🔲 Offen |
+| 13.3 | Dashboard-Cards: Projekt-Logo anzeigen (Fallback auf Workspace-Logo) | 🔲 Offen |
+| 13.4 | Projekt-Page: Buttons/Akzentfarbe aus `project.brand_color` (CSS-Variable) | 🔲 Offen |
+| 13.5 | Neue Settings-Route `/settings/projects/[id]/branding` (Logo-Upload + Farbwähler) | 🔲 Offen |
+| 13.6 | API-Endpoint `POST /api/settings/projects/[id]/branding/logo` (Storage-Upload) | 🔲 Offen |
+| 13.7 | WorkspaceNav: Projekt-Logo anzeigen wenn auf Projekt-Seite | 🔲 Offen |
+| 13.8 | `app/(app)/layout.tsx`: CSS-Variable `--brand` priorisiert `project.brand_color` über `workspace.brand_color` | 🔲 Offen |
+| 13.9 | (Backlog) Subdomain-Routing entfernen als separater Meilenstein | 🔲 Offen |
 
 ### Bugfixes (außerhalb Meilensteine)
 
