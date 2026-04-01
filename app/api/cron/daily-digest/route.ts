@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
+        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.app>',
         to,
         subject,
         html,

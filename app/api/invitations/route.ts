@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
+          from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.app>',
           to: [inv.email],
           subject: 'Du wurdest zu AutoToDo eingeladen',
           html: `<p>Hallo,</p>

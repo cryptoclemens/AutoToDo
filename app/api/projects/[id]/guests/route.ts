@@ -121,7 +121,7 @@ export async function POST(
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
+        from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.app>',
         to: [guest.email],
         subject: 'Du wurdest als Gast zu einem Projekt eingeladen',
         html: `<p>Hallo,</p>

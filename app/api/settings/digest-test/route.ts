@@ -69,7 +69,7 @@ export async function POST() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.com>',
+      from: process.env.RESEND_FROM ?? 'AutoToDo <noreply@vencly.app>',
       to: user.email,
       subject: '✓ AutoToDo Test-E-Mail – Digest-Konfiguration OK',
       html,
