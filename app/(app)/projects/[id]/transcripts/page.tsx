@@ -56,6 +56,17 @@ export default async function TranscriptsPage({ params }: Props) {
     }
   const canUpload = member?.role !== 'viewer'
 
+  // Check if Notion integration is configured (silently fails if migration not yet applied)
+  let notionConfigured = false
+  try {
+    const { data: notionCfg } = await supabase
+      .from('workspace_notion_configs')
+      .select('workspace_id')
+      .eq('workspace_id', workspace.id)
+      .maybeSingle() as { data: { workspace_id: string } | null }
+    notionConfigured = !!notionCfg
+  } catch { /* Migration 018 not yet deployed */ }
+
   const { data: transcripts } = await supabase
     .from('transcripts')
     .select('id, original_filename, meeting_date, processing_status, items_created, items_updated, llm_summary, processing_error, error_message, created_at')
@@ -83,7 +94,7 @@ export default async function TranscriptsPage({ params }: Props) {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Transkripte</h1>
         {canUpload && (
-          <TranscriptUploadForm projectId={project.id} />
+          <TranscriptUploadForm projectId={project.id} notionConfigured={notionConfigured} />
         )}
       </div>
 

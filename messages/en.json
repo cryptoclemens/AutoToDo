@@ -130,8 +130,16 @@
     "title": "Title",
     "responsible": "Owner",
     "dueDate": "Due date",
-    "priority": "Priority",
-    "status": "Status",
+    "priority": {
+      "hoch": "High",
+      "mittel": "Medium",
+      "niedrig": "Low"
+    },
+    "status": {
+      "offen": "Open",
+      "in_bearbeitung": "In Progress",
+      "abgeschlossen": "Done"
+    },
     "result": "Result",
     "description": "Description",
     "sourceQuote": "Quote from transcript",
@@ -148,16 +156,6 @@
       "reset": "Reset filters",
       "showing": "{count} of {total} items",
       "noMatch": "No items match the filter."
-    },
-    "status": {
-      "offen": "Open",
-      "in_bearbeitung": "In Progress",
-      "abgeschlossen": "Done"
-    },
-    "priority": {
-      "hoch": "High",
-      "mittel": "Medium",
-      "niedrig": "Low"
     },
     "actions": {
       "save": "Save",
@@ -191,7 +189,8 @@
       "ai": "AI Configuration",
       "api": "API Keys",
       "webhooks": "Webhooks",
-      "audit": "Audit Log"
+      "audit": "Audit Log",
+      "integrations": "Integrations"
     },
     "workspaceDesc": "Customize your workspace logo and accent color.",
     "digestTitle": "Email notifications",
@@ -370,13 +369,46 @@
     "back": "Back",
     "next": "Next",
     "done": "Let's go",
-    "s0": { "title": "Welcome to AutoToDo", "subtitle": "Meeting notes become action items automatically.", "desc": "AutoToDo reads your meeting transcripts and uses AI to automatically extract all tasks, owners and deadlines — directly as a structured action list (LOP)." },
-    "s1": { "title": "Step 1 – Create a project", "subtitle": "One project per client or team.", "desc": "Click \"New project\" on the dashboard. Enter a name and an optional description. All transcripts and action items are assigned to the project." },
-    "s2": { "title": "Step 2 – Upload transcript", "subtitle": "Copy & paste or file upload.", "desc": "Open a project and click \"↑ Upload transcript\". You can paste text directly or upload a .txt or .rtf file. AI processing starts automatically." },
-    "s3": { "title": "Step 3 – AI extracts tasks", "subtitle": "Fully automatic – in seconds.", "desc": "The AI (Anthropic, OpenAI or Azure) analyses the transcript and creates action items with title, owner, due date, priority and status. Uncertain items are flagged for review." },
-    "s4": { "title": "Step 4 – Edit the action list", "subtitle": "Filter, edit, set status.", "desc": "In the action list you can filter by status, priority and owner. Click a title to edit all details in a dialog. Status changes can be made directly in the row." },
-    "s5": { "title": "Step 5 – Add items manually", "subtitle": "Add tasks independently of a transcript.", "desc": "Click \"+ Add item manually\" at the top of the project page. A form opens where you can enter title, owner, due date and priority." },
-    "s6": { "title": "Step 6 – Export & share", "subtitle": "XLSX export with workspace branding.", "desc": "Use \"↓ XLSX\" to export the action list as an Excel file with workspace colour and metadata. Use \"+ Invite member\" to add colleagues to the project." }
+    "s0": {
+      "title": "Welcome to AutoToDo",
+      "subtitle": "Meeting notes become action items automatically.",
+      "desc": "AutoToDo reads your meeting transcripts and uses AI to automatically extract all tasks, owners and deadlines — directly as a structured action list (LOP)."
+    },
+    "s1": {
+      "title": "Step 1 – Create a project",
+      "subtitle": "One project per client or team.",
+      "desc": "Click \"New project\" on the dashboard. Enter a name and an optional description. All transcripts and action items are assigned to the project."
+    },
+    "s2": {
+      "title": "Step 2 – Upload transcript",
+      "subtitle": "Copy & paste or file upload.",
+      "desc": "Open a project and click »↑ Upload Transcript«. You can paste text directly, upload a .txt or .rtf file – or import a Notion page directly. The AI processing starts automatically."
+    },
+    "s3": {
+      "title": "Step 3 – AI extracts tasks",
+      "subtitle": "Fully automatic – in seconds.",
+      "desc": "The AI (Anthropic, OpenAI or Azure) analyses the transcript and creates action items with title, owner, due date, priority and status. Uncertain items are flagged for review."
+    },
+    "s4": {
+      "title": "Step 4 – Edit the action list",
+      "subtitle": "Filter, edit, set status.",
+      "desc": "In the action list you can filter by status, priority and owner. Click a title to edit all details in a dialog. Status changes can be made directly in the row."
+    },
+    "s5": {
+      "title": "Step 5 – Add items manually",
+      "subtitle": "Add tasks independently of a transcript.",
+      "desc": "Click \"+ Add item manually\" at the top of the project page. A form opens where you can enter title, owner, due date and priority."
+    },
+    "s6": {
+      "title": "Step 6 – Export & share",
+      "subtitle": "XLSX export with workspace branding.",
+      "desc": "Use \"↓ XLSX\" to export the action list as an Excel file with workspace colour and metadata. Use \"+ Invite member\" to add colleagues to the project."
+    },
+    "s7": {
+      "title": "Tip: Import directly from Notion",
+      "subtitle": "Automatically transfer meeting notes.",
+      "desc": "Connect your Notion account under Settings → Integrations. Then switch to the »Notion« tab when uploading a transcript, paste the page URL, and import with one click – no copy & paste needed."
+    }
   },
   "errors": {
     "notAuthenticated": "Not authenticated.",

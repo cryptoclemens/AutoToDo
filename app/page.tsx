@@ -64,6 +64,7 @@ export default async function LandingPage() {
         { icon: '🔗', title: 'Public REST API', desc: 'Integrate AutoToDo into your own tools via REST API + Webhooks.' },
         { icon: '👥', title: 'Team collaboration', desc: 'Invite members with granular roles: viewer, editor, admin.' },
         { icon: '📊', title: 'XLSX export', desc: 'Export your action list as Excel with workspace branding.' },
+        { icon: '📝', title: 'Notion import', desc: 'Import meeting notes directly from Notion with one click. Connect once, import anytime.' },
       ]
     : [
         { icon: '⚡', title: 'Sofort-Extraktion', desc: 'Vom Transkript zur LOP in unter 30 Sekunden.' },
@@ -72,6 +73,7 @@ export default async function LandingPage() {
         { icon: '🔗', title: 'Öffentliche REST-API', desc: 'AutoToDo in eigene Tools einbinden via REST-API + Webhooks.' },
         { icon: '👥', title: 'Team-Zusammenarbeit', desc: 'Mitglieder einladen mit feingranularen Rollen: Betrachter, Editor, Admin.' },
         { icon: '📊', title: 'XLSX-Export', desc: 'LOP als Excel exportieren mit Workspace-Branding.' },
+        { icon: '📝', title: 'Notion-Import', desc: 'Meeting-Notizen direkt aus Notion importieren – einmal verbinden, jederzeit importieren.' },
       ]
 
   const featureColors = [
@@ -81,10 +83,11 @@ export default async function LandingPage() {
     'bg-purple-50 text-purple-500',
     'bg-emerald-50 text-emerald-600',
     'bg-teal-50 text-teal-600',
+    'bg-gray-50 text-gray-600',
   ]
 
   // SVG icon components — one per feature, in order
-  const FEATURE_ICONS = [Zap, Pencil, Bell, Link2, Users, BarChart3]
+  const FEATURE_ICONS = [Zap, Pencil, Bell, Link2, Users, BarChart3, Pencil]
 
   return (
     <div className="min-h-screen bg-white">
@@ -265,7 +268,7 @@ export default async function LandingPage() {
             {isEn ? 'Works with' : 'Kompatibel mit'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8">
-            {['Anthropic Claude', 'OpenAI GPT-4o', 'Azure OpenAI', 'Perplexity AI', 'Slack', 'Microsoft Teams', 'Resend'].map(name => (
+            {['Anthropic Claude', 'OpenAI GPT-4o', 'Azure OpenAI', 'Notion', 'Jamie', 'Slack', 'Microsoft Teams'].map(name => (
               <span key={name} className="text-sm text-gray-400 font-medium">{name}</span>
             ))}
           </div>

@@ -13,9 +13,10 @@ import { AccountSettings } from './AccountSettings'
 import WebhooksSettings from './WebhooksSettings'
 import AuditLog from './AuditLog'
 import BillingTab from './BillingTab'
+import NotionIntegrationForm from './NotionIntegrationForm'
 import { Plan } from '@/lib/plans'
 
-type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing'
+type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing' | 'integrations'
 
 const CHANGEABLE_ROLES = ['workspace_admin', 'project_admin', 'editor', 'viewer']
 
@@ -69,6 +70,7 @@ interface Props {
     projectCount: number
     transcriptsThisMonth: number
   }
+  notionInitial: { configured: boolean; connectedAt: string | null }
 }
 
 const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
@@ -77,12 +79,13 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
   { id: 'team', adminOnly: true },
   { id: 'billing', adminOnly: true },
   { id: 'ki', adminOnly: true },
+  { id: 'integrations', adminOnly: true },
   { id: 'api', adminOnly: true },
   { id: 'webhooks', adminOnly: true },
   { id: 'audit', adminOnly: true },
 ]
 
-export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing }: Props) {
+export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
@@ -351,6 +354,19 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
       {/* Webhooks */}
       {tab === 'webhooks' && isAdmin && (
         <WebhooksSettings />
+      )}
+
+      {/* Integrationen */}
+      {tab === 'integrations' && isAdmin && (
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Notion</h2>
+            <p className="text-xs text-gray-500 mb-6">
+              Importiere Meeting-Notizen direkt aus Notion in AutoToDo. Die KI extrahiert daraus automatisch LOP-Punkte.
+            </p>
+            <NotionIntegrationForm initial={notionInitial} />
+          </div>
+        </div>
       )}
 
       {/* Audit-Log */}

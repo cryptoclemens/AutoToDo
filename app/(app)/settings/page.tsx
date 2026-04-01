@@ -87,6 +87,19 @@ export default async function SettingsPage() {
         }
     : { data: null }
 
+  // Load Notion config (admin only, fallback if table doesn't exist yet)
+  let notionInitial = { configured: false, connectedAt: null as string | null }
+  if (isAdmin) {
+    try {
+      const { data: notionData } = await supabase
+        .from('workspace_notion_configs')
+        .select('connected_at')
+        .eq('workspace_id', workspace.id)
+        .maybeSingle() as { data: { connected_at: string } | null }
+      if (notionData) notionInitial = { configured: true, connectedAt: notionData.connected_at }
+    } catch { /* Migration 018 not yet deployed – silently skip */ }
+  }
+
   const llmInitial = llmConfig
     ? { configured: true, provider: llmConfig.provider, model: llmConfig.model, endpoint: llmConfig.endpoint ?? undefined, apiKeyMasked: '••••••••' }
     : { configured: false }
@@ -108,6 +121,7 @@ export default async function SettingsPage() {
         projectCount: projectCount ?? 0,
         transcriptsThisMonth: (usageData as { transcripts_month?: number } | null)?.transcripts_month ?? 0,
       }}
+      notionInitial={notionInitial}
     />
   )
 }
