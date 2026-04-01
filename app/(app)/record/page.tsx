@@ -25,7 +25,7 @@ export default function RecordPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    fetch('/api/v1/projects', { headers: { 'x-workspace-slug': '' } })
+    fetch('/api/projects')
       .then(r => r.json())
       .then((data: { projects?: Project[] }) => {
         const list = data.projects ?? []
@@ -253,7 +253,7 @@ export default function RecordPage() {
         {state === 'idle' && (
           <p className="mt-8 text-xs text-gray-400 text-center">
             {t('whisperHint')}{' '}
-            <a href="/settings" className="text-blue-500 hover:underline">{t('whisperHintLink')}</a>
+            <a href="/settings?tab=ki" className="text-blue-500 hover:underline">{t('whisperHintLink')}</a>
           </p>
         )}
       </div>

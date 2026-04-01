@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
@@ -86,8 +87,17 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
 ]
 
 export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial }: Props) {
-  const [tab, setTab] = useState<Tab>('konto')
+  const searchParams = useSearchParams()
+  const [tab, setTab] = useState<Tab>(() => {
+    const t = searchParams.get('tab') as Tab | null
+    return t ?? 'konto'
+  })
   const ts = useTranslations('settings')
+
+  useEffect(() => {
+    const t = searchParams.get('tab') as Tab | null
+    if (t) setTab(t)
+  }, [searchParams])
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
   const [digestSaving, setDigestSaving] = useState(false)
   const [digestTestSending, setDigestTestSending] = useState(false)

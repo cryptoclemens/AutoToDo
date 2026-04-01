@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
+import { resolveWorkspace } from '@/lib/workspace'
 import { z } from 'zod'
 import { checkProjectLimit } from '@/lib/plan-gate'
 
@@ -9,6 +11,30 @@ const schema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(500).nullable().optional(),
 })
+
+export async function GET() {
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const slug = headers().get('x-workspace-slug') ?? ''
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('id, name')
+    .eq('workspace_id', workspace.id)
+    .is('archived_at', null)
+    .order('created_at', { ascending: false })
+
+  return NextResponse.json({ projects: projects ?? [] })
+}
 
 export async function POST(request: NextRequest) {
   const authClient = createClient()

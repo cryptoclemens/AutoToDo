@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
@@ -105,6 +106,7 @@ export default async function SettingsPage() {
     : { configured: false }
 
   return (
+    <Suspense>
     <SettingsPageClient
       userEmail={user.email ?? ''}
       isAdmin={isAdmin}
@@ -123,5 +125,6 @@ export default async function SettingsPage() {
       }}
       notionInitial={notionInitial}
     />
+    </Suspense>
   )
 }
