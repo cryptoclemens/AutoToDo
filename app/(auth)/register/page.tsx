@@ -21,6 +21,9 @@ const LLM_PROVIDERS = [
       { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (schnell & günstig)' },
     ],
     needsEndpoint: false,
+    apiKeyHint: 'Den API-Key findest du in der Anthropic Console unter',
+    apiKeyLinkLabel: 'console.anthropic.com → API Keys',
+    apiKeyLink: 'https://console.anthropic.com/settings/keys',
   },
   {
     id: 'openai',
@@ -31,6 +34,9 @@ const LLM_PROVIDERS = [
       { id: 'gpt-4o-mini', label: 'GPT-4o mini (günstig)' },
     ],
     needsEndpoint: false,
+    apiKeyHint: 'Den API-Key findest du im OpenAI Developer Portal unter',
+    apiKeyLinkLabel: 'platform.openai.com → API Keys',
+    apiKeyLink: 'https://platform.openai.com/api-keys',
   },
   {
     id: 'azure_openai',
@@ -41,6 +47,9 @@ const LLM_PROVIDERS = [
       { id: 'gpt-4o-mini', label: 'gpt-4o-mini' },
     ],
     needsEndpoint: true,
+    apiKeyHint: 'Den API-Key findest du im Azure Portal unter deiner Azure OpenAI-Ressource →',
+    apiKeyLinkLabel: 'portal.azure.com → Keys and Endpoint',
+    apiKeyLink: 'https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub/~/OpenAI',
   },
 ]
 
@@ -349,7 +358,17 @@ export default function RegisterPage() {
                 onChange={e => setLlmApiKey(e.target.value)}
                 className="font-mono text-sm"
               />
-              <p className="text-xs text-gray-400">{t('llmApiKeyHint')}</p>
+              <p className="text-xs text-gray-400">
+                {providerData.apiKeyHint}{' '}
+                <a
+                  href={providerData.apiKeyLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  {providerData.apiKeyLinkLabel}
+                </a>
+              </p>
             </div>
 
             {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
