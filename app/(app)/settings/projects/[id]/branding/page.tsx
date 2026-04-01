@@ -54,7 +54,7 @@ export default async function ProjectBrandingPage({ params }: Props) {
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Projekt-Branding</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Eigenes Logo und Akzentfarbe für „{project.name}" — überschreibt das Workspace-Branding.
+        Eigenes Logo und Akzentfarbe für &bdquo;{project.name}&ldquo; — überschreibt das Workspace-Branding.
       </p>
       <ProjectBrandingForm project={project} workspaceId={workspace.id} />
     </div>
