@@ -106,7 +106,11 @@ function SlackTeamsSection() {
   async function handleTest() {
     setTesting(true)
     try {
-      const res = await fetch('/api/settings/notifications/test', { method: 'POST' })
+      const res = await fetch('/api/settings/notifications/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: webhookUrl }),
+      })
       const data = await res.json() as { ok?: boolean; platform?: string; error?: string }
       if (!res.ok || !data.ok) {
         toast.error(data.error ?? 'Test fehlgeschlagen.')

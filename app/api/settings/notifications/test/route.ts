@@ -5,10 +5,17 @@ import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
 import { sendSlackNotification } from '@/lib/slack'
 
-export async function POST() {
+export async function POST(req: Request) {
   const authClient = createClient()
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const body = await req.json().catch(() => ({})) as { url?: string }
+  const webhookUrl = body.url?.trim()
+
+  if (!webhookUrl) {
+    return NextResponse.json({ error: 'Keine Webhook-URL angegeben.' }, { status: 400 })
+  }
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,23 +28,26 @@ export async function POST() {
 
   const { data: ws } = await supabase
     .from('workspaces')
-    .select('slack_webhook_url, name')
+    .select('name')
     .eq('id', workspace.id)
-    .single() as { data: { slack_webhook_url: string | null; name: string } | null }
+    .single() as { data: { name: string } | null }
 
-  if (!ws?.slack_webhook_url) {
-    return NextResponse.json({ error: 'Keine Webhook-URL konfiguriert.' }, { status: 400 })
-  }
+  const workspaceName = ws?.name ?? 'AutoToDo'
 
-  const isTeams = ws.slack_webhook_url.includes('webhook.office.com') || ws.slack_webhook_url.includes('office365.com')
+  const isTeams =
+    webhookUrl.includes('webhook.office.com') ||
+    webhookUrl.includes('office365.com') ||
+    webhookUrl.includes('powerplatform.com') ||
+    webhookUrl.includes('logic.azure.com')
+
   const platform = isTeams ? 'Microsoft Teams' : 'Slack'
 
   const testMessage = isTeams
-    ? `✅ **AutoToDo Verbindungstest erfolgreich!**\n\nDiese Nachricht bestätigt, dass ${ws.name} korrekt mit ${platform} verbunden ist. LOP-Benachrichtigungen werden ab jetzt hier erscheinen.`
-    : `✅ *AutoToDo Verbindungstest erfolgreich!*\n\nDiese Nachricht bestätigt, dass *${ws.name}* korrekt mit ${platform} verbunden ist. LOP-Benachrichtigungen werden ab jetzt hier erscheinen.`
+    ? `✅ **AutoToDo Verbindungstest erfolgreich!**\n\nDiese Nachricht bestätigt, dass ${workspaceName} korrekt mit ${platform} verbunden ist. LOP-Benachrichtigungen werden ab jetzt hier erscheinen.`
+    : `✅ *AutoToDo Verbindungstest erfolgreich!*\n\nDiese Nachricht bestätigt, dass *${workspaceName}* korrekt mit ${platform} verbunden ist. LOP-Benachrichtigungen werden ab jetzt hier erscheinen.`
 
   try {
-    await sendSlackNotification(ws.slack_webhook_url, testMessage)
+    await sendSlackNotification(webhookUrl, testMessage)
     return NextResponse.json({ ok: true, platform })
   } catch (err) {
     return NextResponse.json(
