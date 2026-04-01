@@ -22,7 +22,8 @@
     "settings": "Settings",
     "logout": "Sign out",
     "howTo": "How to",
-    "newProject": "New project"
+    "newProject": "New project",
+    "record": "Record"
   },
   "landing": {
     "title": "Meetings into actions.",
@@ -417,5 +418,27 @@
     "saveFailed": "Save failed.",
     "loadFailed": "Load failed.",
     "generic": "An error occurred."
+  },
+  "record": {
+    "title": "Record Meeting",
+    "subtitle": "Record via microphone, auto-transcribe and extract action items.",
+    "project": "Project",
+    "noProjects": "No projects available",
+    "meetingName": "Meeting name (optional)",
+    "meetingNamePlaceholder": "e.g. Weekly Sync",
+    "meetingDate": "Meeting date",
+    "startRecording": "Start recording",
+    "stopRecording": "Stop recording",
+    "tapToStart": "Tap to start",
+    "tapToStop": "Tap to stop & send",
+    "transcribing": "Transcribing audio…",
+    "processing": "AI extracting action items…",
+    "successMessage": "Done! Action items have been extracted and added to the project.",
+    "newRecording": "New recording",
+    "viewProject": "View project",
+    "micError": "Microphone access denied. Please grant permission in browser settings.",
+    "uploadError": "Upload failed. Please try again.",
+    "whisperHint": "Requires an OpenAI API key for transcription.",
+    "whisperHintLink": "Set up now →"
   }
 }

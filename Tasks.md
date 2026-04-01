@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: April 2026 · Version 0.1.124 · M1–M11, M9.1, M9.5, M14 komplett abgeschlossen
+Letzte Aktualisierung: April 2026 · Version 0.1.125 · M1–M11, M9.1, M9.5, M14, M15 (Phase 1) komplett abgeschlossen
 
 ---
 
@@ -354,6 +354,22 @@ Letzte Aktualisierung: April 2026 · Version 0.1.124 · M1–M11, M9.1, M9.5, M1
 | 14.11 | Digest-Test: „Test-E-Mail senden"-Button in Workspace-Einstellungen | ✅ Erledigt |
 | 14.12 | Registrierung Schritt 2: Subdomain-Feld entfernt (Slug weiterhin auto-generiert) | ✅ Erledigt |
 | 14.13 | Registrierung Schritt 3: Provider-spezifische API-Key-Hinweise mit Direktlinks | ✅ Erledigt |
+
+### Meilenstein 15: AutoToDo Recorder & PWA Audio-Transkription
+
+> Phase 1: Web-App-Infrastruktur (dieses Repo). Phase 2: Tauri Desktop-App (separates Repo).
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 15.1 | `/api/v1/transcripts`: `storage_path` ergänzt + `runTranscriptProcessing` triggern | ✅ Erledigt |
+| 15.2 | `/api/transcripts/audio`: Multipart-Audio → Whisper API (OpenAI) → Pipeline | ✅ Erledigt |
+| 15.3 | `/record` Seite: MediaRecorder UI, Projekt-Auswahl, Meeting-Name, Status-Flow | ✅ Erledigt |
+| 15.4 | PWA-Manifest (`app/manifest.ts`): installierbar auf iOS/Android | ✅ Erledigt |
+| 15.5 | i18n: `record`-Namespace in de.json + en.json | ✅ Erledigt |
+| 15.6 | Navigation: „Aufnahme"-Link in WorkspaceNav | 🔲 Offen |
+| 15.7 | PWA: Offline-Fallback-Seite | 🔲 Offen |
+| 15.8 | Phase 2: Tauri Desktop-App (separates Repo) – System-Audio + whisper.cpp lokal | 🔲 Offen |
+| 15.9 | Phase 2: Groq als Whisper-Provider für Nicht-OpenAI-Nutzer | 🔲 Offen |
 
 ### Bugfixes (außerhalb Meilensteine)
 

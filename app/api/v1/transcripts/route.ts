@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { validateApiKey } from '@/lib/apiKeyAuth'
+import { runTranscriptProcessing } from '@/lib/processTranscript'
 import { z } from 'zod'
+
+export const maxDuration = 60
 
 const schema = z.object({
   projectId: z.string().uuid(),
   text: z.string().min(1).max(100000),
   meetingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  meetingName: z.string().max(255).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
   if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
 
   // Upload text as file to Supabase Storage
-  const filename = `api-upload-${Date.now()}.txt`
+  const filename = `recorder-${Date.now()}.txt`
   const filePath = `${auth.workspaceId}/${parsed.data.projectId}/${filename}`
 
   const { error: uploadError } = await supabase.storage
@@ -60,7 +64,8 @@ export async function POST(request: NextRequest) {
       workspace_id: auth.workspaceId,
       project_id: parsed.data.projectId,
       file_path: filePath,
-      original_filename: 'api-upload.txt',
+      storage_path: filePath,
+      original_filename: parsed.data.meetingName ?? 'recorder-upload.txt',
       meeting_date: parsed.data.meetingDate ?? null,
       processing_status: 'pending',
     })
@@ -71,5 +76,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Transkript konnte nicht gespeichert werden.' }, { status: 500 })
   }
 
-  return NextResponse.json(transcript, { status: 201 })
+  // Trigger LLM processing pipeline (synchronous, up to 60s)
+  const result = await runTranscriptProcessing(transcript.id)
+
+  return NextResponse.json(
+    { ...transcript, processing: result },
+    { status: 201 }
+  )
 }

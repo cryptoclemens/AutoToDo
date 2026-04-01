@@ -56,6 +56,15 @@ function IconSuperAdmin() {
   )
 }
 
+function IconRecord() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="inline-block">
+      <circle cx="8" cy="8" r="4" fill="currentColor" opacity=".85" />
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2" opacity=".4" />
+    </svg>
+  )
+}
+
 export default function WorkspaceNav({ workspace, userRole, userId: _userId, isSuperAdmin }: Props) {
   const pathname = usePathname()
   const router = useRouter()
@@ -72,6 +81,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
 
   const navLinks = [
     { href: '/dashboard', label: t('dashboard'), icon: <IconDashboard /> },
+    { href: '/record', label: t('record'), icon: <IconRecord /> },
     ...(isAdmin(userRole) ? [{ href: '/settings', label: t('settings'), icon: <IconSettings /> }] : []),
     ...(isSuperAdmin ? [{ href: '/admin/steuerung', label: 'Steuerung', icon: <IconSuperAdmin /> }] : []),
   ]

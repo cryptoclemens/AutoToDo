@@ -22,7 +22,8 @@
     "settings": "Einstellungen",
     "logout": "Abmelden",
     "howTo": "Anleitung",
-    "newProject": "Neues Projekt"
+    "newProject": "Neues Projekt",
+    "record": "Aufnahme"
   },
   "landing": {
     "title": "Meetings in Maßnahmen.",
@@ -417,5 +418,27 @@
     "saveFailed": "Speichern fehlgeschlagen.",
     "loadFailed": "Laden fehlgeschlagen.",
     "generic": "Ein Fehler ist aufgetreten."
+  },
+  "record": {
+    "title": "Meeting aufnehmen",
+    "subtitle": "Mikrofon aufnehmen, automatisch transkribieren und LOP-Punkte extrahieren.",
+    "project": "Projekt",
+    "noProjects": "Keine Projekte vorhanden",
+    "meetingName": "Meeting-Name (optional)",
+    "meetingNamePlaceholder": "z.B. Weekly Sync",
+    "meetingDate": "Meeting-Datum",
+    "startRecording": "Aufnahme starten",
+    "stopRecording": "Aufnahme stoppen",
+    "tapToStart": "Tippen zum Starten",
+    "tapToStop": "Tippen zum Stoppen & Senden",
+    "transcribing": "Transkribiere Audio…",
+    "processing": "KI extrahiert LOP-Punkte…",
+    "successMessage": "Fertig! Die LOP-Punkte wurden extrahiert und dem Projekt hinzugefügt.",
+    "newRecording": "Neue Aufnahme",
+    "viewProject": "Zum Projekt",
+    "micError": "Mikrofon-Zugriff verweigert. Bitte Berechtigung in den Browser-Einstellungen erteilen.",
+    "uploadError": "Übertragung fehlgeschlagen. Bitte erneut versuchen.",
+    "whisperHint": "Benötigt einen OpenAI-API-Key für die Transkription.",
+    "whisperHintLink": "Jetzt hinterlegen →"
   }
 }
