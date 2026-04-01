@@ -3,7 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
-import { getNotionToken } from '@/app/api/settings/integrations/notion/route'
+import { getNotionToken } from '@/lib/notion'
 
 export const maxDuration = 60
 

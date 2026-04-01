@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
-import { encrypt, decrypt } from '@/lib/encryption'
+import { encrypt } from '@/lib/encryption'
 import { resolveWorkspace } from '@/lib/workspace'
 
 const supabaseAdmin = () => createServiceClient(
@@ -91,17 +91,4 @@ export async function DELETE() {
     .eq('workspace_id', ctx.workspaceId)
 
   return NextResponse.json({ ok: true })
-}
-
-/** Internal helper – used by the notion-import API route */
-export async function getNotionToken(workspaceId: string): Promise<string | null> {
-  const supabase = supabaseAdmin()
-  const { data } = await supabase
-    .from('workspace_notion_configs')
-    .select('encrypted_token')
-    .eq('workspace_id', workspaceId)
-    .maybeSingle() as { data: { encrypted_token: string } | null }
-
-  if (!data) return null
-  return decrypt(data.encrypted_token)
 }
