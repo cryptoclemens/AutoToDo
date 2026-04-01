@@ -70,8 +70,19 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (data.user) {
+        // Check if user already has a workspace — if so, go to dashboard
+        const { data: membership } = await supabase
+          .from('workspace_members')
+          .select('workspace_id')
+          .eq('user_id', data.user.id)
+          .limit(1)
+          .maybeSingle()
+        if (membership) {
+          router.replace('/dashboard')
+          return
+        }
         setExistingUserId(data.user.id)
         setStep('workspace')
       }
