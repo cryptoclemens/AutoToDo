@@ -42,6 +42,8 @@ export default function SteuerungClient() {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null)
   const [kpis, setKpis] = useState<WorkspaceKpis | null>(null)
   const [kpisLoading, setKpisLoading] = useState(false)
+  const [digestDiag, setDigestDiag] = useState<Record<string, unknown> | null>(null)
+  const [digestTesting, setDigestTesting] = useState(false)
 
   const loadCodes = useCallback(async () => {
     setLoading(true)
@@ -83,6 +85,20 @@ export default function SteuerungClient() {
     if (res.ok) setKpis(await res.json())
     else toast.error('KPIs konnten nicht geladen werden.')
     setKpisLoading(false)
+  }
+
+  async function handleDigestTest() {
+    setDigestTesting(true)
+    setDigestDiag(null)
+    try {
+      const res = await fetch('/api/admin/digest-test')
+      const data = await res.json()
+      setDigestDiag(data)
+    } catch {
+      toast.error('Diagnose fehlgeschlagen.')
+    } finally {
+      setDigestTesting(false)
+    }
   }
 
   const redeemed = codes.filter(c => c.redeemed_at)
@@ -329,6 +345,66 @@ export default function SteuerungClient() {
           ) : null}
         </div>
       )}
+
+      {/* Digest-Diagnose */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">E-Mail-Digest Diagnose</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Simuliert den Versand (dry run) – es werden keine E-Mails verschickt.
+              Cron läuft Mo–Fr um 16:00 UTC (= 18:00 CEST).
+            </p>
+          </div>
+          <Button
+            onClick={handleDigestTest}
+            disabled={digestTesting}
+            variant="outline"
+            size="sm"
+            className="rounded-lg shrink-0"
+          >
+            {digestTesting ? 'Teste…' : 'Digest testen (dry run)'}
+          </Button>
+        </div>
+
+        {digestDiag && (
+          <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+            {digestDiag.skipped ? (
+              <p className="text-sm text-red-600 font-medium">
+                ⚠ Übersprungen: {String(digestDiag.skipped)}
+                <span className="block text-xs font-normal text-gray-500 mt-1">
+                  → <strong>RESEND_API_KEY</strong> fehlt in den Vercel Environment Variables.
+                </span>
+              </p>
+            ) : digestDiag.reason ? (
+              <div>
+                <p className="text-sm text-amber-700 font-medium">Keine E-Mails würden gesendet.</p>
+                <p className="text-xs text-gray-500 mt-1">{String(digestDiag.reason)}</p>
+                {digestDiag.debug != null && (
+                  <pre className="text-xs text-gray-400 mt-2 bg-white p-2 rounded border border-gray-100 overflow-auto">
+                    {JSON.stringify(digestDiag.debug, null, 2)}
+                  </pre>
+                )}
+              </div>
+            ) : digestDiag.dry_run ? (
+              <div>
+                <p className="text-sm text-green-700 font-medium">
+                  ✓ Würde an {Number(digestDiag.total_users ?? 0)} Nutzer ({Number(digestDiag.total_items ?? 0)} Aufgaben) senden.
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {(digestDiag.would_send_to as Array<{ email: string; itemCount: number }> ?? []).map((r, i) => (
+                    <li key={i} className="text-xs text-gray-600">
+                      {r.email} – {r.itemCount} Aufgabe{r.itemCount !== 1 ? 'n' : ''}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <pre className="text-xs text-gray-500 overflow-auto">{JSON.stringify(digestDiag, null, 2)}</pre>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
