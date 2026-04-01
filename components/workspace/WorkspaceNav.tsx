@@ -67,63 +67,77 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
   ]
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-4">
+    <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/70 shadow-sm px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-14">
         {/* Logo / Workspace-Name */}
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2.5">
             {workspace.logo_url ? (
-              <Image src={workspace.logo_url} alt={workspace.name} width={28} height={28} className="h-7 w-auto object-contain" />
+              <Image src={workspace.logo_url} alt={workspace.name} width={28} height={28} className="h-7 w-auto object-contain rounded" />
             ) : (
               <span
-                className="text-sm font-bold px-2 py-1 rounded text-white"
+                className="text-xs font-bold w-8 h-8 flex items-center justify-center rounded-lg text-white shadow-sm"
                 style={{ backgroundColor: 'var(--brand, #2563EB)' }}
               >
                 {workspace.name.slice(0, 2).toUpperCase()}
               </span>
             )}
-            <span className="font-semibold text-gray-900 text-sm hidden sm:block">
+            <span className="font-semibold text-gray-900 text-sm hidden sm:block tracking-tight">
               {workspace.name}
             </span>
           </Link>
 
           {/* Desktop Nav-Links */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map(({ href, label, icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors
-                  ${pathname.startsWith(href)
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-              >
-                <span className={pathname.startsWith(href) ? 'text-gray-700' : 'text-gray-400'}>{icon}</span>
-                {label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-0.5">
+            {navLinks.map(({ href, label, icon }) => {
+              const active = pathname.startsWith(href)
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                    ${active
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
+                >
+                  <span className={active ? 'text-gray-700' : 'text-gray-400'}>{icon}</span>
+                  {label}
+                  {active && (
+                    <span
+                      className="ml-1 w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: 'var(--brand, #2563EB)' }}
+                    />
+                  )}
+                </Link>
+              )
+            })}
           </div>
         </div>
 
         {/* Right section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <LanguageSwitcher currentLocale={locale} />
           <SecurityModal />
           <HowToModal />
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 hidden md:flex">
-              <span className="hidden sm:inline">Konto</span>
-              <span>▾</span>
+            <DropdownMenuTrigger className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors font-medium">
+              <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                {userRole.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="hidden sm:inline text-gray-700">Konto</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-400">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <div className="px-2 py-1.5 text-xs text-gray-500 font-medium uppercase tracking-wide">
+            <DropdownMenuContent align="end" className="w-48 shadow-lg rounded-xl border-gray-100">
+              <div className="px-3 py-2 text-xs text-gray-400 font-medium uppercase tracking-wider">
                 {userRole.replace(/_/g, ' ')}
               </div>
               <DropdownMenuSeparator />
               {isAdmin(userRole) && (
                 <>
-                  <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  <DropdownMenuItem onClick={() => router.push('/settings')} className="rounded-lg">
                     {t('settings')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -131,7 +145,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
               )}
               <DropdownMenuItem
                 onClick={handleSignOut}
-                className="text-red-600 focus:text-red-600"
+                className="text-red-600 focus:text-red-600 rounded-lg"
               >
                 {t('logout')}
               </DropdownMenuItem>
@@ -140,7 +154,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex flex-col gap-1.5 p-2 rounded-md hover:bg-gray-50"
+            className="md:hidden flex flex-col gap-1.5 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setMobileOpen(v => !v)}
             aria-label="Menü"
           >
@@ -159,7 +173,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-colors
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors
                 ${pathname.startsWith(href)
                   ? 'bg-gray-100 text-gray-900 font-medium'
                   : 'text-gray-600 hover:bg-gray-50'}`}
@@ -171,7 +185,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId }: P
           <div className="border-t border-gray-100 mt-2 pt-2">
             <button
               onClick={() => { setMobileOpen(false); handleSignOut() }}
-              className="flex items-center gap-2 px-3 py-2.5 w-full rounded-md text-sm text-red-600 hover:bg-red-50"
+              className="flex items-center gap-2 px-3 py-2.5 w-full rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               {t('logout')}
             </button>

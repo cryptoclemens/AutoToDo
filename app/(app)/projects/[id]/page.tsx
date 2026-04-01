@@ -1,9 +1,11 @@
+import type React from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
+import { getEffectiveBranding } from '@/lib/branding'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import ProjectPageClient from '@/components/projects/ProjectPageClient'
 import XlsxImportDialog from '@/components/projects/XlsxImportDialog'
@@ -30,13 +32,14 @@ export default async function ProjectPage({ params }: Props) {
   // Projekt laden
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, description, archived_at, workspace_id')
+    .select('id, name, description, archived_at, workspace_id, brand_color, logo_url, branding_inherited')
     .eq('id', params.id)
     .eq('workspace_id', workspace.id)
     .single() as {
       data: {
         id: string; name: string; description: string | null
         archived_at: string | null; workspace_id: string
+        brand_color: string | null; logo_url: string | null; branding_inherited: boolean
       } | null
     }
 
@@ -102,8 +105,10 @@ export default async function ProjectPage({ params }: Props) {
   const avgDays = avgDaysRaw !== null ? Math.round(avgDaysRaw) : null
   const completionPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
+  const branding = getEffectiveBranding(project, workspace)
+
   return (
-    <div>
+    <div style={{ '--brand': branding.brand_color } as React.CSSProperties}>
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-1 text-sm text-gray-500">
         <Link href="/dashboard" className="hover:text-gray-600">Dashboard</Link>

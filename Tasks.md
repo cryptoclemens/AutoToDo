@@ -310,15 +310,15 @@ Letzte Aktualisierung: April 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 12.1 | Visuelles Redesign: Navbar (Glasmorphismus, backdrop-blur, bessere Schatten) | 🔲 Offen |
-| 12.2 | Visuelles Redesign: Dashboard-Cards (größere Radien, Tiefen-Schatten, moderne Typografie) | 🔲 Offen |
-| 12.3 | Visuelles Redesign: Buttons & Badges (Lucide Icons statt Emojis, sattere Farben, Pill-Stil) | 🔲 Offen |
-| 12.4 | Visuelles Redesign: LOP-Tabellenzeilen (mehr Whitespace, subtile Trennlinien, bessere Hover-States) | 🔲 Offen |
-| 12.5 | Daily Stand-up Modus: Toggle-Button auf LOP-Seite (filtert erledigte Items, sortiert überfällig zuerst) | 🔲 Offen |
-| 12.6 | Daily Stand-up Modus: Sektionen „Überfällig / Heute fällig / Offen / In Bearbeitung" | 🔲 Offen |
-| 12.7 | Daily Stand-up Modus: One-click Status-Toggle direkt in Zeile (ohne Dialog-Öffnen) | 🔲 Offen |
-| 12.8 | Ähnliche LOP-Punkte zusammenführen: Fuzzy-Similarity-Check nach Transkript-Verarbeitung | 🔲 Offen |
-| 12.9 | Ähnliche LOP-Punkte zusammenführen: Dialog „Punkte zusammenführen?" mit Vorschau | 🔲 Offen |
+| 12.1 | Visuelles Redesign: Navbar (Glasmorphismus, backdrop-blur, bessere Schatten) | ✅ Erledigt |
+| 12.2 | Visuelles Redesign: Dashboard-Cards (größere Radien, Tiefen-Schatten, moderne Typografie) | ✅ Erledigt |
+| 12.3 | Visuelles Redesign: Buttons & Badges (SVG-Icons, Pill-Stil, sattere Farben) | ✅ Erledigt |
+| 12.4 | Visuelles Redesign: LOP-Tabellenzeilen (mehr Whitespace, subtile Trennlinien, bessere Hover-States) | ✅ Erledigt |
+| 12.5 | Daily Stand-up Modus: Toggle-Button auf LOP-Seite (filtert erledigte Items, sortiert überfällig zuerst) | ✅ Erledigt |
+| 12.6 | Daily Stand-up Modus: Sektionen „Überfällig / Heute fällig / Offen / In Bearbeitung" | ✅ Erledigt |
+| 12.7 | Daily Stand-up Modus: One-click Status-Toggle direkt in Zeile (ohne Dialog-Öffnen) | ✅ Erledigt |
+| 12.8 | Ähnliche LOP-Punkte zusammenführen: Jaccard-Similarity-Check (lib/similarity.ts) | ✅ Erledigt |
+| 12.9 | Ähnliche LOP-Punkte zusammenführen: Dialog „Punkte zusammenführen?" mit Vorschau | ✅ Erledigt |
 
 ### Meilenstein 13: Projekt-Level-Branding (Sanfte Evolution)
 
@@ -327,14 +327,14 @@ Letzte Aktualisierung: April 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 
 | # | Aufgabe | Status |
 |---|---|---|
-| 13.1 | Migration `016_project_branding.sql`: `brand_color`, `logo_url`, `branding_inherited BOOLEAN DEFAULT true` auf `projects` | 🔲 Offen |
-| 13.2 | `lib/branding.ts`: Helper `getProjectBranding(project, workspace)` mit Fallback-Kette | 🔲 Offen |
-| 13.3 | Dashboard-Cards: Projekt-Logo anzeigen (Fallback auf Workspace-Logo) | 🔲 Offen |
-| 13.4 | Projekt-Page: Buttons/Akzentfarbe aus `project.brand_color` (CSS-Variable) | 🔲 Offen |
-| 13.5 | Neue Settings-Route `/settings/projects/[id]/branding` (Logo-Upload + Farbwähler) | 🔲 Offen |
-| 13.6 | API-Endpoint `POST /api/settings/projects/[id]/branding/logo` (Storage-Upload) | 🔲 Offen |
+| 13.1 | Migration `016_project_branding.sql`: `brand_color`, `logo_url`, `branding_inherited BOOLEAN DEFAULT true` auf `projects` | ✅ Erledigt |
+| 13.2 | `lib/branding.ts`: Helper `getEffectiveBranding(project, workspace)` mit Fallback-Kette | ✅ Erledigt |
+| 13.3 | Dashboard-Cards: Projekt-Logo anzeigen (Fallback auf Workspace-Logo) | ✅ Erledigt |
+| 13.4 | Projekt-Page: CSS-Variable `--brand` aus `project.brand_color` | ✅ Erledigt |
+| 13.5 | Neue Settings-Route `/settings/projects/[id]/branding` (Logo-Upload + Farbwähler) | ✅ Erledigt |
+| 13.6 | API-Endpoint `POST /api/settings/projects/[id]/branding/logo` (Storage-Upload) | ✅ Erledigt |
 | 13.7 | WorkspaceNav: Projekt-Logo anzeigen wenn auf Projekt-Seite | 🔲 Offen |
-| 13.8 | `app/(app)/layout.tsx`: CSS-Variable `--brand` priorisiert `project.brand_color` über `workspace.brand_color` | 🔲 Offen |
+| 13.8 | `app/(app)/layout.tsx`: CSS-Variable `--brand` — Projekt überschreibt via CSS-Kaskade auf Projekt-Page | ✅ Erledigt |
 | 13.9 | (Backlog) Subdomain-Routing entfernen als separater Meilenstein | 🔲 Offen |
 
 ### Bugfixes (außerhalb Meilensteine)

@@ -6,10 +6,12 @@ import LopTableRow from './LopTableRow'
 import LopItemDialog, { type LopItem } from './LopItemDialog'
 import ReviewBanner from './ReviewBanner'
 import AiReviewPanel from './AiReviewPanel'
+import MergeSuggestionDialog from './MergeSuggestionDialog'
 import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { findSimilarPairs, type SimilarPair } from '@/lib/similarity'
 
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
@@ -31,6 +33,9 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
   const [showReviewPanel, setShowReviewPanel] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LopItem | null>(null)
   const [internalShowAddForm, setInternalShowAddForm] = useState(false)
+  const [standupMode, setStandupMode] = useState(false)
+  const [mergePairs, setMergePairs] = useState<SimilarPair[]>([])
+  const [showMergeDialog, setShowMergeDialog] = useState(false)
 
   const showAddForm = externalShowAddForm ?? internalShowAddForm
   const setShowAddForm = onShowAddFormChange ?? setInternalShowAddForm
@@ -57,8 +62,14 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
 
   const STATUS_ORDER: Record<string, number> = { offen: 0, in_bearbeitung: 1, abgeschlossen: 2 }
 
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
   const filtered = items
     .filter(item => {
+      if (standupMode && item.status === 'abgeschlossen') return false
       if (filterStatus !== 'all' && item.status !== filterStatus) return false
       if (filterPriority !== 'all' && item.priority !== filterPriority) return false
       if (filterResponsible !== 'all' && item.responsible !== filterResponsible) return false
@@ -72,7 +83,59 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       }
       return true
     })
-    .sort((a, b) => (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0))
+    .sort((a, b) => {
+      if (standupMode) {
+        // Sort: overdue first, then today, then open/in-progress by priority
+        const PRIORITY_ORDER: Record<string, number> = { hoch: 0, mittel: 1, niedrig: 2 }
+        const dueA = a.due_date ? new Date(a.due_date) : null
+        const dueB = b.due_date ? new Date(b.due_date) : null
+        const overdueA = dueA && dueA < today ? 1 : 0
+        const overdueB = dueB && dueB < today ? 1 : 0
+        if (overdueA !== overdueB) return overdueB - overdueA
+        return (PRIORITY_ORDER[a.priority] ?? 1) - (PRIORITY_ORDER[b.priority] ?? 1)
+      }
+      return (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0)
+    })
+
+  // Stand-up sections
+  const standupSections = standupMode ? [
+    {
+      key: 'overdue',
+      label: 'Überfällig',
+      color: 'text-red-700',
+      bg: 'bg-red-50',
+      dot: 'bg-red-500',
+      items: filtered.filter(i => i.due_date && new Date(i.due_date) < today),
+    },
+    {
+      key: 'today',
+      label: 'Heute fällig',
+      color: 'text-amber-700',
+      bg: 'bg-amber-50',
+      dot: 'bg-amber-500',
+      items: filtered.filter(i => {
+        if (!i.due_date) return false
+        const d = new Date(i.due_date)
+        return d >= today && d < tomorrow
+      }),
+    },
+    {
+      key: 'inprogress',
+      label: 'In Bearbeitung',
+      color: 'text-blue-700',
+      bg: 'bg-blue-50',
+      dot: 'bg-blue-500',
+      items: filtered.filter(i => i.status === 'in_bearbeitung' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
+    },
+    {
+      key: 'open',
+      label: 'Offen',
+      color: 'text-slate-600',
+      bg: 'bg-slate-50',
+      dot: 'bg-slate-400',
+      items: filtered.filter(i => i.status === 'offen' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
+    },
+  ].filter(s => s.items.length > 0) : []
 
   async function handleUpdate(id: string, changes: Partial<LopItem>) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i))
@@ -95,6 +158,13 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
     setItems(prev => {
       const remaining = prev.filter(i => i.id !== id ? i.requires_review : false)
       if (remaining.length === 0) setShowReviewPanel(false)
+      // Check for similar pairs after accepting AI items
+      const open = prev.filter(i => i.status !== 'abgeschlossen')
+      const pairs = findSimilarPairs(open)
+      if (pairs.length > 0) {
+        setMergePairs(pairs)
+        setShowMergeDialog(true)
+      }
       return prev
     })
   }
@@ -112,7 +182,24 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
   }
 
   function handleNewItem(item: LopItem) {
-    setItems(prev => [item, ...prev])
+    setItems(prev => {
+      const updated = [item, ...prev]
+      const open = updated.filter(i => i.status !== 'abgeschlossen')
+      const pairs = findSimilarPairs(open)
+      if (pairs.length > 0) {
+        setMergePairs(pairs)
+        setShowMergeDialog(true)
+      }
+      return updated
+    })
+  }
+
+  async function handleMerge(keepId: string, deleteId: string) {
+    const res = await fetch(`/api/lop/${deleteId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setItems(prev => prev.filter(i => i.id !== deleteId))
+      if (selectedItem?.id === deleteId) setSelectedItem(null)
+    }
   }
 
   return (
@@ -132,95 +219,164 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
         />
       )}
 
-      {/* Filter-Leiste */}
+      {/* Filter-Leiste + Stand-up Toggle */}
       <div className="flex flex-wrap gap-2 mb-4 items-center">
-        <Input
-          placeholder={t('filters.search')}
-          value={filterSearch}
-          onChange={e => setFilterSearch(e.target.value)}
-          className="w-44 h-8 text-sm"
-        />
-        <Select value={filterStatus} onValueChange={v => setFilterStatus(v ?? 'all')}>
-          <SelectTrigger className="w-40 h-8 text-sm">
-            <SelectValue placeholder={t('status_label')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('filters.allStatuses')}</SelectItem>
-            <SelectItem value="offen">{t('status.offen')}</SelectItem>
-            <SelectItem value="in_bearbeitung">{t('status.in_bearbeitung')}</SelectItem>
-            <SelectItem value="abgeschlossen">{t('status.abgeschlossen')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterPriority} onValueChange={v => setFilterPriority(v ?? 'all')}>
-          <SelectTrigger className="w-36 h-8 text-sm">
-            <SelectValue placeholder={t('priority_label')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('filters.allPriorities')}</SelectItem>
-            <SelectItem value="hoch">{t('priority.hoch')}</SelectItem>
-            <SelectItem value="mittel">{t('priority.mittel')}</SelectItem>
-            <SelectItem value="niedrig">{t('priority.niedrig')}</SelectItem>
-          </SelectContent>
-        </Select>
-        {responsibleOptions.length > 0 && (
-          <Select value={filterResponsible} onValueChange={v => setFilterResponsible(v ?? 'all')}>
-            <SelectTrigger className="w-44 h-8 text-sm">
-              <SelectValue placeholder={t('responsible')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('filters.allResponsible')}</SelectItem>
-              {responsibleOptions.map(name => (
-                <SelectItem key={name} value={name}>{name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {!standupMode && (
+          <>
+            <Input
+              placeholder={t('filters.search')}
+              value={filterSearch}
+              onChange={e => setFilterSearch(e.target.value)}
+              className="w-44 h-8 text-sm"
+            />
+            <Select value={filterStatus} onValueChange={v => setFilterStatus(v ?? 'all')}>
+              <SelectTrigger className="w-40 h-8 text-sm">
+                <SelectValue placeholder={t('status_label')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('filters.allStatuses')}</SelectItem>
+                <SelectItem value="offen">{t('status.offen')}</SelectItem>
+                <SelectItem value="in_bearbeitung">{t('status.in_bearbeitung')}</SelectItem>
+                <SelectItem value="abgeschlossen">{t('status.abgeschlossen')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterPriority} onValueChange={v => setFilterPriority(v ?? 'all')}>
+              <SelectTrigger className="w-36 h-8 text-sm">
+                <SelectValue placeholder={t('priority_label')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('filters.allPriorities')}</SelectItem>
+                <SelectItem value="hoch">{t('priority.hoch')}</SelectItem>
+                <SelectItem value="mittel">{t('priority.mittel')}</SelectItem>
+                <SelectItem value="niedrig">{t('priority.niedrig')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {responsibleOptions.length > 0 && (
+              <Select value={filterResponsible} onValueChange={v => setFilterResponsible(v ?? 'all')}>
+                <SelectTrigger className="w-44 h-8 text-sm">
+                  <SelectValue placeholder={t('responsible')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('filters.allResponsible')}</SelectItem>
+                  {responsibleOptions.map(name => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </>
         )}
-        <span className="text-xs text-gray-400 ml-auto">
-          {t('filters.showing', { count: filtered.length, total: items.length })}
-        </span>
+
+        {standupMode && (
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-xs font-semibold text-blue-700">Daily Stand-up</span>
+            <span className="text-xs text-blue-500">· {filtered.length} offene Punkte</span>
+          </div>
+        )}
+
+        <div className="ml-auto flex items-center gap-3">
+          {!standupMode && (
+            <span className="text-xs text-gray-400">
+              {t('filters.showing', { count: filtered.length, total: items.length })}
+            </span>
+          )}
+          <button
+            onClick={() => setStandupMode(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
+              ${standupMode
+                ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50'}`}
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <circle cx="6.5" cy="4" r="2" stroke="currentColor" strokeWidth="1.3" />
+              <path d="M2 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            Stand-up
+          </button>
+        </div>
       </div>
 
-      {/* Tabelle */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
-              <th className="px-3 py-2 text-center w-8">#</th>
-              <th className="px-3 py-2 text-left">{t('title')}</th>
-              <th className="px-3 py-2 text-left w-36">{t('status_label')}</th>
-              <th className="px-3 py-2 text-left w-32">{t('responsible')}</th>
-              <th className="px-3 py-2 text-left w-28">{t('dueDate')}</th>
-              <th className="px-3 py-2 text-left w-24">{t('priority_label')}</th>
-              <th className="px-3 py-2 text-left">{t('result')}</th>
-              <th className="px-3 py-2 w-16"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
-                  {items.length === 0
-                    ? t('noItems')
-                    : t('filters.noMatch')}
-                </td>
+      {/* Stand-up-Modus: Sektionen */}
+      {standupMode ? (
+        <div className="space-y-4">
+          {standupSections.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-100 py-12 text-center text-gray-400 text-sm">
+              Keine offenen Punkte – alles erledigt!
+            </div>
+          ) : (
+            standupSections.map(section => (
+              <div key={section.key}>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-t-xl ${section.bg} border border-b-0 border-gray-100`}>
+                  <span className={`w-2 h-2 rounded-full ${section.dot}`} />
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${section.color}`}>{section.label}</span>
+                  <span className="text-xs text-gray-400 ml-1">({section.items.length})</span>
+                </div>
+                <div className="bg-white rounded-b-xl border border-gray-100 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {section.items.map((item, index) => (
+                        <LopTableRow
+                          key={item.id}
+                          item={item}
+                          index={index}
+                          canEdit={canEdit}
+                          members={members}
+                          onUpdate={handleUpdate}
+                          onDelete={handleDelete}
+                          onOpenDetail={() => setSelectedItem(item)}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Normale Tabellen-Ansicht */
+        <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto shadow-sm">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50/80 text-xs text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-2.5 text-center w-8">#</th>
+                <th className="px-3 py-2.5 text-left">{t('title')}</th>
+                <th className="px-3 py-2.5 text-left w-36">{t('status_label')}</th>
+                <th className="px-3 py-2.5 text-left w-32">{t('responsible')}</th>
+                <th className="px-3 py-2.5 text-left w-28">{t('dueDate')}</th>
+                <th className="px-3 py-2.5 text-left w-24">{t('priority_label')}</th>
+                <th className="px-3 py-2.5 text-left">{t('result')}</th>
+                <th className="px-3 py-2.5 w-16"></th>
               </tr>
-            ) : (
-              filtered.map((item, index) => (
-                <LopTableRow
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  canEdit={canEdit}
-                  members={members}
-                  onUpdate={handleUpdate}
-                  onDelete={handleDelete}
-                  onOpenDetail={() => setSelectedItem(item)}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
+                    {items.length === 0
+                      ? t('noItems')
+                      : t('filters.noMatch')}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((item, index) => (
+                  <LopTableRow
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    canEdit={canEdit}
+                    members={members}
+                    onUpdate={handleUpdate}
+                    onDelete={handleDelete}
+                    onOpenDetail={() => setSelectedItem(item)}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Neuer LOP-Punkt */}
       {canEdit && (
@@ -242,6 +398,16 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />
+
+      {/* Merge-Vorschlag-Dialog */}
+      {showMergeDialog && mergePairs.length > 0 && (
+        <MergeSuggestionDialog
+          pairs={mergePairs}
+          items={items}
+          onMerge={handleMerge}
+          onDismiss={() => { setShowMergeDialog(false); setMergePairs([]) }}
+        />
+      )}
     </div>
   )
 }

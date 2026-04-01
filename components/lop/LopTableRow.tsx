@@ -56,12 +56,12 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
   }
 
   const isDone = item.status === 'abgeschlossen'
-  const rowBg = item.requires_review ? 'bg-yellow-50' : isDone ? 'bg-gray-50' : ''
-  const rowOpacity = isDone ? 'opacity-60' : ''
+  const rowBg = item.requires_review ? 'bg-amber-50/60' : isDone ? 'bg-gray-50/80' : ''
+  const rowOpacity = isDone ? 'opacity-50' : ''
 
   if (editing) {
     return (
-      <tr className="border-b bg-blue-50">
+      <tr className="border-b bg-blue-50/60">
         <td className="px-3 py-2 text-center text-xs text-gray-400">{index + 1}</td>
         <td className="px-3 py-2" colSpan={2}>
           <Input
@@ -136,41 +136,49 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
   }
 
   return (
-    <tr className={`border-b hover:bg-gray-50 group transition-opacity ${rowBg} ${rowOpacity}`}>
-      <td className="px-3 py-2.5 text-center text-xs text-gray-400">{index + 1}</td>
-      <td className="px-3 py-2.5 max-w-[240px]">
+    <tr className={`border-b border-gray-100 hover:bg-slate-50/70 group transition-all ${rowBg} ${rowOpacity}`}>
+      <td className="px-3 py-3 text-center text-xs text-gray-300 font-mono">{index + 1}</td>
+      <td className="px-3 py-3 max-w-[240px]">
         <button
           onClick={onOpenDetail}
           className="text-left w-full"
           title="Details anzeigen"
         >
-          <div className="font-medium text-sm text-gray-900 truncate hover:text-blue-600 hover:underline transition-colors">
+          <div className="font-medium text-sm text-gray-900 truncate hover:text-blue-600 transition-colors">
             {item.title}
           </div>
           {item.description && (
-            <div className="text-xs text-gray-400 truncate mt-0.5">{item.description}</div>
+            <div className="text-xs text-gray-400 truncate mt-0.5 leading-relaxed">{item.description}</div>
           )}
           {item.requires_review && (
-            <span className="inline-block mt-1 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">
+            <span className="inline-flex items-center gap-1 mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
               KI-Vorschlag
             </span>
           )}
         </button>
       </td>
-      <td className="px-3 py-2.5">
-        <button onClick={cycleStatus} title="Klicken zum Wechseln" disabled={!canEdit}>
+      <td className="px-3 py-3">
+        <button
+          onClick={cycleStatus}
+          title={canEdit ? 'Status wechseln' : undefined}
+          disabled={!canEdit}
+          className={canEdit ? 'hover:scale-105 transition-transform' : ''}
+        >
           <StatusBadge status={item.status} />
         </button>
       </td>
-      <td className="px-3 py-2.5 text-sm text-gray-600 whitespace-nowrap">
+      <td className="px-3 py-3 text-sm text-gray-600 whitespace-nowrap">
         {(() => {
           const resolved = item.responsible_user_id
             ? (members.find(m => m.user_id === item.responsible_user_id)?.display_name ?? item.responsible)
             : item.responsible
-          return resolved ?? <span className="text-gray-300">–</span>
+          return resolved
+            ? <span className="font-medium text-gray-700">{resolved}</span>
+            : <span className="text-gray-300">–</span>
         })()}
       </td>
-      <td className="px-3 py-2.5 text-sm whitespace-nowrap">
+      <td className="px-3 py-3 text-sm whitespace-nowrap">
         {item.due_date
           ? (() => {
               const due = new Date(item.due_date)
@@ -178,42 +186,51 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
               today.setHours(0, 0, 0, 0)
               const overdue = !isDone && due < today
               return (
-                <span className={overdue ? 'text-red-600 font-medium' : 'text-gray-600'}>
-                  {overdue && <span className="mr-1" title="Überfällig">⚠</span>}
+                <span className={`inline-flex items-center gap-1 ${overdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                  {overdue && (
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-label="Überfällig">
+                      <path d="M6.5 1L12 12H1L6.5 1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                      <path d="M6.5 5v3M6.5 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  )}
                   {due.toLocaleDateString('de-DE')}
                 </span>
               )
             })()
           : <span className="text-gray-300">–</span>}
       </td>
-      <td className="px-3 py-2.5">
+      <td className="px-3 py-3">
         <PriorityBadge priority={item.priority} />
       </td>
-      <td className="px-3 py-2.5 max-w-[200px]">
+      <td className="px-3 py-3 max-w-[200px]">
         {item.result
-          ? <span className="text-xs text-gray-500 truncate block">{item.result}</span>
+          ? <span className="text-xs text-gray-500 truncate block leading-relaxed">{item.result}</span>
           : <span className="text-gray-300 text-xs">–</span>}
       </td>
-      <td className="px-3 py-2.5 text-right">
+      <td className="px-3 py-3 text-right">
         {canEdit && (
           <div className="opacity-0 group-hover:opacity-100 flex gap-1 justify-end transition-opacity">
             <Button
               size="sm"
               variant="ghost"
-              className="h-7 w-7 p-0 text-gray-400 hover:text-blue-600"
+              className="h-7 w-7 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
               onClick={() => { setDraft(item); setEditing(true) }}
               title="Inline bearbeiten"
             >
-              ✏
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M9 2l2 2-7 7H2v-2l7-7Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+              </svg>
             </Button>
             <Button
               size="sm"
               variant="ghost"
-              className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
+              className="h-7 w-7 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
               onClick={() => onDelete(item.id)}
               title="Löschen"
             >
-              🗑
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M2 3h9M5 3V2h3v1M4 3v7a1 1 0 001 1h3a1 1 0 001-1V3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </Button>
           </div>
         )}
