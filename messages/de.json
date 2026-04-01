@@ -437,6 +437,11 @@
     "newRecording": "Neue Aufnahme",
     "viewProject": "Zum Projekt",
     "micError": "Mikrofon-Zugriff verweigert. Bitte Berechtigung in den Browser-Einstellungen erteilen.",
+    "micPermissionDenied": "Mikrofon-Zugriff verweigert.",
+    "micPermissionHint": "Tipp: Erlaube den Mikrofon-Zugriff im Browser (Schloss-Symbol in der Adressleiste) und lade die Seite neu.",
+    "reloadPage": "Seite neu laden →",
+    "micNoDevice": "Kein Mikrofon gefunden. Bitte ein Mikrofon anschließen.",
+    "micInUse": "Mikrofon wird von einer anderen Anwendung verwendet. Bitte diese schließen und erneut versuchen.",
     "uploadError": "Übertragung fehlgeschlagen. Bitte erneut versuchen.",
     "whisperHint": "Benötigt einen OpenAI-API-Key für die Transkription.",
     "whisperHintLink": "Jetzt hinterlegen →"

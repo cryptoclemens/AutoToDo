@@ -60,8 +60,20 @@ export default function RecordPage() {
       mediaRecorderRef.current = mr
       setState('recording')
       startTimer()
-    } catch {
-      setError(t('micError'))
+    } catch (err) {
+      if (err instanceof DOMException) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError('permission_denied')
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setError('no_device')
+        } else if (err.name === 'NotReadableError') {
+          setError('in_use')
+        } else {
+          setError(err.message || t('micError'))
+        }
+      } else {
+        setError(t('micError'))
+      }
     }
   }
 
@@ -244,8 +256,25 @@ export default function RecordPage() {
 
         {/* Error */}
         {error && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {error}
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 space-y-2">
+            {error === 'permission_denied' ? (
+              <>
+                <p className="font-medium">{t('micPermissionDenied')}</p>
+                <p className="text-xs text-red-600">{t('micPermissionHint')}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-xs underline text-red-700 hover:text-red-900"
+                >
+                  {t('reloadPage')}
+                </button>
+              </>
+            ) : error === 'no_device' ? (
+              <p>{t('micNoDevice')}</p>
+            ) : error === 'in_use' ? (
+              <p>{t('micInUse')}</p>
+            ) : (
+              <p>{error}</p>
+            )}
           </div>
         )}
 

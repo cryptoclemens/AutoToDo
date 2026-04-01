@@ -437,6 +437,11 @@
     "newRecording": "New recording",
     "viewProject": "View project",
     "micError": "Microphone access denied. Please grant permission in browser settings.",
+    "micPermissionDenied": "Microphone access denied.",
+    "micPermissionHint": "Tip: Allow microphone access in your browser (lock icon in the address bar) and reload the page.",
+    "reloadPage": "Reload page →",
+    "micNoDevice": "No microphone found. Please connect a microphone.",
+    "micInUse": "Microphone is in use by another application. Please close it and try again.",
     "uploadError": "Upload failed. Please try again.",
     "whisperHint": "Requires an OpenAI API key for transcription.",
     "whisperHintLink": "Set up now →"
