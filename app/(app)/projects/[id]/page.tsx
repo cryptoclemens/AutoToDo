@@ -176,6 +176,16 @@ export default async function ProjectPage({ params }: Props) {
             <XlsxImportDialog projectId={project.id} />
           )}
           {canAdmin && !project.archived_at && (
+            <Link href={`/settings/projects/${project.id}/branding`} title="Projekt-Branding anpassen">
+              <Button variant="outline" size="sm" className="px-2.5">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
+                  <circle cx="7" cy="7" r="2" fill="currentColor" />
+                </svg>
+              </Button>
+            </Link>
+          )}
+          {canAdmin && !project.archived_at && (
             <ArchiveButton projectId={project.id} />
           )}
         </div>
