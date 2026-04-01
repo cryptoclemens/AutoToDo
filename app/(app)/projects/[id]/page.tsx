@@ -169,8 +169,11 @@ export default async function ProjectPage({ params }: Props) {
               ↑ Transkript hochladen
             </Button>
           </Link>
-          <a href={`/api/lop/export?projectId=${project.id}`}>
-            <Button variant="outline" size="sm" className="rounded-lg">↓ XLSX exportieren</Button>
+          <a
+            href={`/api/lop/export?projectId=${project.id}`}
+            className="inline-flex items-center h-7 gap-1 px-2.5 text-[0.8rem] font-medium border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 rounded-lg transition-colors"
+          >
+            ↓ XLSX exportieren
           </a>
           {canEdit && !project.archived_at && (
             <XlsxImportDialog projectId={project.id} />

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ImportChange } from '@/lib/import'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   projectId: string
@@ -149,12 +150,9 @@ export default function XlsxImportDialog({ projectId }: Props) {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-md font-medium transition-colors"
-      >
+      <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setOpen(true)}>
         ↑ XLSX importieren
-      </button>
+      </Button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
