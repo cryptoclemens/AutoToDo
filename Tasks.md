@@ -306,6 +306,20 @@ Letzte Aktualisierung: März 2026 · Version 0.1.78 · M1–M11, M9.1, M9.5 komp
 | 10.12 | Footer auf Landing Page (Links: Impressum, Datenschutz, Kontakt) | ✅ Erledigt (M7b.4) |
 | 10.13 | Cookie-Hinweis / Consent-Banner (DSGVO) | ✅ Erledigt (M7b.8) |
 
+### Meilenstein 12: UI/UX-Modernisierung & Daily Stand-up
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 12.1 | Visuelles Redesign: Navbar (Glasmorphismus, backdrop-blur, bessere Schatten) | 🔲 Offen |
+| 12.2 | Visuelles Redesign: Dashboard-Cards (größere Radien, Tiefen-Schatten, moderne Typografie) | 🔲 Offen |
+| 12.3 | Visuelles Redesign: Buttons & Badges (Lucide Icons statt Emojis, sattere Farben, Pill-Stil) | 🔲 Offen |
+| 12.4 | Visuelles Redesign: LOP-Tabellenzeilen (mehr Whitespace, subtile Trennlinien, bessere Hover-States) | 🔲 Offen |
+| 12.5 | Daily Stand-up Modus: Toggle-Button auf LOP-Seite (filtert erledigte Items, sortiert überfällig zuerst) | 🔲 Offen |
+| 12.6 | Daily Stand-up Modus: Sektionen „Überfällig / Heute fällig / Offen / In Bearbeitung" | 🔲 Offen |
+| 12.7 | Daily Stand-up Modus: One-click Status-Toggle direkt in Zeile (ohne Dialog-Öffnen) | 🔲 Offen |
+| 12.8 | Ähnliche LOP-Punkte zusammenführen: Fuzzy-Similarity-Check nach Transkript-Verarbeitung | 🔲 Offen |
+| 12.9 | Ähnliche LOP-Punkte zusammenführen: Dialog „Punkte zusammenführen?" mit Vorschau | 🔲 Offen |
+
 ### Bugfixes (außerhalb Meilensteine)
 
 | # | Aufgabe | Status |
