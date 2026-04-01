@@ -44,16 +44,29 @@ export default async function SettingsPage() {
       data: Array<{ user_id: string; role: string; joined_at: string; email: string; display_name: string }> | null
     }
 
-  // Load LLM config (admin only)
-  const { data: llmConfig } = isAdmin
-    ? await supabase.from('workspace_llm_config')
-        .select('provider, model, endpoint')
-        .eq('workspace_id', workspace.id).single() as {
-          data: { provider: string; model: string; endpoint: string | null } | null
-        }
-    : { data: null }
+  // Load LLM configs (admin only) – extraction + transcription
+  type LlmRow = { role: string; provider: string; model: string; endpoint: string | null } | null
+  let llmExtraction: LlmRow = null
+  let llmTranscription: LlmRow = null
+  if (isAdmin) {
+    const { data: llmRows } = await supabase
+      .from('workspace_llm_config')
+      .select('role, provider, model, endpoint')
+      .eq('workspace_id', workspace.id) as { data: Array<{ role: string; provider: string; model: string; endpoint: string | null }> | null }
+    llmExtraction = (llmRows ?? []).find(r => r.role === 'extraction') ?? null
+    llmTranscription = (llmRows ?? []).find(r => r.role === 'transcription') ?? null
+  }
+  const llmInitial = {
+    extraction: llmExtraction
+      ? { configured: true as const, provider: llmExtraction.provider, model: llmExtraction.model, endpoint: llmExtraction.endpoint ?? undefined, apiKeyMasked: '••••••••' }
+      : { configured: false as const },
+    transcription: llmTranscription
+      ? { configured: true as const, provider: llmTranscription.provider, model: llmTranscription.model, apiKeyMasked: '••••••••' }
+      : { configured: false as const },
+  }
 
   // Load billing usage data
+
   const plan = (ws?.plan ?? 'beta') as import('@/lib/plans').Plan
   const [{ count: projectCount }, { count: seatCount }, { data: usageData }] = await Promise.all([
     supabase.from('projects').select('id', { count: 'exact', head: true }).eq('workspace_id', workspace.id).is('archived_at', null),
@@ -100,10 +113,6 @@ export default async function SettingsPage() {
       if (notionData) notionInitial = { configured: true, connectedAt: notionData.connected_at }
     } catch { /* Migration 018 not yet deployed – silently skip */ }
   }
-
-  const llmInitial = llmConfig
-    ? { configured: true, provider: llmConfig.provider, model: llmConfig.model, endpoint: llmConfig.endpoint ?? undefined, apiKeyMasked: '••••••••' }
-    : { configured: false }
 
   return (
     <Suspense>

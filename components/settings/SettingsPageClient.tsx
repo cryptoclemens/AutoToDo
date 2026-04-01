@@ -56,11 +56,8 @@ interface Props {
   members: Member[]
   pendingInvitations: PendingInvitation[]
   llmInitial: {
-    configured: boolean
-    provider?: string
-    model?: string
-    endpoint?: string
-    apiKeyMasked?: string
+    extraction: { configured: boolean; provider?: string; model?: string; endpoint?: string; apiKeyMasked?: string }
+    transcription: { configured: boolean; provider?: string; model?: string; apiKeyMasked?: string }
   }
   apiKeys: ApiKey[]
   mollieEnabled: boolean
@@ -372,7 +369,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
       {tab === 'ki' && isAdmin && (
         <div>
           <p className="text-sm text-gray-500 mb-6">{ts('kiDesc')}</p>
-          <LlmSettingsForm initial={llmInitial} />
+          <LlmSettingsForm extractionInitial={llmInitial.extraction} transcriptionInitial={llmInitial.transcription} />
         </div>
       )}
 

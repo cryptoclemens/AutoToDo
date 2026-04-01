@@ -28,15 +28,22 @@ export default async function LlmSettingsPage() {
 
   const isAdmin = ['workspace_owner', 'workspace_admin'].includes(member?.role ?? '')
 
-  const { data: llmConfig } = await supabase
+  type LlmRow = { role: string; provider: string; model: string; endpoint: string | null }
+  const { data: llmRows } = await supabase
     .from('workspace_llm_config')
-    .select('provider, model, endpoint')
-    .eq('workspace_id', workspace.id)
-    .single() as { data: { provider: string; model: string; endpoint: string | null } | null }
+    .select('role, provider, model, endpoint')
+    .eq('workspace_id', workspace.id) as { data: LlmRow[] | null }
 
-  const initial = llmConfig
-    ? { configured: true, provider: llmConfig.provider, model: llmConfig.model, endpoint: llmConfig.endpoint ?? undefined, apiKeyMasked: '••••••••' }
-    : { configured: false }
+  const llmExtraction = (llmRows ?? []).find(r => r.role === 'extraction') ?? null
+  const llmTranscription = (llmRows ?? []).find(r => r.role === 'transcription') ?? null
+
+  const extractionInitial = llmExtraction
+    ? { configured: true as const, provider: llmExtraction.provider, model: llmExtraction.model, endpoint: llmExtraction.endpoint ?? undefined, apiKeyMasked: '••••••••' }
+    : { configured: false as const }
+
+  const transcriptionInitial = llmTranscription
+    ? { configured: true as const, provider: llmTranscription.provider, model: llmTranscription.model, apiKeyMasked: '••••••••' }
+    : { configured: false as const }
 
   return (
     <div className="max-w-xl">
@@ -46,13 +53,18 @@ export default async function LlmSettingsPage() {
       </p>
 
       {isAdmin ? (
-        <LlmSettingsForm initial={initial} />
+        <LlmSettingsForm extractionInitial={extractionInitial} transcriptionInitial={transcriptionInitial} />
       ) : (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-700">
           Nur Workspace-Admins können die LLM-Konfiguration ändern.
-          {initial.configured && (
+          {extractionInitial.configured && (
             <span className="block mt-1 text-gray-500">
-              Aktuell konfiguriert: {initial.provider} / {initial.model}
+              Aktuell konfiguriert (Extraktion): {extractionInitial.provider} / {extractionInitial.model}
+            </span>
+          )}
+          {transcriptionInitial.configured && (
+            <span className="block mt-1 text-gray-500">
+              Aktuell konfiguriert (Transkription): {transcriptionInitial.provider} / {transcriptionInitial.model}
             </span>
           )}
         </div>

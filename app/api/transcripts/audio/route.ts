@@ -68,40 +68,42 @@ export async function POST(req: NextRequest) {
     .from('projects').select('id').eq('id', projectId).eq('workspace_id', workspace.id).single() as { data: { id: string } | null }
   if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
 
-  // Load workspace LLM config to get OpenAI API key for Whisper
-  const { data: llmConfig } = await supabase
+  // Load transcription config; fall back to extraction if compatible
+  const { data: allConfigs } = await supabase
     .from('workspace_llm_config')
-    .select('provider, encrypted_api_key')
-    .eq('workspace_id', workspace.id)
-    .maybeSingle() as { data: { provider: string; encrypted_api_key: string } | null }
+    .select('role, provider, encrypted_api_key')
+    .eq('workspace_id', workspace.id) as { data: Array<{ role: string; provider: string; encrypted_api_key: string }> | null }
 
-  if (!llmConfig) {
+  const transcriptionConfig = (allConfigs ?? []).find(r => r.role === 'transcription')
+  const extractionConfig = (allConfigs ?? []).find(r => r.role === 'extraction')
+
+  const WHISPER_PROVIDERS = ['openai', 'groq', 'azure_openai']
+  const activeConfig = transcriptionConfig ?? (
+    extractionConfig && WHISPER_PROVIDERS.includes(extractionConfig.provider)
+      ? extractionConfig
+      : null
+  )
+
+  if (!activeConfig) {
     return NextResponse.json({
-      error: 'Kein KI-API-Key konfiguriert. Bitte unter Einstellungen → KI einen OpenAI-Key hinterlegen.',
+      error: 'Kein Transkriptions-API-Key konfiguriert. Bitte unter Einstellungen → KI einen OpenAI- oder Groq-Key für Audio-Transkription hinterlegen.',
     }, { status: 422 })
   }
+  const apiKey = decrypt(activeConfig.encrypted_api_key)
+  const isGroq = activeConfig.provider === 'groq'
 
-  // Whisper is only available via OpenAI (or compatible) providers
-  const whisperProviders = ['openai', 'azure_openai', 'perplexity']
-  if (!whisperProviders.includes(llmConfig.provider)) {
-    return NextResponse.json({
-      error: `Audio-Transkription benötigt einen OpenAI-API-Key. Aktuell konfiguriert: ${llmConfig.provider}. Bitte unter Einstellungen → KI auf OpenAI wechseln oder einen zweiten Key hinterlegen.`,
-    }, { status: 422 })
-  }
+  // Call Whisper API (OpenAI or Groq)
+  const whisperUrl = isGroq
+    ? 'https://api.groq.com/openai/v1/audio/transcriptions'
+    : 'https://api.openai.com/v1/audio/transcriptions'
+  const whisperModel = isGroq ? 'whisper-large-v3-turbo' : 'whisper-1'
 
-  const apiKey = decrypt(llmConfig.encrypted_api_key)
-
-  // Call OpenAI Whisper API
   const whisperForm = new FormData()
   whisperForm.append('file', audioFile, audioFile.name || 'recording.webm')
-  whisperForm.append('model', 'whisper-1')
+  whisperForm.append('model', whisperModel)
   whisperForm.append('language', 'de') // default; could be made configurable
 
-  const whisperBase = llmConfig.provider === 'azure_openai'
-    ? 'https://api.openai.com/v1' // Azure doesn't support Whisper via custom endpoint, fall back
-    : 'https://api.openai.com/v1'
-
-  const whisperRes = await fetch(`${whisperBase}/audio/transcriptions`, {
+  const whisperRes = await fetch(whisperUrl, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}` },
     body: whisperForm,

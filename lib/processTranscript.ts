@@ -57,12 +57,13 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
 
     const transcriptText = decrypt(encryptedContent)
 
-    // Load LLM config
+    // Load LLM config (extraction role)
     const { data: llmConfig } = await supabase
       .from('workspace_llm_config')
       .select('provider, model, encrypted_api_key, endpoint')
       .eq('workspace_id', transcript.workspace_id)
-      .single() as {
+      .eq('role', 'extraction')
+      .maybeSingle() as {
         data: {
           provider: string; model: string; encrypted_api_key: string
           endpoint?: string | null

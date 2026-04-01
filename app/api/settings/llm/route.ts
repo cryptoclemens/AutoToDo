@@ -5,6 +5,8 @@ import { headers } from 'next/headers'
 import { encrypt, decrypt } from '@/lib/encryption'
 import { resolveWorkspace } from '@/lib/workspace'
 
+type Role = 'extraction' | 'transcription'
+
 const supabaseAdmin = () => createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -31,25 +33,35 @@ async function getWorkspaceAndUser() {
   return { workspaceId: workspace.id, user, role: member?.role }
 }
 
-export async function GET() {
-  const ctx = await getWorkspaceAndUser()
-  if (!ctx) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
-
-  const supabase = supabaseAdmin()
-  const { data } = await supabase
-    .from('workspace_llm_config')
-    .select('provider, model, encrypted_api_key, endpoint')
-    .eq('workspace_id', ctx.workspaceId)
-    .single() as { data: { provider: string; model: string; encrypted_api_key: string; endpoint: string | null } | null }
-
-  if (!data) return NextResponse.json({ configured: false })
-
-  return NextResponse.json({
+function formatConfig(data: { provider: string; model: string; encrypted_api_key: string; endpoint: string | null } | null) {
+  if (!data) return { configured: false }
+  return {
     configured: true,
     provider: data.provider,
     model: data.model,
     endpoint: data.endpoint ?? undefined,
     apiKeyMasked: '••••••••' + decrypt(data.encrypted_api_key).slice(-4),
+  }
+}
+
+export async function GET() {
+  const ctx = await getWorkspaceAndUser()
+  if (!ctx) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const supabase = supabaseAdmin()
+  const { data: rows } = await supabase
+    .from('workspace_llm_config')
+    .select('role, provider, model, encrypted_api_key, endpoint')
+    .eq('workspace_id', ctx.workspaceId) as {
+      data: Array<{ role: string; provider: string; model: string; encrypted_api_key: string; endpoint: string | null }> | null
+    }
+
+  const extraction = (rows ?? []).find(r => r.role === 'extraction') ?? null
+  const transcription = (rows ?? []).find(r => r.role === 'transcription') ?? null
+
+  return NextResponse.json({
+    extraction: formatConfig(extraction),
+    transcription: formatConfig(transcription),
   })
 }
 
@@ -62,7 +74,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 
-  const body = await req.json() as { provider: string; model: string; apiKey: string; endpoint?: string }
+  const body = await req.json() as { role?: string; provider: string; model: string; apiKey: string; endpoint?: string }
+  const role: Role = (body.role === 'transcription' ? 'transcription' : 'extraction')
+
   if (!body.provider || !body.model || !body.apiKey) {
     return NextResponse.json({ error: 'provider, model und apiKey sind erforderlich.' }, { status: 400 })
   }
@@ -77,19 +91,20 @@ export async function POST(req: NextRequest) {
     .from('workspace_llm_config')
     .upsert({
       workspace_id: ctx.workspaceId,
+      role,
       provider: body.provider,
       model: body.model,
       encrypted_api_key: encrypted,
       endpoint: body.endpoint ?? null,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'workspace_id' })
+    }, { onConflict: 'workspace_id,role' })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ ok: true })
 }
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   const ctx = await getWorkspaceAndUser()
   if (!ctx) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
@@ -98,8 +113,15 @@ export async function DELETE() {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 
+  const { searchParams } = new URL(req.url)
+  const role: Role = searchParams.get('role') === 'transcription' ? 'transcription' : 'extraction'
+
   const supabase = supabaseAdmin()
-  await supabase.from('workspace_llm_config').delete().eq('workspace_id', ctx.workspaceId)
+  await supabase
+    .from('workspace_llm_config')
+    .delete()
+    .eq('workspace_id', ctx.workspaceId)
+    .eq('role', role)
 
   return NextResponse.json({ ok: true })
 }
