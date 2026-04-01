@@ -48,7 +48,7 @@ const STEPS = [
     title: 'Notion-Seiten teilen',
     desc: (
       <>
-        Öffne in Notion jede Seite, die du importieren möchtest. Klicke oben rechts auf <strong>„..."  →  Connections → AutoToDo</strong>.
+        Öffne in Notion jede Seite, die du importieren möchtest. Klicke oben rechts auf <strong>&bdquo;&hellip;&ldquo; → Connections → AutoToDo</strong>.
         Ohne diesen Schritt kann AutoToDo die Seite nicht lesen.
       </>
     ),
