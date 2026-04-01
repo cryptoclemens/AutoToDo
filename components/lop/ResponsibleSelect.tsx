@@ -63,14 +63,15 @@ export default function ResponsibleSelect({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [responsibleUserId, responsible])
 
-  // No members loaded yet → plain input
+  // No members loaded yet → plain input, but never show a raw UUID
   if (members.length === 0) {
+    const isUuid = responsible ? UUID_RE.test(responsible) : false
     return (
       <Input
-        value={responsible ?? ''}
+        value={isUuid ? '' : (responsible ?? '')}
         onChange={e => onChange(e.target.value || null, null)}
         className={className}
-        placeholder={placeholder}
+        placeholder={isUuid ? 'Lädt…' : placeholder}
         disabled={disabled}
       />
     )

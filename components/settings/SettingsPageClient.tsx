@@ -90,6 +90,7 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
   const ts = useTranslations('settings')
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
   const [digestSaving, setDigestSaving] = useState(false)
+  const [digestTestSending, setDigestTestSending] = useState(false)
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>(
     Object.fromEntries(members.map(m => [m.user_id, m.role]))
   )
@@ -116,6 +117,20 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
       toast.error(ts('digestError'))
     } finally {
       setDigestSaving(false)
+    }
+  }
+
+  async function handleDigestTestSend() {
+    setDigestTestSending(true)
+    try {
+      const res = await fetch('/api/settings/digest-test', { method: 'POST' })
+      const data = await res.json() as { ok?: boolean; sentTo?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? 'Unbekannter Fehler.')
+      toast.success(`Test-E-Mail gesendet an ${data.sentTo}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Fehler beim Senden.')
+    } finally {
+      setDigestTestSending(false)
     }
   }
 
@@ -217,6 +232,14 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
               <span className="text-sm text-gray-700">
                 {ts('digestLabel')} {digestEnabled ? ts('digestActive') : ts('digestDisabled')}
               </span>
+              <button
+                type="button"
+                onClick={handleDigestTestSend}
+                disabled={digestTestSending}
+                className="ml-4 text-xs text-blue-600 hover:underline disabled:opacity-50"
+              >
+                {digestTestSending ? 'Sende…' : 'Test-E-Mail senden'}
+              </button>
             </div>
           </div>
         </div>
