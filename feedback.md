@@ -19,3 +19,10 @@ Ich fände es cool, wenn ich auf Excel offline bearbeitete XSLX, die ich vorher 
 Die Schreibweise bei den Status ist etwas komisch, z.B. in_bearbeitung
 
 ---
+## 2026-04-02 08:20:28 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Links in LOP-Punkten in Hyperlinks überführen und im neuen Tab bei click öffnen
+
+---
