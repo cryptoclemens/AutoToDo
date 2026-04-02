@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: April 2026 · Version 0.1.125 · M1–M11, M9.1, M9.5, M14, M15 (Phase 1) komplett abgeschlossen
+Letzte Aktualisierung: April 2026 · Version 0.1.134 · M1–M14, M15 (Phase 1) komplett abgeschlossen
 
 ---
 
@@ -247,7 +247,7 @@ Letzte Aktualisierung: April 2026 · Version 0.1.125 · M1–M11, M9.1, M9.5, M1
 | 9.1 | Mollie-Billing (Free/Solo/Team/Business) | ✅ Erledigt (Code vollständig; aktiviert sobald MOLLIE_API_KEY gesetzt) |
 | 9.2 | Custom Domain `autotodo.vencly.com` | ✅ DNS konfiguriert (Cloudflare CNAME → Vercel, Supabase Redirect URLs gesetzt) |
 | 9.3 | E-Mail-Benachrichtigungen (Resend) | ✅ Erledigt (Invite + Digest) |
-| 9.4 | Slack/Teams-Integration via Webhook | 🔲 Offen |
+| 9.4 | Slack/Teams-Integration via Webhook | ✅ Erledigt (Webhook-URL + Test-Button, Teams/Power-Automate-URLs unterstützt) |
 | 9.6 | SSO (SAML für Enterprise) | 🔲 Offen (Business-Plan vorgesehen) |
 
 ---
@@ -362,14 +362,28 @@ Letzte Aktualisierung: April 2026 · Version 0.1.125 · M1–M11, M9.1, M9.5, M1
 | # | Aufgabe | Status |
 |---|---|---|
 | 15.1 | `/api/v1/transcripts`: `storage_path` ergänzt + `runTranscriptProcessing` triggern | ✅ Erledigt |
-| 15.2 | `/api/transcripts/audio`: Multipart-Audio → Whisper API (OpenAI) → Pipeline | ✅ Erledigt |
+| 15.2 | `/api/transcripts/audio`: Multipart-Audio → Whisper API (OpenAI/Groq) → Pipeline | ✅ Erledigt |
 | 15.3 | `/record` Seite: MediaRecorder UI, Projekt-Auswahl, Meeting-Name, Status-Flow | ✅ Erledigt |
 | 15.4 | PWA-Manifest (`app/manifest.ts`): installierbar auf iOS/Android | ✅ Erledigt |
 | 15.5 | i18n: `record`-Namespace in de.json + en.json | ✅ Erledigt |
-| 15.6 | Navigation: „Aufnahme"-Link in WorkspaceNav | 🔲 Offen |
+| 15.6 | Navigation: „Aufnahme"-Link in WorkspaceNav (sichtbar für Super-Admins) | ✅ Erledigt |
 | 15.7 | PWA: Offline-Fallback-Seite | 🔲 Offen |
 | 15.8 | Phase 2: Tauri Desktop-App (separates Repo) – System-Audio + whisper.cpp lokal | 🔲 Offen |
-| 15.9 | Phase 2: Groq als Whisper-Provider für Nicht-OpenAI-Nutzer | 🔲 Offen |
+| 15.9 | Groq als Whisper-Provider (whisper-large-v3-turbo, 120 Min/Tag kostenlos) | ✅ Erledigt |
+| 15.10 | Multi-Role LLM Config: `extraction` + `transcription` getrennt konfigurierbar (Migration 019) | ✅ Erledigt |
+| 15.11 | Mic-Fehler: DOMException-Unterscheidung (permission_denied / no_device / in_use) mit Reload-Hint | ✅ Erledigt |
+
+### Meilenstein 16: Nutzer-Feedback 02.04.2026
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 16.1 | Bug: Escape-Taste + Klick außerhalb schließt Inline-Edit-Modus ohne Speichern | ✅ Erledigt |
+| 16.2 | Bug: Status-Toggle → Dropdown statt Cycling (kein versehentlicher Status-Wechsel mehr) | ✅ Erledigt |
+| 16.3 | Feature: Duplikat-Vermeidung – KI prüft vor `create` auf semantisch ähnliche LOP-Punkte | ✅ Erledigt |
+| 16.4 | Feature: Umbenennung bestehender Punkte via Transkript (`update` + `title`-Feld) | ✅ Erledigt |
+| 16.5 | Feature: Namens-Matching – Workspace-Mitglieder als Kontext an LLM übergeben | ✅ Erledigt |
+| 16.6 | Feature: Tooltips (`title`-Attribut) auf abgeschnittenen Zellinhalten (Titel, Beschreibung, Ergebnis) | ✅ Erledigt |
+| 16.7 | Feature: Projekt wiederherstellen – `POST /api/projects/[id]/unarchive` + „Wiederherstellen"-Button | ✅ Erledigt |
 
 ### Bugfixes (außerhalb Meilensteine)
 
@@ -391,6 +405,9 @@ Letzte Aktualisierung: April 2026 · Version 0.1.125 · M1–M11, M9.1, M9.5, M1
 | BF.14 | Registrierung: eingeloggter User mit Workspace-Mitgliedschaft wird zu Dashboard weitergeleitet statt Schritt 1 zu überspringen | ✅ Erledigt |
 | BF.15 | Button-Konsistenz: alle Sekundär-Buttons auf `variant="outline" size="sm" rounded-lg` vereinheitlicht | ✅ Erledigt |
 | BF.16 | `<a><Button>`-Verschachtelung im Export-Button behoben (invalid HTML) | ✅ Erledigt |
+| BF.17 | Webhook-Test-Button: URL aus Request-Body statt DB lesen (funktioniert auch vor dem Speichern) | ✅ Erledigt |
+| BF.18 | Settings `?tab=ki`: `window.location.search` statt `useSearchParams()` (SSR-Hydration-Bug) | ✅ Erledigt |
+| BF.19 | Recorder Mic-Fehler: DOMException-Typen unterscheiden (NotAllowedError/NotFoundError/NotReadableError) | ✅ Erledigt |
 
 ---
 

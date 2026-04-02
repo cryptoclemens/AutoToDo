@@ -1,6 +1,6 @@
 # AutoToDo
 
-**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.78
+**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.134
 
 AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
 
@@ -12,7 +12,8 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 |---|---|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
-| KI | Anthropic Claude / OpenAI GPT / Azure OpenAI / Perplexity AI Sonar (BYOK – Bring Your Own Key) |
+| KI (Extraktion) | Anthropic Claude / OpenAI GPT / Azure OpenAI / Perplexity AI Sonar (BYOK) |
+| KI (Transkription) | OpenAI Whisper / Groq Whisper (whisper-large-v3-turbo, 120 Min/Tag kostenlos) |
 | Deployment | Vercel (maxDuration 60s für LLM-Verarbeitung) · Coolify/Docker (standalone) |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
 | Billing | Mollie (aktiv; aktiviert sobald `MOLLIE_API_KEY` gesetzt) |
@@ -69,6 +70,9 @@ supabase/migrations/008_m7e.sql
 supabase/migrations/009_legal_consent.sql
 supabase/migrations/010_storage_buckets.sql
 supabase/migrations/011_freemium.sql
+supabase/migrations/012_...sql     # (folgende Migrations wie deployed)
+supabase/migrations/...
+supabase/migrations/019_llm_multi_role.sql
 ```
 
 ### 4. Entwicklungsserver starten
@@ -122,7 +126,7 @@ autotodo/
 │   └── ui/                 # shadcn/ui Komponenten
 ├── lib/
 │   ├── supabase/           # Client, Server, Middleware Helper
-│   ├── llm/                # LLM-Abstraktionsschicht (BYOK): Anthropic, OpenAI, Azure
+│   ├── llm/                # LLM-Abstraktionsschicht (BYOK): Anthropic, OpenAI, Azure, Perplexity, Groq
 │   ├── workspace.ts        # resolveWorkspace() Helper
 │   ├── encryption.ts       # AES-256-GCM (mit Error-Handling)
 │   ├── apiKeyAuth.ts       # SHA-256 API-Key-Validierung + Scope-Prüfung
@@ -132,7 +136,7 @@ autotodo/
 │   ├── mollie.ts           # getMollieClient() + isMollieConfigured()
 │   ├── plan-gate.ts        # checkProjectLimit / checkTranscriptLimit / checkSeatLimit
 │   └── plans.ts            # Tier-Limits (Beta/Free/Solo/Team/Business)
-├── supabase/migrations/    # SQL Migrations (011 Dateien, alle deployed)
+├── supabase/migrations/    # SQL Migrations (019 Dateien, alle deployed)
 ├── docs/                   # hetzner-migration-plan.md
 ├── scripts/                # bump-version.sh, install-hooks.sh
 ├── middleware.ts            # Auth-Schutz + Workspace-Header
@@ -175,7 +179,7 @@ NEXT_PUBLIC_APP_URL         # https://autotodo.vencly.com
 NEXT_PUBLIC_APP_DOMAIN      # autotodo.vencly.com
 # Optional:
 RESEND_API_KEY              # aktiviert E-Mail-Versand (Einladungen + täglicher Digest)
-RESEND_FROM                 # z.B. "AutoToDo <noreply@vencly.com>"
+RESEND_FROM                 # z.B. "AutoToDo <noreply@vencly.app>"
 MOLLIE_API_KEY              # aktiviert Billing-Checkout
 GITHUB_FEEDBACK_TOKEN       # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
 CRON_SECRET                 # Secret für Vercel Cron Job Authorization (täglicher Digest)
@@ -208,11 +212,15 @@ Migrationsplan für Hetzner CX32 + Self-hosted Supabase: siehe [`docs/hetzner-mi
 
 | Meilenstein | Inhalt | Status |
 |---|---|---|
-| **9.2** | Custom Domain `autotodo.vencly.com` | DNS konfiguriert |
-| **9.4** | Slack/Teams-Integration via Webhook | Offen |
+| **9.2** | Custom Domain `autotodo.vencly.com` | ✅ DNS konfiguriert |
+| **9.4** | Slack/Teams-Integration via Webhook | ✅ Erledigt |
+| **M15** | AutoToDo Recorder PWA (Mic → Whisper → LOP) | ✅ Phase 1 fertig |
+| **M16** | Nutzer-Feedback: Status-Dropdown, Dedup, Namens-Matching, Unarchive | ✅ Erledigt |
 | **9.6** | SSO (SAML für Enterprise) | Offen (Business-Plan) |
 | **10.1** | Landing Page Hero-Illustration | Teilweise (Animationen live) |
 | **10.9** | Dark Mode | Offen |
+| **M15.7** | PWA Offline-Fallback-Seite | Offen |
+| **M15.8** | Phase 2: Tauri Desktop-App (System-Audio, separates Repo) | Offen |
 | **Hetzner** | Migration auf CX32 + Self-hosted Supabase | Plan fertig, bereit zur Umsetzung |
 
 ## Entwicklungsstand

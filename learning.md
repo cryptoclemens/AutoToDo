@@ -482,3 +482,72 @@ Notion API gibt nur direkte Kinder zurück. Für verschachtelte Inhalte (Toggle-
 **Fix:** Hilfsfunktionen in `lib/`-Dateien auslagern (`lib/notion.ts`) und von dort importieren.
 
 *Diese Datei bei neuen Projekten als Referenz nutzen und projektspezifische Learnings anhängen.*
+
+---
+
+## 18. Table Row Editing – Escape & Outside-Click
+
+### 18.1 Escape-Key + Outside-Click für Inline-Edit-Zeilen
+**Problem:** `<tr>` hat kein natives `blur`-Event. Escape-Taste und Klick außerhalb der Zeile haben den Edit-Modus nicht beendet.
+**Fix:** `useEffect` mit `document.addEventListener('keydown', ...)` + `document.addEventListener('mousedown', ...)`:
+```ts
+useEffect(() => {
+  if (!editing) return
+  const cancel = () => { setDraft(item); setEditing(false) }
+  const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') cancel() }
+  const onMouse = (e: MouseEvent) => {
+    if (rowRef.current && !rowRef.current.contains(e.target as Node)) cancel()
+  }
+  document.addEventListener('keydown', onKey)
+  document.addEventListener('mousedown', onMouse)
+  return () => {
+    document.removeEventListener('keydown', onKey)
+    document.removeEventListener('mousedown', onMouse)
+  }
+}, [editing])
+```
+**Wichtig:** `rowRef` muss auf dem `<tr>`-Element sitzen. Cleanup-Funktion immer mitgeben um Memory Leaks zu vermeiden.
+
+### 18.2 Status-Toggle: Dropdown statt Cycling
+**Problem:** Click-to-cycle (offen → in_bearbeitung → abgeschlossen) verursacht versehentliche Statusänderungen.
+**Fix:** Relative-positioned Wrapper + State `dropdownOpen` + Dropdown-Div mit allen 3 Optionen. Outside-Click per separatem `useEffect` schließen.
+**Regel:** Destructive/irreversible UI-Aktionen immer bewusste Bestätigung erfordern (Dropdown, Dialog, Confirm).
+
+---
+
+## 19. `useSearchParams()` in Next.js App Router
+
+### 19.1 `useSearchParams()` unreliable nach SSR
+**Problem:** `useSearchParams()` gibt in Client Components nach SSR/Hydration manchmal `null` oder leere Params zurück, bis die Seite vollständig hydratisiert ist. Führt dazu, dass `?tab=ki` immer auf Default-Tab fällt.
+**Fix:** `window.location.search` in einem `useEffect` lesen (nur client-side, nach Hydration):
+```ts
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search)
+  const t = params.get('tab')
+  if (t && VALID_TABS.includes(t)) setTab(t)
+}, [])
+```
+**Gilt für:** Alle Fälle wo URL-Parameter zum initialen State-Setzen genutzt werden.
+
+---
+
+## 20. LLM Prompt Engineering – Dedup & Name Matching
+
+### 20.1 Duplikat-Prävention im System-Prompt
+Damit die KI keine Duplikate erstellt, reicht es nicht, bestehende Items zu übergeben.
+Der Prompt muss **explizit** anweisen:
+- Vor jedem `create`: semantische Ähnlichkeit mit bestehenden Items prüfen
+- Bei Überschneidung: `update` + `lop_item_id` des bestehenden Items verwenden
+- Umbenennung: `update` + `title`-Feld (neues Feld im Schema ergänzen)
+- `create` nur wenn eindeutig kein Bezug zu einem bestehenden Eintrag besteht
+Bestehende Items mit `description` übergeben (nicht nur `title`) – mehr Kontext = besseres Matching.
+
+### 20.2 Namens-Matching via Workspace-Mitglieder-Kontext
+Workspace-Mitglieder (Name + E-Mail) als separaten Block in den User-Prompt einfügen:
+```
+Workspace-Mitglieder:
+- Katharina Müller (k.mueller@firma.de)
+- Markus Schmidt (m.schmidt@firma.de)
+```
+KI normalisiert automatisch Tippfehler im Transkript (Katarina → Katharina) wenn der korrekte Name im Kontext steht.
+Externe Personen (nicht in der Liste) → Freitext-Name aus Transkript beibehalten.
