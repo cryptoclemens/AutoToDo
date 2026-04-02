@@ -1,11 +1,12 @@
 import OpenAI from 'openai'
-import type { LlmConfig, ProcessTranscriptResult } from './types'
+import type { LlmConfig, ProcessTranscriptResult, ExistingLopItem, WorkspaceMemberContext } from './types'
 import { buildSystemPrompt, buildUserPrompt } from './prompt'
 
 export async function processWithPerplexity(
   config: LlmConfig,
   transcriptText: string,
-  existingItems: Array<{ id: string; title: string; status: string }>
+  existingItems: ExistingLopItem[],
+  members: WorkspaceMemberContext[] = [],
 ): Promise<ProcessTranscriptResult> {
   const client = new OpenAI({
     apiKey: config.apiKey,
@@ -18,7 +19,7 @@ export async function processWithPerplexity(
       max_tokens: 4096,
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(transcriptText, existingItems) },
+        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) },
       ],
     })
     const content = completion.choices[0]?.message?.content

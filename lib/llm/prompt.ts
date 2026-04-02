@@ -18,6 +18,7 @@ Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt im folgenden Format:
     {
       "action": "update",
       "lop_item_id": "ID des zu aktualisierenden Punktes",
+      "title": "Neuer Titel (optional, nur wenn umbenannt)",
       "status": "offen|in_bearbeitung|abgeschlossen",
       "result": "Ergebnis oder Statusbeschreibung (optional)",
       "confidence": 0.0-1.0
@@ -38,13 +39,37 @@ Regeln:
 - due_date nur setzen wenn ein konkretes Datum genannt wird
 - priority: "hoch" bei explizit dringend/kritisch, "niedrig" bei "irgendwann", sonst "mittel"
 - Für update/close: lop_item_id nur wenn ein bestehender Punkt eindeutig identifizierbar ist, sonst weglassen
-- Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
+
+WICHTIG – Duplikate vermeiden:
+- Bevor du einen neuen Punkt (action: "create") erstellst, prüfe IMMER ob ein semantisch ähnlicher Punkt bereits in der bestehenden LOP existiert
+- Wenn ein bestehender Punkt dieselbe Aufgabe beschreibt (auch bei leicht anderer Formulierung): verwende action "update" mit der lop_item_id des bestehenden Punktes
+- Wenn ein Punkt im Gespräch umbenannt wird (z.B. "Showcase-Vorstellung KI Deep Dive" → "Projektvorstellung"): verwende action "update" mit dem neuen title-Feld
+- Erstelle nur dann einen neuen Punkt, wenn eindeutig kein bestehender Eintrag die gleiche Aufgabe beschreibt
+
+WICHTIG – Personennamen:
+- Im Abschnitt "Workspace-Mitglieder" sind die korrekten Namen aller Teammitglieder aufgelistet
+- Gleiche Namen aus dem Transkript mit dieser Liste ab (auch bei Tippfehlern, z.B. "Katarina" → "Katharina")
+- Verwende im Feld "responsible" immer den exakten Namen aus der Mitgliederliste
+- Für Personen die nicht in der Liste stehen (Externe, Kunden): übernehme den Namen aus dem Transkript
+
+Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
 }
 
-export function buildUserPrompt(transcriptText: string, existingItems: Array<{ id: string; title: string; status: string }>): string {
+export function buildUserPrompt(
+  transcriptText: string,
+  existingItems: Array<{ id: string; title: string; description: string | null; status: string }>,
+  members: Array<{ display_name: string; email: string }>,
+): string {
   const itemsList = existingItems.length > 0
-    ? `\n\nBestehende LOP-Punkte:\n${existingItems.map(i => `- ID: ${i.id} | "${i.title}" (${i.status})`).join('\n')}`
+    ? `\n\nBestehende LOP-Punkte:\n${existingItems.map(i => {
+        const desc = i.description ? ` | Beschreibung: "${i.description.slice(0, 120)}"` : ''
+        return `- ID: ${i.id} | "${i.title}" (${i.status})${desc}`
+      }).join('\n')}`
     : '\n\nKeine bestehenden LOP-Punkte vorhanden.'
 
-  return `Analysiere das folgende Meeting-Transkript und extrahiere alle Aufgaben und Statusänderungen.${itemsList}\n\nTranskript:\n${transcriptText}`
+  const membersList = members.length > 0
+    ? `\n\nWorkspace-Mitglieder:\n${members.map(m => `- ${m.display_name} (${m.email})`).join('\n')}`
+    : ''
+
+  return `Analysiere das folgende Meeting-Transkript und extrahiere alle Aufgaben und Statusänderungen.${itemsList}${membersList}\n\nTranskript:\n${transcriptText}`
 }

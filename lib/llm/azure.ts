@@ -1,11 +1,12 @@
 import { AzureOpenAI } from 'openai'
-import type { LlmConfig, ProcessTranscriptResult } from './types'
+import type { LlmConfig, ProcessTranscriptResult, ExistingLopItem, WorkspaceMemberContext } from './types'
 import { buildSystemPrompt, buildUserPrompt } from './prompt'
 
 export async function processWithAzureOpenAI(
   config: LlmConfig,
   transcriptText: string,
-  existingItems: Array<{ id: string; title: string; status: string }>
+  existingItems: ExistingLopItem[],
+  members: WorkspaceMemberContext[] = [],
 ): Promise<ProcessTranscriptResult> {
   if (!config.endpoint) throw new Error('Azure Endpoint-URL ist erforderlich.')
 
@@ -23,7 +24,7 @@ export async function processWithAzureOpenAI(
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(transcriptText, existingItems) },
+        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) },
       ],
     })
     const content = completion.choices[0]?.message?.content

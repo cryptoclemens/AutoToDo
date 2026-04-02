@@ -2,6 +2,18 @@
 
 export type LlmProvider = 'anthropic' | 'openai' | 'azure_openai' | 'perplexity'
 
+export interface ExistingLopItem {
+  id: string
+  title: string
+  description: string | null
+  status: string
+}
+
+export interface WorkspaceMemberContext {
+  display_name: string
+  email: string
+}
+
 export interface LlmConfig {
   provider: LlmProvider
   apiKey: string

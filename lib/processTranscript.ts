@@ -79,22 +79,41 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       endpoint: llmConfig.endpoint ?? undefined,
     }
 
-    // Load existing LOP items for context
+    // Load existing LOP items for context (include description for dedup)
     const { data: existingItems } = await supabase
       .from('lop_items')
-      .select('id, title, status')
+      .select('id, title, description, status')
       .eq('project_id', transcript.project_id)
       .neq('status', 'abgeschlossen') as {
-        data: Array<{ id: string; title: string; status: string }> | null
+        data: Array<{ id: string; title: string; description: string | null; status: string }> | null
       }
+
+    // Load workspace members for name matching
+    const { data: memberRows } = await supabase
+      .from('workspace_members')
+      .select('user_id, role, profiles:user_id(display_name, email)')
+      .eq('workspace_id', transcript.workspace_id) as {
+        data: Array<{
+          user_id: string
+          role: string
+          profiles: { display_name: string | null; email: string | null } | null
+        }> | null
+      }
+
+    const members = (memberRows ?? [])
+      .map(m => ({
+        display_name: m.profiles?.display_name ?? m.profiles?.email?.split('@')[0] ?? 'Unbekannt',
+        email: m.profiles?.email ?? '',
+      }))
+      .filter(m => m.display_name !== 'Unbekannt')
 
     // Process with LLM (with retry on JSON parse error)
     let result
     try {
-      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [])
+      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [], members)
     } catch {
       await new Promise(r => setTimeout(r, 1500))
-      result = await processTranscriptWithLlm(config, transcriptText, [])
+      result = await processTranscriptWithLlm(config, transcriptText, [], members)
     }
 
     // Apply actions
@@ -134,6 +153,7 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
         }
 
         if (isAutoApply) {
+          if (action.title) updates.title = action.title
           if (action.status) updates.status = action.action === 'close' ? 'abgeschlossen' : action.status
           if (action.result) updates.result = action.result
           updates.requires_review = false

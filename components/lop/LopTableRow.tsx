@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
 import { Input } from '@/components/ui/input'
@@ -23,17 +23,54 @@ interface Props {
   onOpenDetail: () => void
 }
 
-const STATUS_CYCLE: Status[] = ['offen', 'in_bearbeitung', 'abgeschlossen']
+const STATUS_OPTIONS: { value: Status; label: string }[] = [
+  { value: 'offen', label: 'Offen' },
+  { value: 'in_bearbeitung', label: 'In Bearbeitung' },
+  { value: 'abgeschlossen', label: 'Abgeschlossen' },
+]
 
 export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onOpenDetail }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<LopItem>(item)
   const [saving, setSaving] = useState(false)
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
+  const editRowRef = useRef<HTMLTableRowElement>(null)
+  const statusRef = useRef<HTMLDivElement>(null)
 
-  function cycleStatus() {
-    const nextIndex = (STATUS_CYCLE.indexOf(item.status) + 1) % STATUS_CYCLE.length
-    onUpdate(item.id, { status: STATUS_CYCLE[nextIndex] })
-  }
+  // Escape key + outside click to cancel edit mode
+  useEffect(() => {
+    if (!editing) return
+    const cancelEdit = () => { setDraft(item); setEditing(false) }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') cancelEdit()
+    }
+    function onMouseDown(e: MouseEvent) {
+      if (editRowRef.current && !editRowRef.current.contains(e.target as Node)) {
+        cancelEdit()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('mousedown', onMouseDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('mousedown', onMouseDown)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing])
+
+  // Close status dropdown on outside click
+  useEffect(() => {
+    if (!statusDropdownOpen) return
+    function onMouseDown(e: MouseEvent) {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+        setStatusDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [statusDropdownOpen])
 
   async function handleSave() {
     setSaving(true)
@@ -61,7 +98,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
 
   if (editing) {
     return (
-      <tr className="border-b bg-blue-50/60">
+      <tr ref={editRowRef} className="border-b bg-blue-50/60">
         <td className="px-3 py-2 text-center text-xs text-gray-400">{index + 1}</td>
         <td className="px-3 py-2" colSpan={2}>
           <Input
@@ -144,11 +181,19 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
           className="text-left w-full"
           title="Details anzeigen"
         >
-          <div className="font-medium text-sm text-gray-900 truncate hover:text-blue-600 transition-colors">
+          <div
+            className="font-medium text-sm text-gray-900 truncate hover:text-blue-600 transition-colors"
+            title={item.title}
+          >
             {item.title}
           </div>
           {item.description && (
-            <div className="text-xs text-gray-400 truncate mt-0.5 leading-relaxed">{item.description}</div>
+            <div
+              className="text-xs text-gray-400 truncate mt-0.5 leading-relaxed"
+              title={item.description}
+            >
+              {item.description}
+            </div>
           )}
           {item.requires_review && (
             <span className="inline-flex items-center gap-1 mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
@@ -159,14 +204,35 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
         </button>
       </td>
       <td className="px-3 py-3">
-        <button
-          onClick={cycleStatus}
-          title={canEdit ? 'Status wechseln' : undefined}
-          disabled={!canEdit}
-          className={canEdit ? 'hover:scale-105 transition-transform' : ''}
-        >
+        {canEdit ? (
+          <div ref={statusRef} className="relative inline-block">
+            <button
+              onClick={() => setStatusDropdownOpen(o => !o)}
+              title="Status ändern"
+              className="hover:scale-105 transition-transform"
+            >
+              <StatusBadge status={item.status} />
+            </button>
+            {statusDropdownOpen && (
+              <div className="absolute z-50 left-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+                {STATUS_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center gap-2 ${item.status === opt.value ? 'bg-gray-50/80' : ''}`}
+                    onClick={() => {
+                      setStatusDropdownOpen(false)
+                      onUpdate(item.id, { status: opt.value })
+                    }}
+                  >
+                    <StatusBadge status={opt.value} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
           <StatusBadge status={item.status} />
-        </button>
+        )}
       </td>
       <td className="px-3 py-3 text-sm text-gray-600 whitespace-nowrap">
         {(() => {
@@ -204,7 +270,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
       </td>
       <td className="px-3 py-3 max-w-[200px]">
         {item.result
-          ? <span className="text-xs text-gray-500 truncate block leading-relaxed">{item.result}</span>
+          ? <span className="text-xs text-gray-500 truncate block leading-relaxed" title={item.result}>{item.result}</span>
           : <span className="text-gray-300 text-xs">–</span>}
       </td>
       <td className="px-3 py-3 text-right">

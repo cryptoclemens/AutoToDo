@@ -192,8 +192,9 @@ export default async function ProjectPage({ params }: Props) {
       </div>
 
       {project.archived_at && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 mb-4 text-sm text-yellow-800">
-          ⚠ Dieses Projekt ist archiviert.
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 mb-4 text-sm text-yellow-800 flex items-center justify-between gap-4">
+          <span>⚠ Dieses Projekt ist archiviert.</span>
+          {canAdmin && <UnarchiveButton projectId={project.id} />}
         </div>
       )}
 
@@ -212,11 +213,21 @@ export default async function ProjectPage({ params }: Props) {
 
 // ─── Archivieren-Button (Client) ──────────────────────────────────────────────
 function ArchiveButton({ projectId }: { projectId: string }) {
-  // Inline Server Action nicht möglich in dieser Konstellation – via API Route
   return (
     <form action={`/api/projects/${projectId}/archive`} method="POST">
       <Button type="submit" variant="outline" size="sm" className="rounded-lg">
         Archivieren
+      </Button>
+    </form>
+  )
+}
+
+// ─── Wiederherstellen-Button (Client) ─────────────────────────────────────────
+function UnarchiveButton({ projectId }: { projectId: string }) {
+  return (
+    <form action={`/api/projects/${projectId}/unarchive`} method="POST">
+      <Button type="submit" variant="outline" size="sm" className="rounded-lg border-yellow-400 text-yellow-800 hover:bg-yellow-100">
+        Wiederherstellen
       </Button>
     </form>
   )

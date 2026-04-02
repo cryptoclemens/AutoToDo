@@ -1,11 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { LlmConfig, ProcessTranscriptResult } from './types'
+import type { LlmConfig, ProcessTranscriptResult, ExistingLopItem, WorkspaceMemberContext } from './types'
 import { buildSystemPrompt, buildUserPrompt } from './prompt'
 
 export async function processWithAnthropic(
   config: LlmConfig,
   transcriptText: string,
-  existingItems: Array<{ id: string; title: string; status: string }>
+  existingItems: ExistingLopItem[],
+  members: WorkspaceMemberContext[] = [],
 ): Promise<ProcessTranscriptResult> {
   const client = new Anthropic({ apiKey: config.apiKey })
 
@@ -14,7 +15,7 @@ export async function processWithAnthropic(
       model: config.model,
       max_tokens: 4096,
       system: buildSystemPrompt(),
-      messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems) }],
+      messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) }],
     })
     const block = message.content[0]
     if (block.type !== 'text') throw new Error('Unexpected response type')
