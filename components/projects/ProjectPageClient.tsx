@@ -4,6 +4,7 @@ import { useState } from 'react'
 import LopTable from '@/components/lop/LopTable'
 import ProjectInviteButton from './ProjectInviteButton'
 import ProjectMembersDialog from './ProjectMembersDialog'
+import DesktopRecordButton from '@/components/desktop/DesktopRecordButton'
 import { Button } from '@/components/ui/button'
 import type { LopItem } from '@/components/lop/LopItemDialog'
 
@@ -49,6 +50,9 @@ export default function ProjectPageClient({
             >
               + LOP-Punkt hinzufügen
             </Button>
+          )}
+          {canEdit && (
+            <DesktopRecordButton projectId={projectId} />
           )}
         </div>
       )}
