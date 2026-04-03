@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 
 /**
  * Desktop app auth handoff.
@@ -15,10 +15,31 @@ export async function GET(request: NextRequest) {
   const refresh_token = searchParams.get('refresh_token')
 
   if (access_token && refresh_token) {
-    const supabase = createClient()
+    // Create the redirect response first so cookies can be attached directly to it.
+    // Using createClient() from @/lib/supabase/server writes to next/headers cookieStore
+    // which is NOT reflected on a manually created NextResponse — this pattern avoids that.
+    const response = NextResponse.redirect(`${origin}/dashboard`)
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
+
     const { error } = await supabase.auth.setSession({ access_token, refresh_token })
     if (!error) {
-      return NextResponse.redirect(`${origin}/dashboard`)
+      return response
     }
   }
 
