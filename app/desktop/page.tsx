@@ -21,7 +21,9 @@ async function getLatestRelease(): Promise<GithubRelease | null> {
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'AutoToDo',
     }
-    if (process.env.GITHUB_FEEDBACK_TOKEN) {
+    if (process.env.GITHUB_DESKTOP_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_DESKTOP_TOKEN}`
+    } else if (process.env.GITHUB_FEEDBACK_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.GITHUB_FEEDBACK_TOKEN}`
     }
     const res = await fetch(
@@ -104,7 +106,7 @@ export default async function DesktopPage() {
             <div className="flex flex-col gap-2">
               {macArmAsset ? (
                 <a
-                  href={macArmAsset.browser_download_url}
+                  href="/api/desktop/download?type=mac"
                   className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   <span className="font-medium text-sm">
