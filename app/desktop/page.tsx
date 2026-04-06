@@ -17,12 +17,16 @@ interface GithubRelease {
 
 async function getLatestRelease(): Promise<GithubRelease | null> {
   try {
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'AutoToDo',
+    }
+    if (process.env.GITHUB_FEEDBACK_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_FEEDBACK_TOKEN}`
+    }
     const res = await fetch(
       'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases?per_page=1',
-      {
-        headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'AutoToDo' },
-        next: { revalidate: 300 }, // cache 5 minutes
-      }
+      { headers, next: { revalidate: 300 } }
     )
     if (!res.ok) return null
     const releases: GithubRelease[] = await res.json()
