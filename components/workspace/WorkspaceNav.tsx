@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -72,6 +72,11 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
   const t = useTranslations('nav')
   const locale = useLocale()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isDesktopApp, setIsDesktopApp] = useState(false)
+
+  useEffect(() => {
+    setIsDesktopApp(!!window.__autoToDo)
+  }, [])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -84,7 +89,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
     { href: '/dashboard', label: t('dashboard'), icon: <IconDashboard /> },
     ...(isAdmin(userRole) ? [{ href: '/settings', label: t('settings'), icon: <IconSettings /> }] : []),
     ...(isSuperAdmin ? [{ href: '/admin/steuerung', label: 'Steuerung', icon: <IconSuperAdmin /> }] : []),
-    { href: '/desktop', label: locale === 'en' ? 'Desktop' : 'Desktop-Version', icon: <IconDesktop /> },
+    ...(!isDesktopApp ? [{ href: '/desktop', label: locale === 'en' ? 'Desktop' : 'Desktop-Version', icon: <IconDesktop /> }] : []),
   ]
 
   return (
