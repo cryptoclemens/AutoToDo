@@ -68,6 +68,19 @@ export default async function DashboardPage() {
       .filter((p): p is NonNullable<typeof p> => p !== null && p.archived_at === null)
   }
 
+  // Archivierte Projekte
+  type ArchivedRow = { id: string; name: string; archived_at: string }
+  let archivedProjects: ArchivedRow[] = []
+  if (wsMember) {
+    const { data: archived } = await supabase
+      .from('projects')
+      .select('id, name, archived_at')
+      .eq('workspace_id', workspace.id)
+      .not('archived_at', 'is', null)
+      .order('archived_at', { ascending: false })
+    archivedProjects = (archived ?? []) as ArchivedRow[]
+  }
+
   // Workspace-weite LOP-Statistiken
   const projectIds = (projects ?? []).map(p => p.id)
   const { data: allItems } = projectIds.length > 0
@@ -225,6 +238,33 @@ export default async function DashboardPage() {
               </div>
             </Link>
           )})}
+        </div>
+      )}
+      {/* Archivierte Projekte */}
+      {archivedProjects.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            Archivierte LOP-Listen
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {archivedProjects.map(project => (
+              <Link key={project.id} href={`/projects/${project.id}`}>
+                <div className="group bg-gray-50 rounded-2xl border border-gray-100 hover:border-gray-200 hover:bg-white transition-all cursor-pointer p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-bold shrink-0">
+                      {project.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium text-gray-500 truncate group-hover:text-gray-700 transition-colors">
+                      {project.name}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-400 shrink-0">
+                    {new Date(project.archived_at).toLocaleDateString(locale === 'en' ? 'en-GB' : 'de-DE')}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
