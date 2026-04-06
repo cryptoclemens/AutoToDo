@@ -18,14 +18,15 @@ interface GithubRelease {
 async function getLatestRelease(): Promise<GithubRelease | null> {
   try {
     const res = await fetch(
-      'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases/latest',
+      'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases?per_page=1',
       {
         headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'AutoToDo' },
         next: { revalidate: 300 }, // cache 5 minutes
       }
     )
     if (!res.ok) return null
-    return res.json()
+    const releases: GithubRelease[] = await res.json()
+    return releases[0] ?? null
   } catch {
     return null
   }
