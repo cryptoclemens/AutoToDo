@@ -348,6 +348,58 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Desktop App */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-10 text-white overflow-hidden relative">
+            <div className="absolute -top-16 -right-16 w-64 h-64 bg-blue-600 rounded-full blur-3xl opacity-20 pointer-events-none" />
+            <div className="relative grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-5 border border-white/10">
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
+                    <rect x="1" y="1" width="11" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+                    <path d="M4 11h5M6.5 8v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                  </svg>
+                  {isEn ? 'Native Desktop App' : 'Native Desktop-App'}
+                </div>
+                <h2 className="text-2xl font-bold mb-3">
+                  {isEn ? 'Record meetings directly — no upload needed.' : 'Meetings direkt aufnehmen – kein Upload nötig.'}
+                </h2>
+                <p className="text-white/70 mb-6 leading-relaxed text-sm">
+                  {isEn
+                    ? 'The AutoToDo Desktop App records your meeting audio locally, transcribes it with Whisper on your device, and updates your LOP automatically. Your audio never leaves your computer.'
+                    : 'Die AutoToDo Desktop-App nimmt Meeting-Audio lokal auf, transkribiert es mit Whisper auf Ihrem Gerät und aktualisiert das LOP automatisch. Audio verlässt Ihren Computer nicht.'}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/desktop"
+                    className="px-5 py-2.5 bg-white text-gray-900 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    {isEn ? 'Download Desktop App' : 'Desktop-App herunterladen'} →
+                  </Link>
+                </div>
+                <p className="text-xs text-white/40 mt-3">macOS · Windows · {isEn ? 'Free' : 'Kostenlos'}</p>
+              </div>
+              <div className="hidden md:flex flex-col gap-2.5">
+                {[
+                  { icon: '🎙', title: isEn ? 'One-click recording per LOP' : 'Aufnahme per Klick je LOP-Liste', desc: isEn ? 'Start, pause, stop — directly in the project view.' : 'Start, Pause, Stop – direkt in der Projektansicht.' },
+                  { icon: '🔒', title: isEn ? 'Local Whisper transcription' : 'Lokale Whisper-Transkription', desc: isEn ? 'Audio stays on your device. No cloud required.' : 'Audio bleibt auf Ihrem Gerät. Keine Cloud nötig.' },
+                  { icon: '⚡', title: isEn ? 'Automatic LOP update' : 'Automatisches LOP-Update', desc: isEn ? 'AI extracts tasks and updates the list instantly.' : 'KI extrahiert Aufgaben und aktualisiert das LOP sofort.' },
+                ].map(f => (
+                  <div key={f.title} className="bg-white/8 rounded-xl px-4 py-3 flex items-start gap-3 border border-white/10">
+                    <span className="text-xl mt-0.5">{f.icon}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-white leading-tight">{f.title}</p>
+                      <p className="text-xs text-white/60 mt-0.5">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="bg-gray-50 py-20">
         <div className="max-w-5xl mx-auto px-6">

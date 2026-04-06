@@ -56,6 +56,15 @@ function IconSuperAdmin() {
   )
 }
 
+function IconDesktop() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="inline-block">
+      <rect x="1" y="2" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M5 13h6M8 11v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 
 export default function WorkspaceNav({ workspace, userRole, userId: _userId, isSuperAdmin }: Props) {
   const pathname = usePathname()
@@ -75,6 +84,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
     { href: '/dashboard', label: t('dashboard'), icon: <IconDashboard /> },
     ...(isAdmin(userRole) ? [{ href: '/settings', label: t('settings'), icon: <IconSettings /> }] : []),
     ...(isSuperAdmin ? [{ href: '/admin/steuerung', label: 'Steuerung', icon: <IconSuperAdmin /> }] : []),
+    { href: '/desktop', label: locale === 'en' ? 'Desktop' : 'Desktop-Version', icon: <IconDesktop /> },
   ]
 
   return (
