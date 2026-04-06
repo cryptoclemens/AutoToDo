@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
@@ -8,7 +8,7 @@ interface Props {
   projectId: string
 }
 
-type RecordState = 'idle' | 'recording' | 'paused' | 'transcribing'
+type RecordState = 'idle' | 'checking' | 'needs-model' | 'downloading' | 'recording' | 'paused' | 'transcribing'
 
 interface AutoToDoBridge {
   startRecording: () => Promise<void>
@@ -21,39 +21,46 @@ interface AutoToDoBridge {
   clearTranscriptHandler: () => void
 }
 
+declare global {
+  interface Window {
+    __autoToDo?: AutoToDoBridge
+    __TAURI__?: {
+      core: { invoke: <T>(cmd: string, args?: Record<string, unknown>) => Promise<T> }
+      event: { listen: <T>(event: string, cb: (e: { payload: T }) => void) => Promise<() => void> }
+    }
+  }
+}
+
 function getBridge(): AutoToDoBridge | null {
   if (typeof window === 'undefined') return null
-  return (window as unknown as { __autoToDo?: AutoToDoBridge }).__autoToDo ?? null
+  return window.__autoToDo ?? null
+}
+
+function getTauri() {
+  if (typeof window === 'undefined') return null
+  return window.__TAURI__ ?? null
 }
 
 export default function DesktopRecordButton({ projectId }: Props) {
   const router = useRouter()
   const [recordState, setRecordState] = useState<RecordState>('idle')
+  const [downloadProgress, setDownloadProgress] = useState('')
   const [result, setResult] = useState<{ created: number; updated: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
-  const bridgeAvailable = useRef(false)
 
-  useEffect(() => {
-    setIsMounted(true)
-    bridgeAvailable.current = !!getBridge()
-  }, [])
+  useEffect(() => { setIsMounted(true) }, [])
 
   const handleTranscript = useCallback(async (transcript: string) => {
     setRecordState('transcribing')
     setError(null)
     setResult(null)
     try {
-      const res = await fetch('/api/transcripts', {
-        method: 'POST',
-        body: (() => {
-          const fd = new FormData()
-          fd.append('projectId', projectId)
-          fd.append('text', transcript)
-          fd.append('meetingDate', new Date().toISOString().slice(0, 10))
-          return fd
-        })(),
-      })
+      const fd = new FormData()
+      fd.append('projectId', projectId)
+      fd.append('text', transcript)
+      fd.append('meetingDate', new Date().toISOString().slice(0, 10))
+      const res = await fetch('/api/transcripts', { method: 'POST', body: fd })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error ?? 'Unbekannter Fehler')
@@ -72,56 +79,112 @@ export default function DesktopRecordButton({ projectId }: Props) {
     const bridge = getBridge()
     if (!bridge) return
     bridge.setTranscriptHandler(handleTranscript)
-    return () => {
-      bridge.clearTranscriptHandler()
-    }
+    return () => { bridge.clearTranscriptHandler() }
   }, [handleTranscript])
 
   if (!isMounted || !getBridge()) return null
 
-  async function handleStart() {
-    const bridge = getBridge()
-    if (!bridge) return
+  async function checkAndStart() {
+    const tauri = getTauri()
+    if (!tauri) return
     setError(null)
     setResult(null)
+    setRecordState('checking')
+
+    const status = await tauri.core.invoke<{ ready: boolean }>('whisper_model_status')
+    if (!status.ready) {
+      setRecordState('needs-model')
+      return
+    }
+    await doStart()
+  }
+
+  async function doStart() {
+    const bridge = getBridge()
+    if (!bridge) return
     await bridge.startRecording()
     setRecordState('recording')
   }
 
+  async function handleDownloadAndStart() {
+    const tauri = getTauri()
+    if (!tauri) return
+    setRecordState('downloading')
+    setDownloadProgress('Starte Download…')
+
+    const unlisten = await tauri.event.listen<string>('model-download-error', (e) => {
+      setError('Download fehlgeschlagen: ' + e.payload)
+      setRecordState('idle')
+    })
+
+    const unlistenDone = await tauri.event.listen<void>('model-download-done', async () => {
+      unlisten()
+      unlistenDone()
+      setDownloadProgress('')
+      await doStart()
+    })
+
+    // progress events
+    tauri.event.listen<string>('model-download-progress', (e) => {
+      setDownloadProgress(e.payload)
+    })
+
+    await tauri.core.invoke('download_whisper_model', { model: 'medium' })
+  }
+
   async function handlePause() {
-    const bridge = getBridge()
-    if (!bridge) return
-    await bridge.pauseRecording()
+    await getBridge()?.pauseRecording()
     setRecordState('paused')
   }
 
   async function handleResume() {
-    const bridge = getBridge()
-    if (!bridge) return
-    await bridge.resumeRecording()
+    await getBridge()?.resumeRecording()
     setRecordState('recording')
   }
 
   async function handleStop() {
-    const bridge = getBridge()
-    if (!bridge) return
     setRecordState('transcribing')
-    await bridge.stopRecording()
-    // transcript is handled by the registered handler above
+    await getBridge()?.stopRecording()
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       {recordState === 'idle' && (
         <Button
           variant="outline"
           size="sm"
           className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-          onClick={handleStart}
+          onClick={checkAndStart}
         >
           <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2" />
           Aufnahme starten
         </Button>
+      )}
+
+      {recordState === 'checking' && (
+        <span className="text-sm text-slate-400">Prüfe Whisper…</span>
+      )}
+
+      {recordState === 'needs-model' && (
+        <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+          <span className="text-amber-700">Whisper Medium ist nicht installiert.</span>
+          <Button size="sm" className="rounded-lg h-7 text-xs" onClick={handleDownloadAndStart}>
+            Jetzt herunterladen
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-lg h-7 text-xs" onClick={() => setRecordState('idle')}>
+            Abbrechen
+          </Button>
+        </div>
+      )}
+
+      {recordState === 'downloading' && (
+        <span className="flex items-center gap-1.5 text-sm text-blue-600">
+          <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+          {downloadProgress || 'Whisper wird heruntergeladen…'}
+        </span>
       )}
 
       {recordState === 'recording' && (
