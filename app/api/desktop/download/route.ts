@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const REPO = 'cryptoclemens/AutoToDo-Desktop'
 
 async function getRelease() {
-  const token = process.env.GITHUB_DESKTOP_TOKEN
+  const token = process.env.GITHUB_DESKTOP_TOKEN ?? process.env.GITHUB_FEEDBACK_TOKEN
   const headers: Record<string, string> = { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'AutoToDo' }
   if (token) headers['Authorization'] = `Bearer ${token}`
   const res = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=1`, { headers })
