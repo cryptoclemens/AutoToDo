@@ -118,18 +118,6 @@ export default async function DesktopPage() {
                   </span>
                 </div>
               )}
-              <div className="flex items-start gap-2 mt-1 px-1">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0 mt-0.5 text-amber-500">
-                  <path d="M6.5 1L12 11H1L6.5 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                  <path d="M6.5 5v3M6.5 9.5v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                </svg>
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  {isEn
-                    ? <>App not signed. If macOS says &ldquo;damaged&rdquo;: open Terminal and run <code className="bg-gray-100 px-1 rounded text-gray-600">xattr -cr ~/Downloads/AutoToDo.app</code>, then try again.</>
-                    : <>App nicht signiert. Falls macOS &bdquo;beschädigt&rdquo; meldet: Terminal öffnen und <code className="bg-gray-100 px-1 rounded text-gray-600">xattr -cr ~/Downloads/AutoToDo.app</code> ausführen, dann erneut öffnen.</>
-                  }
-                </p>
-              </div>
             </div>
           </div>
 

@@ -26,14 +26,19 @@ export async function GET(req: NextRequest) {
 
   if (!asset) return NextResponse.json({ error: 'Asset not found' }, { status: 404 })
 
-  // Fetch asset with auth → GitHub redirects to signed CDN URL
+  // Fetch asset with auth, follow redirects → final URL is the signed CDN URL
   const assetRes = await fetch(`https://api.github.com/repos/${REPO}/releases/assets/${asset.id}`, {
     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/octet-stream', 'User-Agent': 'AutoToDo' },
-    redirect: 'manual',
+    redirect: 'follow',
   })
 
-  const cdnUrl = assetRes.headers.get('location')
-  if (!cdnUrl) return NextResponse.json({ error: 'Download URL not found' }, { status: 502 })
+  if (!assetRes.ok) return NextResponse.json({ error: 'Asset fetch failed', status: assetRes.status }, { status: 502 })
 
-  return NextResponse.redirect(cdnUrl)
+  // Stream the file directly to the client
+  return new Response(assetRes.body, {
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${asset.name}"`,
+    },
+  })
 }
