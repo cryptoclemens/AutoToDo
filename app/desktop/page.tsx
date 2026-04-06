@@ -1,54 +1,29 @@
 import Link from 'next/link'
 import { getLocale } from 'next-intl/server'
 
-interface GithubAsset {
-  name: string
-  browser_download_url: string
-  size: number
-}
+const SUPABASE_URL = 'https://lgnlviezjdvxgmknmfog.supabase.co'
+const DOWNLOADS_BASE = `${SUPABASE_URL}/storage/v1/object/public/downloads`
 
-interface GithubRelease {
-  tag_name: string
-  name: string
-  published_at: string
-  body: string
-  assets: GithubAsset[]
-}
+const MAC_DMG_URL = `${DOWNLOADS_BASE}/AutoToDo-latest.dmg`
+const WINDOWS_MSI_URL = `${DOWNLOADS_BASE}/AutoToDo-latest.msi`
 
-async function getLatestRelease(): Promise<GithubRelease | null> {
+async function checkFileExists(url: string): Promise<boolean> {
   try {
-    const headers: Record<string, string> = {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'AutoToDo',
-    }
-    if (process.env.GITHUB_DESKTOP_TOKEN) {
-      headers['Authorization'] = `Bearer ${process.env.GITHUB_DESKTOP_TOKEN}`
-    } else if (process.env.GITHUB_FEEDBACK_TOKEN) {
-      headers['Authorization'] = `Bearer ${process.env.GITHUB_FEEDBACK_TOKEN}`
-    }
-    const res = await fetch(
-      'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases?per_page=1',
-      { headers, next: { revalidate: 300 } }
-    )
-    if (!res.ok) return null
-    const releases: GithubRelease[] = await res.json()
-    return releases[0] ?? null
+    const res = await fetch(url, { method: 'HEAD', next: { revalidate: 300 } })
+    return res.ok
   } catch {
-    return null
+    return false
   }
-}
-
-function formatBytes(bytes: number) {
-  return (bytes / 1024 / 1024).toFixed(0) + ' MB'
 }
 
 export default async function DesktopPage() {
   const locale = await getLocale()
   const isEn = locale === 'en'
-  const release = await getLatestRelease()
 
-  const macArmAsset = release?.assets.find(a => a.name.endsWith('.dmg') && (a.name.includes('aarch64') || a.name.includes('arm')))
-  const windowsAsset = release?.assets.find(a => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
+  const [macAvailable, windowsAvailable] = await Promise.all([
+    checkFileExists(MAC_DMG_URL),
+    checkFileExists(WINDOWS_MSI_URL),
+  ])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,11 +55,6 @@ export default async function DesktopPage() {
               ? 'Record meetings directly, transcribe locally with Whisper — your data stays on your device.'
               : 'Meetings direkt aufnehmen, lokal mit Whisper transkribieren — deine Daten bleiben auf deinem Gerät.'}
           </p>
-          {release && (
-            <p className="text-sm text-gray-400 mt-2">
-              {isEn ? 'Latest version' : 'Aktuelle Version'}: <span className="font-medium text-gray-600">{release.tag_name}</span>
-            </p>
-          )}
         </div>
 
         {/* Download cards */}
@@ -100,19 +70,21 @@ export default async function DesktopPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">macOS</h3>
-                <p className="text-xs text-gray-400">macOS 12.3+</p>
+                <p className="text-xs text-gray-400">macOS 12.3+ · Apple Silicon (M1/M2/M3)</p>
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              {macArmAsset ? (
+              {macAvailable ? (
                 <a
-                  href="/api/desktop/download?type=mac"
+                  href={MAC_DMG_URL}
                   className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   <span className="font-medium text-sm">
                     {isEn ? 'Download for Apple Silicon' : 'Download für Apple Silicon'} (M1/M2/M3)
                   </span>
-                  <span className="text-xs opacity-70">{formatBytes(macArmAsset.size)}</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+                    <path d="M7 1v8M3 6l4 4 4-4M1 11h12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </a>
               ) : (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
@@ -129,8 +101,8 @@ export default async function DesktopPage() {
                 </svg>
                 <p className="text-xs text-gray-400 leading-relaxed">
                   {isEn
-                    ? <>App not signed. If macOS says "damaged": open Terminal and run <code className="bg-gray-100 px-1 rounded text-gray-600">xattr -cr ~/Downloads/AutoToDo.app</code>, then try again.</>
-                    : <>App nicht signiert. Falls macOS „beschädigt" meldet: Terminal öffnen und <code className="bg-gray-100 px-1 rounded text-gray-600">xattr -cr ~/Downloads/AutoToDo.app</code> ausführen, dann erneut öffnen.</>
+                    ? <>App not signed. If macOS says &ldquo;damaged&rdquo;: open Terminal and run <code className="bg-gray-100 px-1 rounded text-gray-600">xattr -cr ~/Downloads/AutoToDo.app</code>, then try again.</>
+                    : <>App nicht signiert. Falls macOS &bdquo;beschädigt&rdquo; meldet: Terminal öffnen und <code className="bg-gray-100 px-1 rounded text-gray-600">xattr -cr ~/Downloads/AutoToDo.app</code> ausführen, dann erneut öffnen.</>
                   }
                 </p>
               </div>
@@ -150,15 +122,17 @@ export default async function DesktopPage() {
                 <p className="text-xs text-gray-400">Windows 10/11 (64-bit)</p>
               </div>
             </div>
-            {windowsAsset ? (
+            {windowsAvailable ? (
               <a
-                href={windowsAsset.browser_download_url}
+                href={WINDOWS_MSI_URL}
                 className="flex items-center justify-between p-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
               >
                 <span className="font-medium text-sm">
                   {isEn ? 'Download for Windows' : 'Download für Windows'} (.msi)
                 </span>
-                <span className="text-xs opacity-70">{formatBytes(windowsAsset.size)}</span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+                  <path d="M7 1v8M3 6l4 4 4-4M1 11h12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </a>
             ) : (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
@@ -170,11 +144,12 @@ export default async function DesktopPage() {
             )}
           </div>
         </div>
-        {!release && (
+
+        {!macAvailable && !windowsAvailable && (
           <p className="text-center text-xs text-gray-400 -mt-8 mb-12">
             {isEn
-              ? 'Builds are being compiled. This page updates automatically once releases are published.'
-              : 'Builds werden gerade kompiliert. Diese Seite aktualisiert sich automatisch sobald Releases veröffentlicht werden.'}
+              ? 'Downloads are being prepared. This page updates automatically.'
+              : 'Downloads werden vorbereitet. Diese Seite aktualisiert sich automatisch.'}
           </p>
         )}
 
