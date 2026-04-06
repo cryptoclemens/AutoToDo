@@ -14,7 +14,7 @@ async function getRelease() {
 
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get('type') // 'mac' | 'windows'
-  const token = process.env.GITHUB_DESKTOP_TOKEN
+  const token = process.env.GITHUB_DESKTOP_TOKEN ?? process.env.GITHUB_FEEDBACK_TOKEN
   if (!token) return NextResponse.json({ error: 'Not configured' }, { status: 503 })
 
   const release = await getRelease()
