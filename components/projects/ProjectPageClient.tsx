@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import LopTable from '@/components/lop/LopTable'
 import ProjectInviteButton from './ProjectInviteButton'
 import ProjectMembersDialog from './ProjectMembersDialog'
@@ -54,6 +55,12 @@ export default function ProjectPageClient({
           {canEdit && (
             <DesktopRecordButton projectId={projectId} />
           )}
+          <Link
+            href={`/projects/${projectId}/transcripts`}
+            className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            Transkript-Historie
+          </Link>
         </div>
       )}
       <LopTable
