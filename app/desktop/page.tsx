@@ -1,29 +1,52 @@
 import Link from 'next/link'
 import { getLocale } from 'next-intl/server'
 
-const SUPABASE_URL = 'https://lgnlviezjdvxgmknmfog.supabase.co'
-const DOWNLOADS_BASE = `${SUPABASE_URL}/storage/v1/object/public/downloads`
+interface GithubAsset {
+  name: string
+  browser_download_url: string
+  size: number
+}
 
-const MAC_DMG_URL = `${DOWNLOADS_BASE}/AutoToDo-latest.dmg`
-const WINDOWS_MSI_URL = `${DOWNLOADS_BASE}/AutoToDo-latest.msi`
+interface GithubRelease {
+  tag_name: string
+  assets: GithubAsset[]
+}
 
-async function checkFileExists(url: string): Promise<boolean> {
+async function getLatestRelease(): Promise<GithubRelease | null> {
   try {
-    const res = await fetch(url, { method: 'HEAD', next: { revalidate: 300 } })
-    return res.ok
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'AutoToDo',
+    }
+    if (process.env.GITHUB_DESKTOP_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_DESKTOP_TOKEN}`
+    } else if (process.env.GITHUB_FEEDBACK_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_FEEDBACK_TOKEN}`
+    }
+    const res = await fetch(
+      'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases?per_page=1',
+      { headers, next: { revalidate: 300 } }
+    )
+    if (!res.ok) return null
+    const releases: GithubRelease[] = await res.json()
+    return releases[0] ?? null
   } catch {
-    return false
+    return null
   }
+}
+
+function formatBytes(bytes: number) {
+  return (bytes / 1024 / 1024).toFixed(0) + ' MB'
 }
 
 export default async function DesktopPage() {
   const locale = await getLocale()
   const isEn = locale === 'en'
+  const release = await getLatestRelease()
 
-  const [macAvailable, windowsAvailable] = await Promise.all([
-    checkFileExists(MAC_DMG_URL),
-    checkFileExists(WINDOWS_MSI_URL),
-  ])
+  // Any .dmg file (no name filter — supports manually uploaded files too)
+  const macAsset = release?.assets.find(a => a.name.endsWith('.dmg'))
+  const windowsAsset = release?.assets.find(a => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -47,14 +70,17 @@ export default async function DesktopPage() {
               <circle cx="14" cy="10" r="3" fill="white" opacity=".9" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            {isEn ? 'AutoToDo Desktop' : 'AutoToDo Desktop'}
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">AutoToDo Desktop</h1>
           <p className="text-lg text-gray-500 max-w-xl mx-auto">
             {isEn
               ? 'Record meetings directly, transcribe locally with Whisper — your data stays on your device.'
               : 'Meetings direkt aufnehmen, lokal mit Whisper transkribieren — deine Daten bleiben auf deinem Gerät.'}
           </p>
+          {release && (
+            <p className="text-sm text-gray-400 mt-2">
+              {isEn ? 'Latest version' : 'Aktuelle Version'}: <span className="font-medium text-gray-600">{release.tag_name}</span>
+            </p>
+          )}
         </div>
 
         {/* Download cards */}
@@ -74,17 +100,15 @@ export default async function DesktopPage() {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              {macAvailable ? (
+              {macAsset ? (
                 <a
-                  href={MAC_DMG_URL}
+                  href="/api/desktop/download?type=mac"
                   className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   <span className="font-medium text-sm">
                     {isEn ? 'Download for Apple Silicon' : 'Download für Apple Silicon'} (M1/M2/M3)
                   </span>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
-                    <path d="M7 1v8M3 6l4 4 4-4M1 11h12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <span className="text-xs opacity-70">{formatBytes(macAsset.size)}</span>
                 </a>
               ) : (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
@@ -122,17 +146,15 @@ export default async function DesktopPage() {
                 <p className="text-xs text-gray-400">Windows 10/11 (64-bit)</p>
               </div>
             </div>
-            {windowsAvailable ? (
+            {windowsAsset ? (
               <a
-                href={WINDOWS_MSI_URL}
+                href="/api/desktop/download?type=windows"
                 className="flex items-center justify-between p-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
               >
                 <span className="font-medium text-sm">
                   {isEn ? 'Download for Windows' : 'Download für Windows'} (.msi)
                 </span>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
-                  <path d="M7 1v8M3 6l4 4 4-4M1 11h12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <span className="text-xs opacity-70">{formatBytes(windowsAsset.size)}</span>
               </a>
             ) : (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
@@ -145,11 +167,11 @@ export default async function DesktopPage() {
           </div>
         </div>
 
-        {!macAvailable && !windowsAvailable && (
+        {!release && (
           <p className="text-center text-xs text-gray-400 -mt-8 mb-12">
             {isEn
-              ? 'Downloads are being prepared. This page updates automatically.'
-              : 'Downloads werden vorbereitet. Diese Seite aktualisiert sich automatisch.'}
+              ? 'Builds are being compiled. This page updates automatically once releases are published.'
+              : 'Builds werden gerade kompiliert. Diese Seite aktualisiert sich automatisch sobald Releases veröffentlicht werden.'}
           </p>
         )}
 
