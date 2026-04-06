@@ -41,7 +41,6 @@ export default async function DesktopPage() {
   const release = await getLatestRelease()
 
   const macArmAsset = release?.assets.find(a => a.name.endsWith('.dmg') && (a.name.includes('aarch64') || a.name.includes('arm')))
-  const macIntelAsset = release?.assets.find(a => a.name.endsWith('.dmg') && (a.name.includes('x86_64') || a.name.includes('x64')))
   const windowsAsset = release?.assets.find(a => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
 
   return (
@@ -113,24 +112,6 @@ export default async function DesktopPage() {
                   <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
                   <span className="text-sm text-gray-500">
                     Apple Silicon (M1/M2/M3) — {isEn ? 'build in progress' : 'Build läuft'}…
-                  </span>
-                </div>
-              )}
-              {macIntelAsset ? (
-                <a
-                  href={macIntelAsset.browser_download_url}
-                  className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                >
-                  <span className="font-medium text-sm">
-                    {isEn ? 'Download for Intel Mac' : 'Download für Intel Mac'}
-                  </span>
-                  <span className="text-xs opacity-60">{formatBytes(macIntelAsset.size)}</span>
-                </a>
-              ) : (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                  <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
-                  <span className="text-sm text-gray-500">
-                    Intel Mac — {isEn ? 'build in progress' : 'Build läuft'}…
                   </span>
                 </div>
               )}
