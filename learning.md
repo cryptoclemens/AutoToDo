@@ -485,6 +485,65 @@ Notion API gibt nur direkte Kinder zurück. Für verschachtelte Inhalte (Toggle-
 
 ---
 
+## 21. Tauri 2 Desktop-App (AutoToDo-Desktop)
+
+### 21.1 `ureq` JSON-Parsing: `.into_json()` vs `.into_string()`
+**Problem:** `response.into_json::<serde_json::Value>()` → `method not found` — erfordert das `json`-Feature-Flag in `ureq`.
+**Fix:** `.into_string()` + `serde_json::from_str(&body)` — funktioniert ohne Feature-Flag.
+
+### 21.2 Tauri `dialog.message` auf Remote-URLs blockiert
+**Problem:** `alert()` in bridge.js (injiziert per `on_page_load`) wirft `dialog.message not allowed` auf Remote-URLs (`autotodo.vencly.com`).
+**Fix:** Eigene `showNotice()`-Funktion als DOM-Element (`position:fixed; bottom`) statt `alert()`.
+
+### 21.3 `tauri_plugin_notification` injiziert JS in alle WebViews
+**Problem:** Das Notification-Plugin registriert einen JS-Handler global — auch auf Remote-URLs → Konsolen-Fehler `notification.is_permission_granted not allowed`.
+**Fix:** Plugin komplett entfernen (`tauri_plugin_notification::init()` aus `lib.rs`, `"notification:default"` aus `capabilities/default.json`). Native Browser-Notifications werden nicht benötigt.
+
+### 21.4 Stream-Pause ohne WAV-Merging
+**Problem:** Pause + Resume bei Audio-Aufnahme erfordert normalerweise WAV-Dateien zusammenzufügen.
+**Fix:** `cpal`-Stream pausieren (`stream.0.pause()`) — der `Vec<f32>`-Sample-Puffer im Speicher wächst einfach nicht weiter. Resume mit `stream.0.play()`. Alle Samples sind beim `stop()` vollständig vorhanden.
+
+### 21.5 `on_page_load` Bridge-Injection nur auf vertrauenswürdigen URLs
+bridge.js nur injecten wenn `url.contains("autotodo.vencly.com")` — nicht auf der lokalen Login-Seite (`index.html`). Verhindert Fehler wenn Tauri-APIs noch nicht bereit sind.
+
+### 21.6 Desktop-App im Browser-Kontext erkennen
+**Pattern:** `window.__autoToDo` ist nur vorhanden wenn bridge.js injiziert wurde (Tauri-Desktop-App auf vertrauenswürdiger URL).
+```ts
+// Tauri erkennen
+const isDesktopApp = typeof window !== 'undefined' && !!window.__autoToDo
+```
+Verwenden in React-Komponenten mit `useEffect(() => { setIsDesktopApp(!!window.__autoToDo) }, [])`.
+
+### 21.7 SSR Cookies auf `NextResponse.redirect()`
+**Problem:** `createServerClient()` aus `@supabase/ssr` schreibt Cookies in `next/headers` (cookieStore) — bei einem `NextResponse.redirect()` landen die Cookies nicht in der Response.
+**Fix:** Response zuerst erstellen, dann `createServerClient` mit `setAll`-Callback darauf zeigen:
+```ts
+const response = NextResponse.redirect(url)
+const supabase = createServerClient(url, key, {
+  cookies: {
+    getAll: () => request.cookies.getAll(),
+    setAll: (cookiesToSet) => cookiesToSet.forEach(({ name, value, options }) =>
+      response.cookies.set(name, value, options)
+    ),
+  },
+})
+```
+
+### 21.8 GitHub Actions: Tauri Build Matrix
+```yaml
+matrix:
+  include:
+    - platform: macos-latest   # ARM (M1/M2/M3)
+      args: '--target aarch64-apple-darwin'
+    - platform: macos-13       # Intel
+      args: '--target x86_64-apple-darwin'
+    - platform: windows-latest # Windows 10/11
+      args: ''
+```
+Rust-Toolchain mit explizitem `targets`-Feld pro Platform. Windows benötigt kein Cross-Compilation-Target.
+
+---
+
 ## 18. Table Row Editing – Escape & Outside-Click
 
 ### 18.1 Escape-Key + Outside-Click für Inline-Edit-Zeilen

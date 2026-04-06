@@ -1,6 +1,6 @@
 # AutoToDo
 
-**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.134
+**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.148
 
 AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
 
@@ -17,7 +17,8 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 | Deployment | Vercel (maxDuration 60s für LLM-Verarbeitung) · Coolify/Docker (standalone) |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
 | Billing | Mollie (aktiv; aktiviert sobald `MOLLIE_API_KEY` gesetzt) |
-| Font | Plus Jakarta Sans |
+| Font | System-Schriftart (kein Google Fonts) |
+| Desktop-App | Tauri 2 (macOS ARM/Intel, Windows) — separates Repo `AutoToDo-Desktop` |
 
 ---
 
@@ -98,6 +99,7 @@ autotodo/
 │   │   ├── projects/[id]/  # Projektseite, Transkripte, XLSX-Import
 │   │   └── settings/       # Branding, LLM, API-Keys, Members, Billing
 │   ├── (guest)/            # Gast-Ansicht (öffentlich, kein Login)
+│   ├── desktop/            # Desktop-App Download-Seite (öffentlich, GitHub-Releases)
 │   ├── auth/callback/      # Supabase E-Mail-Bestätigung
 │   └── api/                # API Routes
 │       ├── lop/            # LOP CRUD
@@ -116,6 +118,7 @@ autotodo/
 │   ├── transcripts/        # TranscriptUploadForm, RetryButton
 │   ├── projects/           # ProjectTitleEditor, ProjectInviteButton,
 │   │                       # ProjectPageClient, XlsxImportDialog
+│   ├── desktop/            # DesktopRecordButton (Record per LOP-Liste)
 │   ├── workspace/          # WorkspaceNav
 │   ├── settings/           # BillingTab, SettingsPageClient, …
 │   ├── landing/            # LandingSecuritySection, LandingLegalFooter
@@ -140,7 +143,7 @@ autotodo/
 ├── docs/                   # hetzner-migration-plan.md
 ├── scripts/                # bump-version.sh, install-hooks.sh
 ├── middleware.ts            # Auth-Schutz + Workspace-Header
-├── next.config.mjs         # output: standalone, Security Headers
+├── next.config.js          # output: standalone, Security Headers, withNextIntl
 ├── CLAUDE.md               # Entwicklungsregeln & Fallstricke
 ├── Tasks.md                # Meilenstein-Tracking
 └── Brief.md                # Vollständige Produktspezifikation
@@ -220,7 +223,7 @@ Migrationsplan für Hetzner CX32 + Self-hosted Supabase: siehe [`docs/hetzner-mi
 | **10.1** | Landing Page Hero-Illustration | Teilweise (Animationen live) |
 | **10.9** | Dark Mode | Offen |
 | **M15.7** | PWA Offline-Fallback-Seite | Offen |
-| **M15.8** | Phase 2: Tauri Desktop-App (System-Audio, separates Repo) | Offen |
+| **M15.8** | Phase 2: Tauri Desktop-App (System-Audio, separates Repo) | ✅ Erledigt (v0.1.x, macOS ARM/Intel + Windows) |
 | **Hetzner** | Migration auf CX32 + Self-hosted Supabase | Plan fertig, bereit zur Umsetzung |
 
 ## Entwicklungsstand

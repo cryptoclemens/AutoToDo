@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: April 2026 · Version 0.1.134 · M1–M14, M15 (Phase 1) komplett abgeschlossen
+Letzte Aktualisierung: April 2026 · Version 0.1.148 · M1–M16, M17 (Desktop-App) erledigt
 
 ---
 
@@ -408,8 +408,36 @@ Letzte Aktualisierung: April 2026 · Version 0.1.134 · M1–M14, M15 (Phase 1) 
 | BF.17 | Webhook-Test-Button: URL aus Request-Body statt DB lesen (funktioniert auch vor dem Speichern) | ✅ Erledigt |
 | BF.18 | Settings `?tab=ki`: `window.location.search` statt `useSearchParams()` (SSR-Hydration-Bug) | ✅ Erledigt |
 | BF.19 | Recorder Mic-Fehler: DOMException-Typen unterscheiden (NotAllowedError/NotFoundError/NotReadableError) | ✅ Erledigt |
+| BF.20 | Google Fonts entfernt (`Plus Jakarta Sans`) – Build schlug lokal fehl (kein Internet); System-Font-Stack stattdessen | ✅ Erledigt |
+| BF.21 | `next.config.mjs` gelöscht (hatte Priorität über `.js` und übersprang `withNextIntl` → next-intl kaputt) | ✅ Erledigt |
+| BF.22 | Desktop-App: `ureq::into_json()` → `into_string()` + `serde_json::from_str()` (json-Feature fehlte) | ✅ Erledigt |
+| BF.23 | Desktop-App: `alert()` in bridge.js durch `showNotice()` ersetzt (`dialog.message` auf Remote-URLs blockiert) | ✅ Erledigt |
+| BF.24 | Desktop-App: `tauri_plugin_notification` entfernt (injezieret JS in alle WebViews → Konsolen-Fehler) | ✅ Erledigt |
+| BF.25 | Desktop Login-Redirect: `NextResponse.redirect()` vor `createServerClient` erstellen, damit Cookies auf der Response landen | ✅ Erledigt |
 
 ---
+
+### Meilenstein 17: AutoToDo Desktop-App (Tauri 2)
+
+> Separates Repo `cryptoclemens/AutoToDo-Desktop`. Web-App-Änderungen in diesem Repo.
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 17.1 | Tauri 2: Grundstruktur, Recorder (cpal), Whisper-Integration (whisper-rs) | ✅ Erledigt |
+| 17.2 | Pause/Resume-Funktion: `stream.pause()` / `stream.play()` (Samples bleiben im Speicher) | ✅ Erledigt |
+| 17.3 | `check_for_update`-Befehl: GitHub Releases API per `ureq`, semver-Vergleich | ✅ Erledigt |
+| 17.4 | `open_url`-Befehl: OS-nativ (`open` / `cmd /c start` / `xdg-open`) | ✅ Erledigt |
+| 17.5 | bridge.js: Overlay-Pill (Recording/Pausiert/Transkribiere), `setTranscriptHandler` API | ✅ Erledigt |
+| 17.6 | bridge.js: Update-Banner bei neuerer Version, dismiss-Button | ✅ Erledigt |
+| 17.7 | `DesktopRecordButton`-Komponente: Whisper-Check vor Start, Modal wenn nicht installiert, Download-Flow | ✅ Erledigt |
+| 17.8 | Transcript-Handler: POST `/api/transcripts` nach Stop, `router.refresh()` | ✅ Erledigt |
+| 17.9 | `ProjectPageClient`: DesktopRecordButton + Transkript-Historie-Link integriert | ✅ Erledigt |
+| 17.10 | WorkspaceNav: „Aufnahme"-Link entfernt (Aufnahme jetzt per LOP-Liste) | ✅ Erledigt |
+| 17.11 | Dashboard: Archivierte LOP-Listen-Sektion unterhalb aktiver Projekte | ✅ Erledigt |
+| 17.12 | GitHub Actions: Build-Matrix macOS ARM + Intel + Windows (`.github/workflows/build.yml`) | ✅ Erledigt |
+| 17.13 | `/desktop`-Seite: öffentlich, GitHub-Release-API, Download-Cards (DMG ARM/Intel, MSI) | ✅ Erledigt |
+| 17.14 | WorkspaceNav: „Desktop-Version"-Link (nur in Web-App, ausgeblendet wenn `window.__autoToDo`) | ✅ Erledigt |
+| 17.15 | Landing Page: Desktop-App-Sektion (dunkle Karte, Feature-Highlights, Download-CTA) | ✅ Erledigt |
 
 ---
 
