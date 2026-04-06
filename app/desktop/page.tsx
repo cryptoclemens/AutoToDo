@@ -21,7 +21,7 @@ async function getLatestRelease(): Promise<GithubRelease | null> {
       'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases/latest',
       {
         headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'AutoToDo' },
-        next: { revalidate: 3600 }, // cache 1 hour
+        next: { revalidate: 300 }, // cache 5 minutes
       }
     )
     if (!res.ok) return null
@@ -83,94 +83,100 @@ export default async function DesktopPage() {
         </div>
 
         {/* Download cards */}
-        {release ? (
-          <div className="grid md:grid-cols-2 gap-4 mb-12">
-            {/* macOS */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
-                    <path d="M14.5 10.5c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.1 9 .7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.2 1.2-2.5 1.2-2.6-.1 0-2.3-.9-2.3-3.5z" />
-                    <path d="M12.4 4.2c.6-.7 1-1.7.9-2.7-.9.1-1.9.6-2.5 1.3-.6.6-1.1 1.6-.9 2.6 1 0 1.9-.5 2.5-1.2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">macOS</h3>
-                  <p className="text-xs text-gray-400">macOS 12.3+</p>
-                </div>
+        <div className="grid md:grid-cols-2 gap-4 mb-12">
+          {/* macOS */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
+                  <path d="M14.5 10.5c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.1 9 .7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.2 1.2-2.5 1.2-2.6-.1 0-2.3-.9-2.3-3.5z" />
+                  <path d="M12.4 4.2c.6-.7 1-1.7.9-2.7-.9.1-1.9.6-2.5 1.3-.6.6-1.1 1.6-.9 2.6 1 0 1.9-.5 2.5-1.2z" />
+                </svg>
               </div>
-              <div className="flex flex-col gap-2">
-                {macArmAsset && (
-                  <a
-                    href={macArmAsset.browser_download_url}
-                    className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                  >
-                    <span className="font-medium text-sm">
-                      {isEn ? 'Download for Apple Silicon' : 'Download für Apple Silicon'} (M1/M2/M3)
-                    </span>
-                    <span className="text-xs opacity-70">{formatBytes(macArmAsset.size)}</span>
-                  </a>
-                )}
-                {macIntelAsset && (
-                  <a
-                    href={macIntelAsset.browser_download_url}
-                    className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                  >
-                    <span className="font-medium text-sm">
-                      {isEn ? 'Download for Intel Mac' : 'Download für Intel Mac'}
-                    </span>
-                    <span className="text-xs opacity-60">{formatBytes(macIntelAsset.size)}</span>
-                  </a>
-                )}
-                {!macArmAsset && !macIntelAsset && macAsset && (
-                  <a
-                    href={macAsset.browser_download_url}
-                    className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                  >
-                    <span className="font-medium text-sm">Download macOS (.dmg)</span>
-                    <span className="text-xs opacity-70">{formatBytes(macAsset.size)}</span>
-                  </a>
-                )}
-                {!macAsset && (
-                  <p className="text-sm text-gray-400 text-center py-2">{isEn ? 'Build in progress…' : 'Build läuft…'}</p>
-                )}
+              <div>
+                <h3 className="font-semibold text-gray-900">macOS</h3>
+                <p className="text-xs text-gray-400">macOS 12.3+</p>
               </div>
             </div>
-
-            {/* Windows */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
-                    <path d="M2 3.5L9.5 2.5V9.5H2V3.5ZM10.5 2.3L18 1V9.5H10.5V2.3ZM2 10.5H9.5V17.5L2 16.5V10.5ZM10.5 10.5H18V19L10.5 17.7V10.5Z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Windows</h3>
-                  <p className="text-xs text-gray-400">Windows 10/11 (64-bit)</p>
-                </div>
-              </div>
-              {windowsAsset ? (
+            <div className="flex flex-col gap-2">
+              {macArmAsset ? (
                 <a
-                  href={windowsAsset.browser_download_url}
-                  className="flex items-center justify-between p-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                  href={macArmAsset.browser_download_url}
+                  className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   <span className="font-medium text-sm">
-                    {isEn ? 'Download for Windows' : 'Download für Windows'} (.msi)
+                    {isEn ? 'Download for Apple Silicon' : 'Download für Apple Silicon'} (M1/M2/M3)
                   </span>
-                  <span className="text-xs opacity-70">{formatBytes(windowsAsset.size)}</span>
+                  <span className="text-xs opacity-70">{formatBytes(macArmAsset.size)}</span>
                 </a>
               ) : (
-                <p className="text-sm text-gray-400 text-center py-2">{isEn ? 'Build in progress…' : 'Build läuft…'}</p>
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
+                  <span className="text-sm text-gray-500">
+                    Apple Silicon (M1/M2/M3) — {isEn ? 'build in progress' : 'Build läuft'}…
+                  </span>
+                </div>
+              )}
+              {macIntelAsset ? (
+                <a
+                  href={macIntelAsset.browser_download_url}
+                  className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                >
+                  <span className="font-medium text-sm">
+                    {isEn ? 'Download for Intel Mac' : 'Download für Intel Mac'}
+                  </span>
+                  <span className="text-xs opacity-60">{formatBytes(macIntelAsset.size)}</span>
+                </a>
+              ) : (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
+                  <span className="text-sm text-gray-500">
+                    Intel Mac — {isEn ? 'build in progress' : 'Build läuft'}…
+                  </span>
+                </div>
               )}
             </div>
           </div>
-        ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center mb-12">
-            <p className="text-gray-500">
-              {isEn ? 'No release available yet. Check back soon.' : 'Noch kein Release verfügbar. Bald hier.'}
-            </p>
+
+          {/* Windows */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
+                  <path d="M2 3.5L9.5 2.5V9.5H2V3.5ZM10.5 2.3L18 1V9.5H10.5V2.3ZM2 10.5H9.5V17.5L2 16.5V10.5ZM10.5 10.5H18V19L10.5 17.7V10.5Z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Windows</h3>
+                <p className="text-xs text-gray-400">Windows 10/11 (64-bit)</p>
+              </div>
+            </div>
+            {windowsAsset ? (
+              <a
+                href={windowsAsset.browser_download_url}
+                className="flex items-center justify-between p-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+              >
+                <span className="font-medium text-sm">
+                  {isEn ? 'Download for Windows' : 'Download für Windows'} (.msi)
+                </span>
+                <span className="text-xs opacity-70">{formatBytes(windowsAsset.size)}</span>
+              </a>
+            ) : (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
+                <span className="text-sm text-gray-500">
+                  Windows (.msi) — {isEn ? 'build in progress' : 'Build läuft'}…
+                </span>
+              </div>
+            )}
           </div>
+        </div>
+        {!release && (
+          <p className="text-center text-xs text-gray-400 -mt-8 mb-12">
+            {isEn
+              ? 'Builds are being compiled. This page updates automatically once releases are published.'
+              : 'Builds werden gerade kompiliert. Diese Seite aktualisiert sich automatisch sobald Releases veröffentlicht werden.'}
+          </p>
         )}
 
         {/* Features */}
