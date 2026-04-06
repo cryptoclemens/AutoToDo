@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { TranscriptUploadForm } from '@/components/transcripts/TranscriptUploadForm'
 import TranscriptsRefresher from './TranscriptsRefresher'
 import { RetryButton } from './RetryButton'
+import TranscriptTextModal from '@/components/transcripts/TranscriptTextModal'
 
 interface Props {
   params: { id: string }
@@ -152,11 +153,17 @@ export default async function TranscriptsPage({ params }: Props) {
                     {(t.processing_error || t.error_message) && (
                       <p className="text-xs text-red-500 mt-1">{t.processing_error ?? t.error_message}</p>
                     )}
-                    {(t.processing_status === 'pending' || t.processing_status === 'error') && canUpload && (
-                      <div className="mt-1">
+                    <div className="flex items-center gap-3 mt-1">
+                      {t.processing_status === 'done' && (
+                        <TranscriptTextModal
+                          transcriptId={t.id}
+                          filename={t.original_filename ?? 'Transkript'}
+                        />
+                      )}
+                      {(t.processing_status === 'pending' || t.processing_status === 'error') && canUpload && (
                         <RetryButton transcriptId={t.id} />
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                   <Badge className={`text-xs shrink-0 ${STATUS_COLORS[t.processing_status] ?? ''}`}>
                     {STATUS_LABELS[t.processing_status] ?? t.processing_status}
