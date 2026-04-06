@@ -87,7 +87,7 @@ export default function RegisterPage() {
         setStep('workspace')
       }
     })
-  }, [])
+  }, [router])
 
   // Account
   const [name, setName] = useState('')

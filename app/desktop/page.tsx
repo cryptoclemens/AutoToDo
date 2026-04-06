@@ -42,7 +42,6 @@ export default async function DesktopPage() {
 
   const macArmAsset = release?.assets.find(a => a.name.endsWith('.dmg') && (a.name.includes('aarch64') || a.name.includes('arm')))
   const macIntelAsset = release?.assets.find(a => a.name.endsWith('.dmg') && (a.name.includes('x86_64') || a.name.includes('x64')))
-  const macAsset = macArmAsset ?? release?.assets.find(a => a.name.endsWith('.dmg'))
   const windowsAsset = release?.assets.find(a => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
 
   return (
