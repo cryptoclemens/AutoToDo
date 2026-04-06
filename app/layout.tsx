@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 import './globals.css'
 
-const inter = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-sans', weight: ['400', '500', '600', '700'], display: 'swap', preload: false })
+const inter = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-sans', weight: ['400', '500', '600', '700'], display: 'optional', preload: false, fallback: ['system-ui', '-apple-system', 'sans-serif'] })
 
 export const metadata: Metadata = {
   title: 'AutoToDo – KI-gestütztes LOP-Management',
