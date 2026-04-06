@@ -166,14 +166,21 @@ export default function DesktopRecordButton({ projectId }: Props) {
       )}
 
       {recordState === 'needs-model' && (
-        <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-sm">
-          <span className="text-amber-700">Whisper Medium ist nicht installiert.</span>
-          <Button size="sm" className="rounded-lg h-7 text-xs" onClick={handleDownloadAndStart}>
-            Jetzt herunterladen
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-lg h-7 text-xs" onClick={() => setRecordState('idle')}>
-            Abbrechen
-          </Button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-base font-semibold text-slate-900">Whisper Medium nicht installiert</h3>
+              <p className="text-sm text-slate-500">Für die automatische Transkription wird das Whisper Medium Modell benötigt (~1.5 GB). Es wird einmalig heruntergeladen und lokal gespeichert.</p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setRecordState('idle')}>
+                Abbrechen
+              </Button>
+              <Button size="sm" className="rounded-lg" onClick={handleDownloadAndStart}>
+                Jetzt herunterladen
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
