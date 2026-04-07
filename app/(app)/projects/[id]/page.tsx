@@ -8,6 +8,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { getEffectiveBranding } from '@/lib/branding'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import ProjectPageClient from '@/components/projects/ProjectPageClient'
+import ContextNotes from '@/components/project/ContextNotes'
 import XlsxImportDialog from '@/components/projects/XlsxImportDialog'
 import { Button } from '@/components/ui/button'
 
@@ -197,6 +198,9 @@ export default async function ProjectPage({ params }: Props) {
           {canAdmin && <UnarchiveButton projectId={project.id} />}
         </div>
       )}
+
+      {/* Context notes extracted from transcripts */}
+      <ContextNotes projectId={project.id} />
 
       {/* Mitglied einladen + LOP-Punkt hinzufügen + LOP-Tabelle */}
       <ProjectPageClient

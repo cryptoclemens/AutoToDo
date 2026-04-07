@@ -47,6 +47,7 @@ export async function processWithPerplexity(
     const parsed = JSON.parse(jsonStr)
     return {
       actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+      context_notes: Array.isArray(parsed.context_notes) ? parsed.context_notes : [],
       summary: typeof parsed.summary === 'string' ? parsed.summary : '',
     }
   } catch {

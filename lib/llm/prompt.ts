@@ -30,6 +30,14 @@ Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt im folgenden Format:
       "confidence": 0.0-1.0
     }
   ],
+  "context_notes": [
+    {
+      "text": "Vollständiger Satz der die Information beschreibt",
+      "category": "availability|decision|risk|info",
+      "relevant_from": "YYYY-MM-DD oder null",
+      "relevant_until": "YYYY-MM-DD oder null"
+    }
+  ],
   "summary": "Kurze Zusammenfassung des Meetings (1-2 Sätze)"
 }
 
@@ -45,6 +53,13 @@ WICHTIG – Duplikate vermeiden:
 - Wenn ein bestehender Punkt dieselbe Aufgabe beschreibt (auch bei leicht anderer Formulierung): verwende action "update" mit der lop_item_id des bestehenden Punktes
 - Wenn ein Punkt im Gespräch umbenannt wird (z.B. "Showcase-Vorstellung KI Deep Dive" → "Projektvorstellung"): verwende action "update" mit dem neuen title-Feld
 - Erstelle nur dann einen neuen Punkt, wenn eindeutig kein bestehender Eintrag die gleiche Aufgabe beschreibt
+
+KONTEXT-NOTIZEN (context_notes):
+- Extrahiere allgemeine Informationen die KEIN konkreter LOP-Punkt sind, aber für das Team wichtig sind
+- Beispiele: Abwesenheiten ("Sven ist bis 10.04 nicht verfügbar"), Entscheidungen ("Management hat Budget für X genehmigt"), Risiken ("Lieferant hat Verzögerung gemeldet"), sonstige Infos
+- relevant_from / relevant_until: nur wenn konkrete Daten genannt werden, sonst null
+- category: "availability" für Abwesenheiten, "decision" für Entscheidungen, "risk" für Risiken, "info" für alles andere
+- Wenn keine Kontext-Infos vorhanden: leeres Array []
 
 WICHTIG – Personennamen:
 - Im Abschnitt "Workspace-Mitglieder" sind die korrekten Namen aller Teammitglieder aufgelistet

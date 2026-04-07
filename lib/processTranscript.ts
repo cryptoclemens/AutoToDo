@@ -187,6 +187,24 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       }
     }
 
+    // Save context notes (resilient — silently skips if migration not deployed)
+    try {
+      const notes = (result.context_notes ?? []).filter(n => n.text?.trim())
+      if (notes.length > 0) {
+        await supabase.from('project_context_notes').insert(
+          notes.map(n => ({
+            project_id: transcript.project_id,
+            workspace_id: transcript.workspace_id,
+            transcript_id: transcriptId,
+            text: n.text.trim(),
+            category: n.category ?? 'info',
+            relevant_from: n.relevant_from ?? null,
+            relevant_until: n.relevant_until ?? null,
+          }))
+        )
+      }
+    } catch { /* migration 020 not yet deployed */ }
+
     // Mark done
     await supabase.from('transcripts').update({
       processing_status: 'done',

@@ -36,7 +36,15 @@ export interface LopAction {
   confidence: number
 }
 
+export interface ContextNote {
+  text: string
+  category: 'availability' | 'decision' | 'risk' | 'info'
+  relevant_from?: string | null
+  relevant_until?: string | null
+}
+
 export interface ProcessTranscriptResult {
   actions: LopAction[]
+  context_notes: ContextNote[]
   summary: string
 }

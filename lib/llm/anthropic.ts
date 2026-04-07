@@ -46,6 +46,7 @@ function parseResponse(raw: string): ProcessTranscriptResult {
     const parsed = JSON.parse(cleaned)
     return {
       actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+      context_notes: Array.isArray(parsed.context_notes) ? parsed.context_notes : [],
       summary: typeof parsed.summary === 'string' ? parsed.summary : '',
     }
   } catch {
