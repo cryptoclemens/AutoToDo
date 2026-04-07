@@ -16,20 +16,6 @@ export default async function LandingPage() {
   const locale = await getLocale()
   const isEn = locale === 'en'
 
-  const plans = isEn
-    ? [
-        { name: 'Free', price: '€0', period: null, sub: null, badge: null, features: ['1 user', '2 projects', '10 transcripts/month', 'AI extraction', 'XLSX export'], highlight: false },
-        { name: 'Solo', price: '€12', period: '/mo', sub: 'plus applicable VAT', badge: 'Popular', features: ['1 user', 'Unlimited projects', 'Unlimited transcripts', '2 guests/project', 'API access'], highlight: true },
-        { name: 'Team', price: '€29', period: '/mo + €8/seat', sub: 'plus applicable VAT', badge: null, features: ['Up to 20 users', 'Everything in Solo', 'Custom branding', 'Webhooks', 'Audit log'], highlight: false },
-        { name: 'Business', price: '€99', period: '/mo + €6/seat', sub: 'plus applicable VAT', badge: null, features: ['Unlimited users', 'Everything in Team', 'SSO / SAML', 'Priority support', 'SLA'], highlight: false },
-      ]
-    : [
-        { name: 'Free', price: '€0', period: null, sub: null, badge: null, features: ['1 Nutzer', '2 Projekte', '10 Transkripte/Monat', 'KI-Extraktion', 'XLSX-Export'], highlight: false },
-        { name: 'Solo', price: '€12', period: '/Monat', sub: 'zzgl. gesetzl. MwSt.', badge: 'Beliebt', features: ['1 Nutzer', 'Unbegrenzte Projekte', 'Unbegrenzte Transkripte', '2 Gäste/Projekt', 'API-Zugang'], highlight: true },
-        { name: 'Team', price: '€29', period: '/Monat + €8/Seat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Bis 20 Nutzer', 'Alles aus Solo', 'Custom Branding', 'Webhooks', 'Audit-Log'], highlight: false },
-        { name: 'Business', price: '€99', period: '/Monat + €6/Seat', sub: 'zzgl. gesetzl. MwSt.', badge: null, features: ['Unbegrenzte Nutzer', 'Alles aus Team', 'SSO / SAML', 'Priority-Support', 'SLA'], highlight: false },
-      ]
-
   const faqItems = isEn
     ? [
         { q: 'Do I need a credit card to start?', a: 'No. The Free plan requires no payment details. Upgrade anytime when you need more.' },
@@ -58,38 +44,69 @@ export default async function LandingPage() {
         { n: '3', title: 'Prüfen & exportieren', desc: 'KI-Vorschläge prüfen, inline bearbeiten, Status setzen – auf Wunsch als XLSX ex- und importierbar.' },
       ]
 
-  const featureList = isEn
+  // Feature highlights for the 2-block layout (left side — 3 prominent)
+  const featureHighlights = isEn
     ? [
-        { icon: '⚡', title: 'Instant extraction', desc: 'From transcript to action list in under 30 seconds.' },
-        { icon: '✏️', title: 'Inline editing', desc: 'Edit every field directly in the table. No popups required.' },
-        { icon: '🔔', title: 'Daily digest', desc: 'Automatic email summary of open items for each responsible person.' },
-        { icon: '🔗', title: 'Public REST API', desc: 'Integrate AutoToDo into your own tools via REST API + Webhooks.' },
-        { icon: '👥', title: 'Team collaboration', desc: 'Invite members with granular roles: viewer, editor, admin.' },
-        { icon: '📊', title: 'XLSX export', desc: 'Export your action list as Excel with workspace branding.' },
-        { icon: '📝', title: 'Notion import', desc: 'Import meeting notes directly from Notion with one click. Connect once, import anytime.' },
+        {
+          Icon: Zap,
+          color: 'bg-yellow-50 text-yellow-500',
+          title: 'Instant AI Extraction',
+          desc: 'From transcript to structured action list in under 30 seconds. Claude, GPT-4o, or Perplexity — you choose.',
+          mockup: 'extraction',
+        },
+        {
+          Icon: Pencil,
+          color: 'bg-blue-50 text-blue-500',
+          title: 'Inline Editing',
+          desc: 'Edit owner, deadline, priority and status directly in the table row. No popup, no context switch.',
+          mockup: 'editing',
+        },
+        {
+          Icon: Bell,
+          color: 'bg-orange-50 text-orange-500',
+          title: 'Daily Digest',
+          desc: 'Each responsible person receives an automatic email summary of their open action items — every morning.',
+          mockup: 'digest',
+        },
       ]
     : [
-        { icon: '⚡', title: 'Sofort-Extraktion', desc: 'Vom Transkript zur LOP in unter 30 Sekunden.' },
-        { icon: '✏️', title: 'Inline-Bearbeitung', desc: 'Jedes Feld direkt in der Tabelle bearbeiten. Kein Popup nötig.' },
-        { icon: '🔔', title: 'Täglicher Digest', desc: 'Automatische E-Mail-Zusammenfassung offener Punkte je Verantwortlichem.' },
-        { icon: '🔗', title: 'Öffentliche REST-API', desc: 'AutoToDo in eigene Tools einbinden via REST-API + Webhooks.' },
-        { icon: '👥', title: 'Team-Zusammenarbeit', desc: 'Mitglieder einladen mit feingranularen Rollen: Betrachter, Editor, Admin.' },
-        { icon: '📊', title: 'XLSX-Export', desc: 'LOP als Excel exportieren mit Workspace-Branding.' },
-        { icon: '📝', title: 'Notion-Import', desc: 'Meeting-Notizen direkt aus Notion importieren – einmal verbinden, jederzeit importieren.' },
+        {
+          Icon: Zap,
+          color: 'bg-yellow-50 text-yellow-500',
+          title: 'Sofort-KI-Extraktion',
+          desc: 'Vom Transkript zur strukturierten LOP in unter 30 Sekunden. Claude, GPT-4o oder Perplexity – Sie wählen.',
+          mockup: 'extraction',
+        },
+        {
+          Icon: Pencil,
+          color: 'bg-blue-50 text-blue-500',
+          title: 'Inline-Bearbeitung',
+          desc: 'Verantwortliche, Fälligkeit, Priorität und Status direkt in der Tabellenzeile bearbeiten – kein Popup.',
+          mockup: 'editing',
+        },
+        {
+          Icon: Bell,
+          color: 'bg-orange-50 text-orange-500',
+          title: 'Täglicher Digest',
+          desc: 'Jede verantwortliche Person erhält automatisch eine E-Mail-Zusammenfassung ihrer offenen Punkte – jeden Morgen.',
+          mockup: 'digest',
+        },
       ]
 
-  const featureColors = [
-    'bg-yellow-50 text-yellow-500',
-    'bg-blue-50 text-blue-500',
-    'bg-orange-50 text-orange-500',
-    'bg-purple-50 text-purple-500',
-    'bg-emerald-50 text-emerald-600',
-    'bg-teal-50 text-teal-600',
-    'bg-gray-50 text-gray-600',
-  ]
-
-  // SVG icon components — one per feature, in order
-  const FEATURE_ICONS = [Zap, Pencil, Bell, Link2, Users, BarChart3, Pencil]
+  // Compact feature list items (right side — 4 items)
+  const featureListItems = isEn
+    ? [
+        { Icon: Link2, color: 'bg-purple-50 text-purple-500', title: 'Public REST API & Webhooks', desc: 'Integrate AutoToDo into any tool via REST API and outbound webhooks.' },
+        { Icon: Users, color: 'bg-emerald-50 text-emerald-600', title: 'Team Collaboration', desc: 'Invite members with granular roles: viewer, editor, admin.' },
+        { Icon: Download, color: 'bg-teal-50 text-teal-600', title: 'XLSX Export with Branding', desc: 'Export your action list as branded Excel file in one click.' },
+        { Icon: FileText, color: 'bg-gray-50 text-gray-600', title: 'Notion Import', desc: 'Import meeting notes from Notion directly — connect once, import anytime.' },
+      ]
+    : [
+        { Icon: Link2, color: 'bg-purple-50 text-purple-500', title: 'REST-API & Webhooks', desc: 'AutoToDo in beliebige Tools einbinden via REST-API und ausgehende Webhooks.' },
+        { Icon: Users, color: 'bg-emerald-50 text-emerald-600', title: 'Team-Zusammenarbeit', desc: 'Mitglieder mit feingranularen Rollen einladen: Betrachter, Editor, Admin.' },
+        { Icon: Download, color: 'bg-teal-50 text-teal-600', title: 'XLSX-Export mit Branding', desc: 'LOP als gebrandete Excel-Datei exportieren – per Klick.' },
+        { Icon: FileText, color: 'bg-gray-50 text-gray-600', title: 'Notion-Import', desc: 'Meeting-Notizen direkt aus Notion importieren – einmal verbinden, jederzeit importieren.' },
+      ]
 
   return (
     <div className="min-h-screen bg-white">
@@ -303,28 +320,143 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Features grid */}
+      {/* Features – 2-block layout */}
       <section id="features" className="bg-gray-50 py-20">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
             {isEn ? 'Everything your team needs' : 'Alles, was Ihr Team braucht'}
           </h2>
           <p className="text-center text-gray-500 mb-12">
             {isEn ? 'Built for consulting teams, project managers and engineering leads.' : 'Entwickelt für Beratungsteams, Projektleiter und Engineering-Leads.'}
           </p>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {featureList.map((f, i) => {
-              const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length]
-              return (
-              <div key={f.title} className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200 group cursor-pointer">
-                <div className={`w-11 h-11 rounded-xl ${featureColors[i % featureColors.length]} flex items-center justify-center mb-4 transition-opacity duration-200 group-hover:opacity-80`}>
-                  <Icon className="w-5 h-5" aria-hidden="true" />
+
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
+            {/* Left: 3 Feature Highlights */}
+            <div className="flex flex-col gap-5">
+              {featureHighlights.map((f) => (
+                <div key={f.title} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className={`w-11 h-11 rounded-xl ${f.color} flex items-center justify-center shrink-0`}>
+                      <f.Icon className="w-5 h-5" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-base leading-tight">{f.title}</h3>
+                      <p className="text-gray-500 text-sm mt-1 leading-relaxed">{f.desc}</p>
+                    </div>
+                  </div>
+                  {/* Inline HTML Mockup */}
+                  {f.mockup === 'extraction' && (
+                    <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mt-2">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                        <span className="text-xs font-medium text-gray-500">
+                          {isEn ? 'AI processing transcript…' : 'KI verarbeitet Transkript…'}
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { task: isEn ? 'Prepare Q3 roadmap' : 'Q3-Roadmap vorbereiten', owner: 'A. Fischer', due: '15.05.' },
+                          { task: isEn ? 'Review budget proposal' : 'Budgetvorschlag prüfen', owner: 'M. Müller', due: '20.05.' },
+                        ].map((row, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-3 text-xs">
+                            <span className="text-green-500 shrink-0">✓</span>
+                            <span className="font-medium text-gray-800 flex-1">{row.task}</span>
+                            <span className="text-gray-400 shrink-0">{row.owner}</span>
+                            <span className="text-gray-400 shrink-0">{row.due}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2 text-xs text-yellow-600 font-medium text-right">
+                        {isEn ? '↑ extracted in 18 s' : '↑ extrahiert in 18 s'}
+                      </div>
+                    </div>
+                  )}
+                  {f.mockup === 'editing' && (
+                    <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mt-2">
+                      <div className="bg-white rounded-lg border border-blue-300 ring-1 ring-blue-200 px-3 py-2.5 text-xs flex items-center gap-3">
+                        <span className="font-medium text-gray-800 flex-1">{isEn ? 'Update customer contract' : 'Kundenvertrag aktualisieren'}</span>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium shrink-0">
+                          {isEn ? 'In progress' : 'In Bearbeitung'}
+                        </span>
+                        <span className="text-blue-500 shrink-0 cursor-pointer">✎</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2 text-center">
+                        {isEn ? 'Click any cell to edit inline' : 'Beliebige Zelle anklicken zum Bearbeiten'}
+                      </p>
+                    </div>
+                  )}
+                  {f.mockup === 'digest' && (
+                    <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mt-2">
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 text-xs">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-xs font-bold">M</div>
+                          <span className="font-semibold text-gray-700">M. Müller</span>
+                          <span className="ml-auto text-gray-400">07:00</span>
+                        </div>
+                        <p className="text-gray-600 font-medium mb-1">
+                          {isEn ? 'Your open items today (3)' : 'Ihre offenen Punkte heute (3)'}
+                        </p>
+                        <ul className="space-y-0.5 text-gray-500">
+                          <li>→ {isEn ? 'Prepare Q3 roadmap' : 'Q3-Roadmap vorbereiten'} <span className="text-red-400 font-medium">{isEn ? '· overdue' : '· überfällig'}</span></li>
+                          <li>→ {isEn ? 'Review budget proposal' : 'Budgetvorschlag prüfen'}</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1.5 text-sm">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+              ))}
+            </div>
+
+            {/* Right: 4 compact feature list items */}
+            <div className="flex flex-col gap-4 lg:pt-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">
+                {isEn ? 'Also included' : 'Ebenfalls enthalten'}
+              </p>
+              {featureListItems.map((f) => (
+                <div key={f.title} className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-start gap-4 hover:shadow-sm hover:border-gray-300 transition-all duration-150">
+                  <div className={`w-10 h-10 rounded-xl ${f.color} flex items-center justify-center shrink-0 mt-0.5`}>
+                    <f.Icon className="w-5 h-5" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm leading-tight">{f.title}</h3>
+                    <p className="text-gray-500 text-sm mt-0.5 leading-relaxed">{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Security callout inside right column */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 px-5 py-4 flex items-start gap-4 mt-2">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Shield className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm leading-tight">
+                    {isEn ? 'GDPR-compliant & encrypted' : 'DSGVO-konform & verschlüsselt'}
+                  </h3>
+                  <p className="text-gray-600 text-sm mt-0.5 leading-relaxed">
+                    {isEn
+                      ? 'All transcripts encrypted at rest (AES-256-GCM). Data stays in your Supabase project.'
+                      : 'Alle Transkripte verschlüsselt gespeichert (AES-256-GCM). Daten bleiben in Ihrem Supabase-Projekt.'}
+                  </p>
+                </div>
               </div>
-              )
-            })}
+
+              <div className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <RefreshCw className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm leading-tight">
+                    {isEn ? 'Status sync & audit log' : 'Status-Sync & Audit-Log'}
+                  </h3>
+                  <p className="text-gray-500 text-sm mt-0.5 leading-relaxed">
+                    {isEn
+                      ? 'Every change is tracked. Full audit log available on Team and Business plans.'
+                      : 'Jede Änderung wird protokolliert. Vollständiges Audit-Log ab Team- und Business-Plan.'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -404,60 +536,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="bg-gray-50 py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
-            {isEn ? 'Simple pricing' : 'Transparente Preise'}
-          </h2>
-          <p className="text-center text-gray-500 mb-8">
-            {isEn ? 'Start free. Scale as you grow.' : 'Kostenlos starten. Mit dem Team wachsen.'}
-          </p>
-
-          {/* Beta banner */}
-          <div className="bg-purple-50 border border-purple-200 rounded-xl px-5 py-3 mb-8 flex items-center gap-3 justify-center text-sm text-purple-800">
-            <span className="text-purple-500">🎉</span>
-            {isEn
-              ? 'Beta users get unlimited access for free. Paid plans launching soon.'
-              : 'Beta-Nutzer erhalten kostenlosen Vollzugang. Bezahlpläne starten bald.'}
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {plans.map(plan => (
-              <div key={plan.name} className={`bg-white rounded-xl border p-6 flex flex-col ${plan.highlight ? 'border-blue-500 shadow-lg ring-1 ring-blue-500' : 'border-gray-200'}`}>
-                {plan.badge && (
-                  <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full mb-3 inline-block self-start">
-                    {plan.badge}
-                  </span>
-                )}
-                {!plan.badge && <div className="mb-[22px]" />}
-                <h3 className="font-bold text-base text-gray-900">{plan.name}</h3>
-                <div className="mt-2 mb-1">
-                  <span className="text-3xl font-bold text-gray-900">{plan.price}</span>
-                  {plan.period && <span className="text-gray-400 text-sm ml-1">{plan.period}</span>}
-                </div>
-                {plan.sub && <p className="text-xs text-gray-400 mb-4">{plan.sub}</p>}
-                {!plan.sub && <div className="mb-4" />}
-                <ul className="space-y-2 mb-6 flex-1">
-                  {plan.features.map(f => (
-                    <li key={f} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-green-500 mt-0.5 shrink-0">✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/register"
-                  className={`block w-full text-center py-2 rounded-md text-sm font-medium transition-colors ${plan.highlight ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-700'}`}>
-                  {isEn ? 'Get started' : 'Starten'}
-                </Link>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-center text-gray-400 mt-6">
-            {isEn
-              ? 'Prices in EUR, plus applicable VAT. Annual billing available (20% discount).'
-              : 'Preise in EUR, zzgl. gesetzl. MwSt. Jahresabrechnung möglich (20% Rabatt).'}
-          </p>
-        </div>
-      </section>
+      <PricingSection isEn={isEn} />
 
       {/* FAQ */}
       <section className="bg-white py-16">
