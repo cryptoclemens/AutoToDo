@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
   const release = await getRelease()
   if (!release) return NextResponse.json({ error: 'No release found' }, { status: 404 })
 
-  const asset = type === 'mac'
-    ? release.assets.find((a: { name: string }) => a.name.endsWith('.dmg'))
-    : release.assets.find((a: { name: string }) => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
+  const asset = type === 'mac-pkg'
+    ? release.assets.find((a: { name: string }) => a.name.endsWith('.pkg'))
+    : type === 'mac'
+      ? release.assets.find((a: { name: string }) => a.name.endsWith('.dmg'))
+      : release.assets.find((a: { name: string }) => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
 
   if (!asset) return NextResponse.json({ error: 'Asset not found' }, { status: 404 })
 

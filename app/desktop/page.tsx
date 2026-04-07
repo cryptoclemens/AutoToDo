@@ -44,8 +44,9 @@ export default async function DesktopPage() {
   const isEn = locale === 'en'
   const release = await getLatestRelease()
 
-  // Any .dmg file (no name filter — supports manually uploaded files too)
-  const macAsset = release?.assets.find(a => a.name.endsWith('.dmg'))
+  const macPkgAsset = release?.assets.find(a => a.name.endsWith('.pkg'))
+  const macDmgAsset = release?.assets.find(a => a.name.endsWith('.dmg'))
+  const macAsset = macPkgAsset ?? macDmgAsset // used for "build in progress" check
   const windowsAsset = release?.assets.find(a => a.name.endsWith('.msi') || a.name.endsWith('.exe'))
 
   return (
@@ -102,21 +103,33 @@ export default async function DesktopPage() {
             <div className="flex flex-col gap-2">
               {macAsset ? (
                 <>
-                  {/* One-line installer (recommended) */}
-                  <div className="rounded-xl bg-gray-950 p-3">
-                    <p className="text-xs text-gray-400 mb-1.5">{isEn ? 'Recommended — installs automatically:' : 'Empfohlen — installiert automatisch:'}</p>
-                    <code className="text-xs text-green-400 break-all select-all">
-                      curl -fsSL https://autotodo.vencly.com/install.sh | bash
-                    </code>
-                  </div>
-                  {/* Manual DMG download */}
-                  <a
-                    href="/api/desktop/download?type=mac"
-                    className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    <span>{isEn ? 'Manual download' : 'Manueller Download'} (.dmg)</span>
-                    <span className="text-xs text-gray-400">{formatBytes(macAsset.size)}</span>
-                  </a>
+                  {/* PKG installer (recommended) */}
+                  {macPkgAsset ? (
+                    <a
+                      href="/api/desktop/download?type=mac-pkg"
+                      className="flex items-center justify-between p-3 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                    >
+                      <div>
+                        <span className="font-medium text-sm block">
+                          {isEn ? 'Download Installer' : 'Installer herunterladen'} (.pkg)
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {isEn ? 'Guided installation with password prompt' : 'Geführte Installation mit Passwortabfrage'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">{formatBytes(macPkgAsset.size)}</span>
+                    </a>
+                  ) : null}
+                  {/* DMG fallback */}
+                  {macDmgAsset ? (
+                    <a
+                      href="/api/desktop/download?type=mac"
+                      className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm"
+                    >
+                      <span>{isEn ? 'Manual download' : 'Manueller Download'} (.dmg)</span>
+                      <span className="text-xs text-gray-400">{formatBytes(macDmgAsset.size)}</span>
+                    </a>
+                  ) : null}
                 </>
               ) : (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
