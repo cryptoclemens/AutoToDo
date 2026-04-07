@@ -29,13 +29,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const { data: items } = await supabase
     .from('lop_items')
-    .select('id, title, responsible, status, source, due_date, priority')
+    .select('id, title, responsible, status, source, due_date, priority, ai_suggestion')
     .eq('transcript_id', params.id)
     .eq('project_id', transcript.project_id)
     .order('created_at', { ascending: true }) as {
       data: Array<{
         id: string; title: string; responsible: string | null
-        status: string; source: string | null; due_date: string | null; priority: string | null
+        status: string; source: string | null; due_date: string | null
+        priority: string | null; ai_suggestion: string | null
       }> | null
     }
 

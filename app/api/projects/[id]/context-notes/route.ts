@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const { data, error } = await supabase
     .from('project_context_notes')
-    .select('id, text, category, relevant_from, relevant_until, created_at')
+    .select('id, text, category, relevant_from, relevant_until, created_at, transcript_id')
     .eq('project_id', params.id)
     .eq('workspace_id', workspace.id)
     .is('archived_at', null)
