@@ -35,7 +35,14 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     }
 
   if (!transcript) return { ok: false, error: 'Transkript nicht gefunden.' }
-  if (transcript.processing_status === 'done') return { ok: true, itemsCreated: 0, itemsUpdated: 0 }
+  if (transcript.processing_status === 'done') {
+    const { data: stored } = await supabase
+      .from('transcripts')
+      .select('items_created, items_updated')
+      .eq('id', transcriptId)
+      .single()
+    return { ok: true, itemsCreated: stored?.items_created ?? 0, itemsUpdated: stored?.items_updated ?? 0 }
+  }
 
   // Mark as processing
   await supabase.from('transcripts').update({ processing_status: 'processing' }).eq('id', transcriptId)
@@ -56,6 +63,17 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     if (!encryptedContent) throw new Error('Transkript-Inhalt nicht gefunden.')
 
     const transcriptText = decrypt(encryptedContent)
+
+    // Detect Whisper hallucination (e.g. "you you you you...")
+    const words = transcriptText.trim().split(/\s+/)
+    if (words.length > 10) {
+      const freq: Record<string, number> = {}
+      for (const w of words) freq[w.toLowerCase()] = (freq[w.toLowerCase()] ?? 0) + 1
+      const topCount = Math.max(...Object.values(freq))
+      if (topCount / words.length > 0.6) {
+        throw new Error('Transkript enthält nur Wiederholungen – Whisper-Halluzination erkannt. Bitte Spracheinstellung prüfen oder Aufnahme wiederholen.')
+      }
+    }
 
     // Load LLM config (extraction role)
     const { data: llmConfig } = await supabase
