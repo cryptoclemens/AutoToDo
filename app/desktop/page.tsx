@@ -103,41 +103,30 @@ export default async function DesktopPage() {
             <div className="flex flex-col gap-2">
               {macAsset ? (
                 <>
-                  {/* PKG installer (recommended) */}
-                  {macPkgAsset ? (
+                  {/* DMG as primary download */}
+                  {macDmgAsset ? (
                     <a
-                      href="/api/desktop/download?type=mac-pkg"
+                      href="/api/desktop/download?type=mac"
                       className="flex items-center justify-between p-3 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors"
                     >
                       <div>
                         <span className="font-medium text-sm block">
-                          {isEn ? 'Download Installer' : 'Installer herunterladen'} (.pkg)
+                          {isEn ? 'Download for macOS' : 'Download für macOS'} (.dmg)
                         </span>
                         <span className="text-xs text-gray-400">
-                          {isEn ? 'Guided installation with password prompt' : 'Geführte Installation mit Passwortabfrage'}
+                          {isEn ? 'Drag to Applications folder' : 'In Programme-Ordner ziehen'}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-400 shrink-0">{formatBytes(macPkgAsset.size)}</span>
+                      <span className="text-xs text-gray-400 shrink-0">{formatBytes(macDmgAsset.size)}</span>
                     </a>
                   ) : null}
                   {/* Gatekeeper hint */}
-                  {macPkgAsset ? (
-                    <p className="text-xs text-gray-400 px-1">
-                      {isEn
-                        ? 'macOS may block the installer. If so: right-click the file → "Open" → "Open anyway".'
-                        : 'macOS blockiert ggf. den Installer. Falls ja: Rechtsklick auf die Datei → „Öffnen" → „Trotzdem öffnen".'}
-                    </p>
-                  ) : null}
-                  {/* DMG fallback */}
-                  {macDmgAsset ? (
-                    <a
-                      href="/api/desktop/download?type=mac"
-                      className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm"
-                    >
-                      <span>{isEn ? 'Manual download' : 'Manueller Download'} (.dmg)</span>
-                      <span className="text-xs text-gray-400">{formatBytes(macDmgAsset.size)}</span>
-                    </a>
-                  ) : null}
+                  <p className="text-xs text-gray-400 px-1">
+                    {isEn
+                      ? 'After installing, run once in Terminal: '
+                      : 'Nach der Installation einmalig im Terminal ausführen: '}
+                    <code className="text-gray-300">xattr -cr /Applications/AutoToDo.app</code>
+                  </p>
                 </>
               ) : (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
