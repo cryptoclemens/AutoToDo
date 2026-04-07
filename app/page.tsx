@@ -7,7 +7,7 @@ import LandingLanguageSwitcher from '@/components/LandingLanguageSwitcher'
 import { getTranslations, getLocale } from 'next-intl/server'
 
 // AUTO-UPDATED by scripts/bump-version.sh
-const APP_VERSION = '0.1.168'
+const APP_VERSION = '0.1.169'
 
 export default async function LandingPage() {
   const t = await getTranslations('landing')
