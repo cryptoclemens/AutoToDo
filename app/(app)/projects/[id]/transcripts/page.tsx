@@ -10,6 +10,7 @@ import { TranscriptUploadForm } from '@/components/transcripts/TranscriptUploadF
 import TranscriptsRefresher from './TranscriptsRefresher'
 import { RetryButton } from './RetryButton'
 import TranscriptTextModal from '@/components/transcripts/TranscriptTextModal'
+import TranscriptChangesModal from '@/components/transcripts/TranscriptChangesModal'
 
 interface Props {
   params: { id: string }
@@ -142,9 +143,11 @@ export default async function TranscriptsPage({ params }: Props) {
                         ? new Date(t.meeting_date).toLocaleDateString('de-DE')
                         : new Date(t.created_at).toLocaleDateString('de-DE')}
                       {t.processing_status === 'done' && (
-                        <span className="ml-2 text-green-600">
-                          · {t.items_created} neu · {t.items_updated} aktualisiert
-                        </span>
+                        <TranscriptChangesModal
+                          transcriptId={t.id}
+                          itemsCreated={t.items_created}
+                          itemsUpdated={t.items_updated}
+                        />
                       )}
                     </p>
                     {t.llm_summary && (

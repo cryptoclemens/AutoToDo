@@ -168,6 +168,7 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
           ai_confidence: action.confidence,
           confidence_score: action.confidence,
           requires_review: requiresReview || !isAutoApply,
+          transcript_id: transcriptId,
         }
 
         if (isAutoApply) {

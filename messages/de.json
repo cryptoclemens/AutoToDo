@@ -352,7 +352,12 @@
     "errorNoText": "Bitte Transkript einfügen.",
     "errorNoFile": "Bitte Datei auswählen.",
     "success": "Transkript eingereicht. Verarbeitung läuft…",
-    "uploadError": "Fehler beim Upload"
+    "uploadError": "Fehler beim Upload",
+    "neu": "neu",
+    "aktualisiert": "aktualisiert",
+    "changesTitle": "LOP-Änderungen",
+    "loading": "Wird geladen…",
+    "noChangesDetail": "Keine Details verfügbar."
   },
   "legal": {
     "login": "Anmelden",

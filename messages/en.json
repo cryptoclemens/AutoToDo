@@ -352,7 +352,12 @@
     "errorNoText": "Please paste a transcript.",
     "errorNoFile": "Please select a file.",
     "success": "Transcript submitted. Processing in progress…",
-    "uploadError": "Upload error"
+    "uploadError": "Upload error",
+    "neu": "new",
+    "aktualisiert": "updated",
+    "changesTitle": "LOP changes",
+    "loading": "Loading…",
+    "noChangesDetail": "No details available."
   },
   "legal": {
     "login": "Sign in",
