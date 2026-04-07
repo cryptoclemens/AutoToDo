@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Zap, Pencil, Bell, Link2, Users, BarChart3 } from 'lucide-react'
+import { Zap, Pencil, Bell, Link2, Users, BarChart3, FileText, Shield, RefreshCw, Download } from 'lucide-react'
 import { LandingSecuritySection, LandingLegalFooter } from '@/components/landing/LandingSecurity'
 import CookieBanner from '@/components/CookieBanner'
 import LandingLanguageSwitcher from '@/components/LandingLanguageSwitcher'
+import ThemeToggle from '@/components/ThemeToggle'
 import { getTranslations, getLocale } from 'next-intl/server'
+import PricingSection from './PricingSection'
 
 // AUTO-UPDATED by scripts/bump-version.sh
 const APP_VERSION = '0.1.170'
@@ -123,6 +125,7 @@ export default async function LandingPage() {
         </div>
         <div className="flex items-center gap-2">
           <LandingLanguageSwitcher currentLocale={locale} />
+          <ThemeToggle />
           <Link href="/login"
             className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
             {t('ctaLogin')}
