@@ -101,15 +101,23 @@ export default async function DesktopPage() {
             </div>
             <div className="flex flex-col gap-2">
               {macAsset ? (
-                <a
-                  href="/api/desktop/download?type=mac"
-                  className="flex items-center justify-between p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                >
-                  <span className="font-medium text-sm">
-                    {isEn ? 'Download for Apple Silicon' : 'Download für Apple Silicon'} (M1/M2/M3)
-                  </span>
-                  <span className="text-xs opacity-70">{formatBytes(macAsset.size)}</span>
-                </a>
+                <>
+                  {/* One-line installer (recommended) */}
+                  <div className="rounded-xl bg-gray-950 p-3">
+                    <p className="text-xs text-gray-400 mb-1.5">{isEn ? 'Recommended — installs automatically:' : 'Empfohlen — installiert automatisch:'}</p>
+                    <code className="text-xs text-green-400 break-all select-all">
+                      curl -fsSL https://autotodo.vencly.com/install.sh | bash
+                    </code>
+                  </div>
+                  {/* Manual DMG download */}
+                  <a
+                    href="/api/desktop/download?type=mac"
+                    className="flex items-center justify-between p-3 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    <span>{isEn ? 'Manual download' : 'Manueller Download'} (.dmg)</span>
+                    <span className="text-xs text-gray-400">{formatBytes(macAsset.size)}</span>
+                  </a>
+                </>
               ) : (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
                   <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
