@@ -120,6 +120,14 @@ export default async function DesktopPage() {
                       <span className="text-xs text-gray-400 shrink-0">{formatBytes(macPkgAsset.size)}</span>
                     </a>
                   ) : null}
+                  {/* Gatekeeper hint */}
+                  {macPkgAsset ? (
+                    <p className="text-xs text-gray-400 px-1">
+                      {isEn
+                        ? 'macOS may block the installer. If so: right-click the file → "Open" → "Open anyway".'
+                        : 'macOS blockiert ggf. den Installer. Falls ja: Rechtsklick auf die Datei → „Öffnen" → „Trotzdem öffnen".'}
+                    </p>
+                  ) : null}
                   {/* DMG fallback */}
                   {macDmgAsset ? (
                     <a
