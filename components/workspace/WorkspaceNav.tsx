@@ -66,6 +66,12 @@ function IconDesktop() {
 }
 
 
+interface ProjectLogoData {
+  id: string
+  logo_url: string | null
+  brand_color: string | null
+}
+
 export default function WorkspaceNav({ workspace, userRole, userId: _userId, isSuperAdmin }: Props) {
   const pathname = usePathname()
   const router = useRouter()
@@ -73,10 +79,30 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
   const locale = useLocale()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isDesktopApp, setIsDesktopApp] = useState(false)
+  const [projectLogo, setProjectLogo] = useState<ProjectLogoData | null>(null)
+
+  const projectIdMatch = pathname.match(/\/projects\/([a-f0-9-]{36})/)
+  const projectId = projectIdMatch ? projectIdMatch[1] : null
 
   useEffect(() => {
     setIsDesktopApp(!!window.__autoToDo)
   }, [])
+
+  useEffect(() => {
+    if (!projectId) {
+      setProjectLogo(null)
+      return
+    }
+    const supabase = createClient()
+    supabase
+      .from('projects')
+      .select('id, logo_url, brand_color')
+      .eq('id', projectId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setProjectLogo(data ?? null)
+      })
+  }, [projectId])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -112,6 +138,19 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
               {workspace.name}
             </span>
           </Link>
+
+          {projectLogo?.logo_url && (
+            <div className="flex items-center gap-2">
+              <span className="text-gray-300 text-base select-none">›</span>
+              <Image
+                src={projectLogo.logo_url}
+                alt="Project logo"
+                width={24}
+                height={24}
+                className="h-6 w-auto object-contain rounded"
+              />
+            </div>
+          )}
 
           {/* Desktop Nav-Links */}
           <div className="hidden md:flex items-center gap-0.5">
