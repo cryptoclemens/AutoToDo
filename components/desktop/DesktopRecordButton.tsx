@@ -81,8 +81,11 @@ export default function DesktopRecordButton({ projectId }: Props) {
     }
     window.addEventListener('__autotodo-system-audio', onSystemAudio)
     // Also read current state from bridge if already loaded
+    // Guard: old bridge versions may not have systemAudioDevice()
     const bridge = getBridge()
-    if (bridge) setSystemAudioDevice(bridge.systemAudioDevice())
+    if (bridge && typeof bridge.systemAudioDevice === 'function') {
+      setSystemAudioDevice(bridge.systemAudioDevice())
+    }
     return () => window.removeEventListener('__autotodo-system-audio', onSystemAudio)
   }, [])
 
