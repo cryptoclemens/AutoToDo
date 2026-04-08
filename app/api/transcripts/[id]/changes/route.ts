@@ -40,8 +40,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       }> | null
     }
 
-  const created = (items ?? []).filter(i => i.source === 'ai')
-  const updated = (items ?? []).filter(i => i.source !== 'ai')
+  // Discriminate by ai_suggestion: new items don't have it set (not written on insert),
+  // updated items always have it (ai_suggestion = JSON.stringify(action) on update).
+  // Using source==='ai' is wrong because previously AI-created items that are *updated*
+  // by this transcript also have source==='ai'.
+  const created = (items ?? []).filter(i => i.ai_suggestion === null)
+  const updated = (items ?? []).filter(i => i.ai_suggestion !== null)
 
   return NextResponse.json({ created, updated })
 }
