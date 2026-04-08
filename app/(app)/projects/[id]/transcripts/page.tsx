@@ -163,7 +163,7 @@ export default async function TranscriptsPage({ params }: Props) {
                           filename={t.original_filename ?? 'Transkript'}
                         />
                       )}
-                      {(t.processing_status === 'pending' || t.processing_status === 'error') && canUpload && (
+                      {(t.processing_status === 'pending' || t.processing_status === 'processing' || t.processing_status === 'error') && canUpload && (
                         <RetryButton transcriptId={t.id} />
                       )}
                     </div>
