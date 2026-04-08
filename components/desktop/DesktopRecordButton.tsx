@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
@@ -17,8 +17,11 @@ interface AutoToDoBridge {
   stopRecording: () => Promise<string | null>
   isRecording: () => boolean
   isPaused: () => boolean
+  systemAudioDevice: () => string | null
   setTranscriptHandler: (fn: (transcript: string) => void) => void
   clearTranscriptHandler: () => void
+  setStateHandler: (fn: (s: { recording: boolean; paused: boolean }) => void) => void
+  clearStateHandler: () => void
 }
 
 declare global {
@@ -49,7 +52,57 @@ export default function DesktopRecordButton({ projectId }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
 
+  // Device settings
+  const [showDeviceMenu, setShowDeviceMenu] = useState(false)
+  const [devices, setDevices] = useState<string[]>([])
+  const [selectedDevice, setSelectedDevice] = useState('')
+  const [systemAudioDevice, setSystemAudioDevice] = useState<string | null>(null)
+  const deviceMenuRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => { setIsMounted(true) }, [])
+
+  // Sync state from keyboard shortcuts via bridge events
+  useEffect(() => {
+    function onBridgeState(e: Event) {
+      const { recording, paused } = (e as CustomEvent).detail as { recording: boolean; paused: boolean; label: string }
+      if (!recording) setRecordState('idle')
+      else if (paused) setRecordState('paused')
+      else setRecordState('recording')
+    }
+    window.addEventListener('__autotodo-state', onBridgeState)
+    return () => window.removeEventListener('__autotodo-state', onBridgeState)
+  }, [])
+
+  // Sync system audio device from bridge
+  useEffect(() => {
+    function onSystemAudio(e: Event) {
+      const { device } = (e as CustomEvent).detail as { device: string | null }
+      setSystemAudioDevice(device)
+    }
+    window.addEventListener('__autotodo-system-audio', onSystemAudio)
+    // Also read current state from bridge if already loaded
+    const bridge = getBridge()
+    if (bridge) setSystemAudioDevice(bridge.systemAudioDevice())
+    return () => window.removeEventListener('__autotodo-system-audio', onSystemAudio)
+  }, [])
+
+  // Load stored mic preference
+  useEffect(() => {
+    const stored = localStorage.getItem('autotodo_mic_device') ?? ''
+    setSelectedDevice(stored)
+  }, [])
+
+  // Close device menu on outside click
+  useEffect(() => {
+    if (!showDeviceMenu) return
+    function onOutsideClick(e: MouseEvent) {
+      if (deviceMenuRef.current && !deviceMenuRef.current.contains(e.target as Node)) {
+        setShowDeviceMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', onOutsideClick)
+    return () => document.removeEventListener('mousedown', onOutsideClick)
+  }, [showDeviceMenu])
 
   const handleTranscript = useCallback(async (transcript: string) => {
     setRecordState('transcribing')
@@ -83,6 +136,23 @@ export default function DesktopRecordButton({ projectId }: Props) {
   }, [handleTranscript])
 
   if (!isMounted || !getBridge()) return null
+
+  async function openDeviceMenu() {
+    const tauri = getTauri()
+    if (!tauri) return
+    const list = await tauri.core.invoke<string[]>('list_audio_inputs').catch(() => [] as string[])
+    setDevices(list)
+    setShowDeviceMenu(true)
+  }
+
+  async function selectDevice(name: string) {
+    const tauri = getTauri()
+    if (!tauri) return
+    await tauri.core.invoke('set_audio_input', { deviceName: name }).catch(() => {})
+    localStorage.setItem('autotodo_mic_device', name)
+    setSelectedDevice(name)
+    setShowDeviceMenu(false)
+  }
 
   async function checkAndStart() {
     const tauri = getTauri()
@@ -124,7 +194,6 @@ export default function DesktopRecordButton({ projectId }: Props) {
       await doStart()
     })
 
-    // progress events
     tauri.event.listen<string>('model-download-progress', (e) => {
       setDownloadProgress(e.payload)
     })
@@ -146,6 +215,8 @@ export default function DesktopRecordButton({ projectId }: Props) {
     setRecordState('transcribing')
     await getBridge()?.stopRecording()
   }
+
+  const showControls = recordState === 'idle' || recordState === 'recording' || recordState === 'paused'
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -199,6 +270,11 @@ export default function DesktopRecordButton({ projectId }: Props) {
           <span className="flex items-center gap-1.5 text-sm text-red-600 font-medium">
             <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             Aufnahme läuft
+            {systemAudioDevice && (
+              <span className="ml-1 text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">
+                🎙+🔊
+              </span>
+            )}
           </span>
           <Button variant="outline" size="sm" className="rounded-lg" onClick={handlePause}>
             ⏸ Pause
@@ -232,6 +308,57 @@ export default function DesktopRecordButton({ projectId }: Props) {
           </svg>
           Transkribiere &amp; verarbeite…
         </span>
+      )}
+
+      {/* Device settings gear – shown when not actively transcribing/downloading */}
+      {showControls && (
+        <div className="relative" ref={deviceMenuRef}>
+          <button
+            onClick={showDeviceMenu ? () => setShowDeviceMenu(false) : openDeviceMenu}
+            title="Audio-Einstellungen"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors text-sm"
+          >
+            ⚙
+          </button>
+
+          {showDeviceMenu && (
+            <div className="absolute right-0 top-9 z-50 bg-white border border-slate-200 rounded-xl shadow-lg p-2 min-w-[240px]">
+              <p className="text-xs text-slate-400 px-2 py-1 font-medium">Mikrofon</p>
+              {devices.length === 0 && (
+                <p className="text-xs text-slate-400 px-2 py-1">Keine Geräte gefunden</p>
+              )}
+              {devices.map(name => (
+                <button
+                  key={name}
+                  onClick={() => selectDevice(name)}
+                  className={`w-full text-left px-2 py-1.5 rounded-lg text-sm flex items-center gap-2 hover:bg-slate-50 transition-colors ${
+                    (selectedDevice === name || (!selectedDevice && devices[0] === name))
+                      ? 'text-blue-600 font-medium'
+                      : 'text-slate-700'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                    (selectedDevice === name || (!selectedDevice && devices[0] === name))
+                      ? 'bg-blue-500'
+                      : 'bg-slate-300'
+                  }`} />
+                  {name}
+                </button>
+              ))}
+              {systemAudioDevice && (
+                <>
+                  <div className="my-1.5 border-t border-slate-100" />
+                  <div className="px-2 py-1 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                    <span className="text-xs text-slate-500">
+                      Systemsound: <span className="text-blue-600 font-medium">{systemAudioDevice}</span>
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {result && recordState === 'idle' && (
