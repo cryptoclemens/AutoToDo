@@ -26,3 +26,10 @@ Die Schreibweise bei den Status ist etwas komisch, z.B. in_bearbeitung
 Links in LOP-Punkten in Hyperlinks überführen und im neuen Tab bei click öffnen
 
 ---
+## 2026-04-10 07:30:18 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Weitere KPI: Anzahl Tasks pro Verantwortlichen und durchschnittliche Bearbeitungszeit
+
+---
