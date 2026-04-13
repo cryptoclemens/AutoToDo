@@ -35,13 +35,16 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json({ notes: data ?? [] })
 }
 
-// PATCH /api/projects/[id]/context-notes — archive a note { noteId }
+// PATCH /api/projects/[id]/context-notes
+// Body: { noteId }        → archive the note
+// Body: { noteId, text } → update note text
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const authClient = createClient()
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { noteId } = await req.json()
+  const body = await req.json()
+  const { noteId, text } = body as { noteId?: string; text?: string }
   if (!noteId) return NextResponse.json({ error: 'noteId required' }, { status: 400 })
 
   const supabase = serviceDb()
@@ -49,12 +52,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 })
 
-  await supabase
-    .from('project_context_notes')
-    .update({ archived_at: new Date().toISOString() })
-    .eq('id', noteId)
-    .eq('project_id', params.id)
-    .eq('workspace_id', workspace.id)
+  if (text !== undefined) {
+    // Update text
+    if (typeof text !== 'string' || text.trim().length === 0) {
+      return NextResponse.json({ error: 'text must be non-empty' }, { status: 400 })
+    }
+    await supabase
+      .from('project_context_notes')
+      .update({ text: text.trim() })
+      .eq('id', noteId)
+      .eq('project_id', params.id)
+      .eq('workspace_id', workspace.id)
+  } else {
+    // Archive
+    await supabase
+      .from('project_context_notes')
+      .update({ archived_at: new Date().toISOString() })
+      .eq('id', noteId)
+      .eq('project_id', params.id)
+      .eq('workspace_id', workspace.id)
+  }
 
   return NextResponse.json({ ok: true })
 }

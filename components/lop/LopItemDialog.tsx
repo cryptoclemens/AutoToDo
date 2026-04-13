@@ -21,6 +21,11 @@ interface ActivityInfo {
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
+export interface LopLink {
+  url: string
+  label?: string
+}
+
 export interface LopItem {
   id: string
   title: string
@@ -34,6 +39,7 @@ export interface LopItem {
   requires_review: boolean
   ai_confidence: number | null
   source_quote: string | null
+  links?: LopLink[]
 }
 
 interface Props {
@@ -49,14 +55,24 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+function isValidUrl(s: string): boolean {
+  try { new URL(s); return true } catch { return false }
+}
+
 export default function LopItemDialog({ item, canEdit, members, onClose, onUpdate, onDelete }: Props) {
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkLabel, setNewLinkLabel] = useState('')
+  const [linkError, setLinkError] = useState('')
 
   useEffect(() => {
-    setDraft(item ? { ...item } : null)
+    setDraft(item ? { ...item, links: item.links ?? [] } : null)
     setActivity(null)
+    setNewLinkUrl('')
+    setNewLinkLabel('')
+    setLinkError('')
   }, [item])
 
   const loadActivity = useCallback(async (id: string) => {
@@ -80,9 +96,24 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
       priority: draft.priority,
       status: draft.status,
       result: draft.result,
+      links: draft.links ?? [],
     })
     setSaving(false)
     onClose()
+  }
+
+  function addLink() {
+    const url = newLinkUrl.trim()
+    if (!url) return
+    if (!isValidUrl(url)) { setLinkError('Ungültige URL (https://… erforderlich)'); return }
+    setLinkError('')
+    setDraft(d => d ? { ...d, links: [...(d.links ?? []), { url, label: newLinkLabel.trim() || undefined }] } : d)
+    setNewLinkUrl('')
+    setNewLinkLabel('')
+  }
+
+  function removeLink(idx: number) {
+    setDraft(d => d ? { ...d, links: (d.links ?? []).filter((_, i) => i !== idx) } : d)
   }
 
   return (
@@ -224,6 +255,78 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
                 />
               ) : (
                 <p className="text-sm text-gray-700">{draft.result ?? <span className="text-gray-400 italic">–</span>}</p>
+              )}
+            </div>
+
+            {/* Externe Links */}
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-500">Externe Links</Label>
+
+              {/* Existing links */}
+              {(draft.links ?? []).length > 0 && (
+                <ul className="space-y-1">
+                  {(draft.links ?? []).map((link, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-sm">
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 min-w-0 text-blue-600 hover:underline truncate"
+                        title={link.url}
+                      >
+                        {link.label || link.url}
+                      </a>
+                      {canEdit && (
+                        <button
+                          onClick={() => removeLink(idx)}
+                          className="shrink-0 text-gray-300 hover:text-red-400 transition-colors"
+                          title="Link entfernen"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          </svg>
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Add link form (edit mode only) */}
+              {canEdit && (
+                <div className="space-y-1.5">
+                  <Input
+                    value={newLinkUrl}
+                    onChange={e => { setNewLinkUrl(e.target.value); setLinkError('') }}
+                    placeholder="https://…"
+                    className="h-8 text-sm"
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLink() } }}
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={newLinkLabel}
+                      onChange={e => setNewLinkLabel(e.target.value)}
+                      placeholder="Bezeichnung (optional)"
+                      className="h-8 text-sm flex-1"
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLink() } }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addLink}
+                      className="h-8 px-3 shrink-0"
+                    >
+                      + Link
+                    </Button>
+                  </div>
+                  {linkError && <p className="text-xs text-red-500">{linkError}</p>}
+                </div>
+              )}
+
+              {/* View-only: no links */}
+              {!canEdit && (draft.links ?? []).length === 0 && (
+                <p className="text-sm text-gray-400 italic">–</p>
               )}
             </div>
 

@@ -15,6 +15,10 @@ const updateSchema = z.object({
   status: z.enum(['offen', 'in_bearbeitung', 'abgeschlossen']).optional(),
   result: z.string().max(2000).nullable().optional(),
   requires_review: z.boolean().optional(),
+  links: z.array(z.object({
+    url: z.string().url().max(2000),
+    label: z.string().max(200).optional(),
+  })).optional(),
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
