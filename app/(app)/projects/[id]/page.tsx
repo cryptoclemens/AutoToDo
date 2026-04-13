@@ -98,13 +98,14 @@ export default async function ProjectPage({ params }: Props) {
     created_at: string; updated_at: string
   }
 
-  let { data: lopItems, error: lopError } = await supabase
+  const { data: lopItemsInit, error: lopError } = await supabase
     .from('lop_items')
     .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, links, created_at, updated_at')
     .eq('project_id', project.id)
     .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false }) as { data: LopRow[] | null; error: unknown }
 
+  let lopItems = lopItemsInit
   if (lopError) {
     // Fallback: links column not yet migrated
     const { data: fallback } = await supabase

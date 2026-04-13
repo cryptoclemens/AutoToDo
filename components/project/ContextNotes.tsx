@@ -188,7 +188,8 @@ export default function ContextNotes({ projectId }: Props) {
                                 <button
                                   onClick={() => setExpandedTexts(prev => {
                                     const next = new Set(prev)
-                                    isTextExpanded ? next.delete(note.id) : next.add(note.id)
+                                    if (isTextExpanded) next.delete(note.id)
+                                    else next.add(note.id)
                                     return next
                                   })}
                                   className="ml-1 text-xs underline opacity-60 hover:opacity-100"
