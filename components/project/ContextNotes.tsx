@@ -22,6 +22,7 @@ const CATEGORY_CONFIG = {
 const IMPORTANCE: Record<string, number> = { risk: 4, decision: 3, availability: 2, info: 1 }
 
 const MAX_VISIBLE = 10
+const MAX_TEXT_LEN = 120
 
 function isExpiredToday(relevant_until: string | null): boolean {
   if (!relevant_until) return false
@@ -38,9 +39,10 @@ interface Props {
 
 export default function ContextNotes({ projectId }: Props) {
   const [notes, setNotes] = useState<ContextNote[]>([])
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [showAll, setShowAll] = useState(false)
+  const [expandedTexts, setExpandedTexts] = useState<Set<string>>(new Set())
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const [saving, setSaving] = useState(false)
@@ -172,13 +174,38 @@ export default function ContextNotes({ projectId }: Props) {
                     </div>
                   ) : (
                     <>
-                      <p className={`text-sm leading-snug ${cfg.text}`}>{note.text}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-xs font-medium ${cfg.text} opacity-70`}>{cfg.label}</span>
-                        {note.relevant_until && (
-                          <span className="text-xs text-gray-400">bis {formatDate(note.relevant_until)}</span>
-                        )}
-                      </div>
+                      {(() => {
+                        const isLong = note.text.length > MAX_TEXT_LEN
+                        const isTextExpanded = expandedTexts.has(note.id)
+                        const displayText = isLong && !isTextExpanded
+                          ? note.text.slice(0, MAX_TEXT_LEN).trimEnd() + '…'
+                          : note.text
+                        return (
+                          <>
+                            <p className={`text-sm leading-snug ${cfg.text}`}>
+                              {displayText}
+                              {isLong && (
+                                <button
+                                  onClick={() => setExpandedTexts(prev => {
+                                    const next = new Set(prev)
+                                    isTextExpanded ? next.delete(note.id) : next.add(note.id)
+                                    return next
+                                  })}
+                                  className="ml-1 text-xs underline opacity-60 hover:opacity-100"
+                                >
+                                  {isTextExpanded ? 'weniger' : 'mehr'}
+                                </button>
+                              )}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-xs font-medium ${cfg.text} opacity-70`}>{cfg.label}</span>
+                              {note.relevant_until && (
+                                <span className="text-xs text-gray-400">bis {formatDate(note.relevant_until)}</span>
+                              )}
+                            </div>
+                          </>
+                        )
+                      })()}
                     </>
                   )}
                 </div>
