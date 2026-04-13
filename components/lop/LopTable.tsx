@@ -15,15 +15,20 @@ import { findSimilarPairs, type SimilarPair } from '@/lib/similarity'
 
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
+interface TranslationMap {
+  [id: string]: { title: string; description: string | null }
+}
+
 interface Props {
   initialItems: LopItem[]
   projectId: string
+  currentLocale?: string
   canEdit: boolean
   showAddForm?: boolean
   onShowAddFormChange?: (v: boolean) => void
 }
 
-export default function LopTable({ initialItems, projectId, canEdit, showAddForm: externalShowAddForm, onShowAddFormChange }: Props) {
+export default function LopTable({ initialItems, projectId, currentLocale, canEdit, showAddForm: externalShowAddForm, onShowAddFormChange }: Props) {
   const t = useTranslations('lop')
   const [items, setItems] = useState<LopItem[]>(initialItems)
   const [filterStatus, setFilterStatus] = useState<string>('all')
@@ -36,6 +41,11 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
   const [standupMode, setStandupMode] = useState(false)
   const [mergePairs, setMergePairs] = useState<SimilarPair[]>([])
   const [showMergeDialog, setShowMergeDialog] = useState(false)
+  const [translations, setTranslations] = useState<TranslationMap>({})
+  const [translating, setTranslating] = useState(false)
+  const [translateError, setTranslateError] = useState('')
+  const showTranslateButton = currentLocale === 'en'
+  const isTranslated = Object.keys(translations).length > 0
 
   const showAddForm = externalShowAddForm ?? internalShowAddForm
   const setShowAddForm = onShowAddFormChange ?? setInternalShowAddForm
@@ -97,6 +107,16 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       return (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0)
     })
 
+  // Apply translations to display items (originals kept in state for saving)
+  const displayFiltered = useMemo(() => {
+    if (!isTranslated) return filtered
+    return filtered.map(item => {
+      const tr = translations[item.id]
+      if (!tr) return item
+      return { ...item, title: tr.title, description: tr.description }
+    })
+  }, [filtered, translations, isTranslated])
+
   // Stand-up sections
   const standupSections = standupMode ? [
     {
@@ -105,7 +125,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       color: 'text-red-700',
       bg: 'bg-red-50',
       dot: 'bg-red-500',
-      items: filtered.filter(i => i.due_date && new Date(i.due_date) < today),
+      items: displayFiltered.filter(i => i.due_date && new Date(i.due_date) < today),
     },
     {
       key: 'today',
@@ -113,7 +133,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       color: 'text-amber-700',
       bg: 'bg-amber-50',
       dot: 'bg-amber-500',
-      items: filtered.filter(i => {
+      items: displayFiltered.filter(i => {
         if (!i.due_date) return false
         const d = new Date(i.due_date)
         return d >= today && d < tomorrow
@@ -125,7 +145,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       color: 'text-blue-700',
       bg: 'bg-blue-50',
       dot: 'bg-blue-500',
-      items: filtered.filter(i => i.status === 'in_bearbeitung' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
+      items: displayFiltered.filter(i => i.status === 'in_bearbeitung' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
     },
     {
       key: 'open',
@@ -133,7 +153,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       color: 'text-slate-600',
       bg: 'bg-slate-50',
       dot: 'bg-slate-400',
-      items: filtered.filter(i => i.status === 'offen' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
+      items: displayFiltered.filter(i => i.status === 'offen' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
     },
   ].filter(s => s.items.length > 0) : []
 
@@ -199,6 +219,29 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
     if (res.ok) {
       setItems(prev => prev.filter(i => i.id !== deleteId))
       if (selectedItem?.id === deleteId) setSelectedItem(null)
+    }
+  }
+
+  async function handleTranslate() {
+    if (isTranslated) { setTranslations({}); return }
+    setTranslating(true)
+    setTranslateError('')
+    try {
+      const payload = items.map(i => ({ id: i.id, title: i.title, description: i.description }))
+      const res = await fetch('/api/lop/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: payload, targetLocale: currentLocale }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setTranslateError(data.error ?? 'Fehler'); return }
+      const map: TranslationMap = {}
+      for (const t of data.translations ?? []) map[t.id] = { title: t.title, description: t.description }
+      setTranslations(map)
+    } catch {
+      setTranslateError('Netzwerkfehler')
+    } finally {
+      setTranslating(false)
     }
   }
 
@@ -271,15 +314,44 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
           <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200">
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
             <span className="text-xs font-semibold text-blue-700">Daily Stand-up</span>
-            <span className="text-xs text-blue-500">· {filtered.length} offene Punkte</span>
+            <span className="text-xs text-blue-500">· {displayFiltered.length} offene Punkte</span>
           </div>
         )}
 
         <div className="ml-auto flex items-center gap-3">
           {!standupMode && (
             <span className="text-xs text-gray-400">
-              {t('filters.showing', { count: filtered.length, total: items.length })}
+              {t('filters.showing', { count: displayFiltered.length, total: items.length })}
             </span>
+          )}
+          {showTranslateButton && items.length > 0 && (
+            <div className="flex flex-col items-end gap-0.5">
+              <button
+                onClick={handleTranslate}
+                disabled={translating}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border
+                  ${isTranslated
+                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50'}
+                  disabled:opacity-50`}
+                title={isTranslated ? 'Show original German' : 'Translate to English via BYOK LLM'}
+              >
+                {translating ? (
+                  <svg className="animate-spin" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 1v2M6 9v2M1 6h2M9 6h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                ) : (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.3"/>
+                    <path d="M6 1c-1.5 2-1.5 8 0 10M6 1c1.5 2 1.5 8 0 10M1 6h10" stroke="currentColor" strokeWidth="1.3"/>
+                  </svg>
+                )}
+                {translating ? 'Translating…' : isTranslated ? 'Original' : 'Translate'}
+              </button>
+              {translateError && (
+                <span className="text-xs text-red-500">{translateError}</span>
+              )}
+            </div>
           )}
           <button
             onClick={() => setStandupMode(v => !v)}
@@ -351,7 +423,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {displayFiltered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
                     {items.length === 0
@@ -360,7 +432,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
                   </td>
                 </tr>
               ) : (
-                filtered.map((item, index) => (
+                displayFiltered.map((item, index) => (
                   <LopTableRow
                     key={item.id}
                     item={item}
@@ -369,7 +441,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
                     members={members}
                     onUpdate={handleUpdate}
                     onDelete={handleDelete}
-                    onOpenDetail={() => setSelectedItem(item)}
+                    onOpenDetail={() => setSelectedItem(items.find(i => i.id === item.id) ?? item)}
                   />
                 ))
               )}

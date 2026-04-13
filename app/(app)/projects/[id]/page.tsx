@@ -1,6 +1,6 @@
 import type React from 'react'
 import { redirect, notFound } from 'next/navigation'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
@@ -143,6 +143,7 @@ export default async function ProjectPage({ params }: Props) {
     .slice(0, 6)
 
   const branding = getEffectiveBranding(project, workspace)
+  const currentLocale = cookies().get('locale')?.value ?? 'de'
 
   return (
     <div style={{ '--brand': branding.brand_color } as React.CSSProperties}>
@@ -243,6 +244,7 @@ export default async function ProjectPage({ params }: Props) {
         workspaceId={workspace.id}
         canEdit={canEdit && !project.archived_at}
         canAdmin={canAdmin && !project.archived_at}
+        currentLocale={currentLocale}
       />
     </div>
   )

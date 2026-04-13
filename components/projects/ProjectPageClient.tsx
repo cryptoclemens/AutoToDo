@@ -16,6 +16,7 @@ interface Props {
   workspaceId: string
   canEdit: boolean
   canAdmin: boolean
+  currentLocale?: string
 }
 
 export default function ProjectPageClient({
@@ -25,6 +26,7 @@ export default function ProjectPageClient({
   workspaceId,
   canEdit,
   canAdmin,
+  currentLocale,
 }: Props) {
   const [showAddForm, setShowAddForm] = useState(false)
 
@@ -66,6 +68,7 @@ export default function ProjectPageClient({
       <LopTable
         initialItems={initialItems}
         projectId={projectId}
+        currentLocale={currentLocale}
         canEdit={canEdit}
         showAddForm={showAddForm}
         onShowAddFormChange={setShowAddForm}
