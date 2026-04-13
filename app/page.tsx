@@ -9,7 +9,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import PricingSection from './PricingSection'
 
 // AUTO-UPDATED by scripts/bump-version.sh
-const APP_VERSION = '0.1.182'
+const APP_VERSION = '0.1.183'
 
 export default async function LandingPage() {
   const t = await getTranslations('landing')
