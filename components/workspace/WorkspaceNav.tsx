@@ -115,7 +115,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
   const navLinks = [
     { href: '/dashboard', label: t('dashboard'), icon: <IconDashboard /> },
     ...(isAdmin(userRole) ? [{ href: '/settings', label: t('settings'), icon: <IconSettings /> }] : []),
-    ...(isSuperAdmin ? [{ href: '/admin/steuerung', label: 'Steuerung', icon: <IconSuperAdmin /> }] : []),
+    ...(isSuperAdmin ? [{ href: '/admin', label: 'Admin', icon: <IconSuperAdmin /> }] : []),
     ...(!isDesktopApp ? [{ href: '/desktop', label: locale === 'en' ? 'Desktop' : 'Desktop-Version', icon: <IconDesktop /> }] : []),
   ]
 
