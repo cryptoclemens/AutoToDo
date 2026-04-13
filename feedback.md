@@ -5,59 +5,61 @@
 
 ---
 
-## 2026-03-27 12:05:14 | ✨ Feature-Wunsch
+## 2026-03-27 12:05:14 | ✨ Feature-Wunsch | Status: offen
 **Workspace:** Plenum
 **Nutzer:** clemens.pompey@vencly.com
 
 Ich fände es cool, wenn ich auf Excel offline bearbeitete XSLX, die ich vorher von dieser Seite runtergeladen habe, wieder hochladen kann, und dann ein Abbgleich mit der jweiliegen Lop-Liste stattfindet
 
 ---
-## 2026-03-27 12:14:26 | 🐛 Fehler
+## 2026-03-27 12:14:26 | 🐛 Fehler | Status: offen
 **Workspace:** Plenum
 **Nutzer:** clemens.pompey@vencly.com
 
 Die Schreibweise bei den Status ist etwas komisch, z.B. in_bearbeitung
 
 ---
-## 2026-04-02 08:20:28 | ✨ Feature-Wunsch
+## 2026-04-02 08:20:28 | ✨ Feature-Wunsch | Status: offen
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Links in LOP-Punkten in Hyperlinks überführen und im neuen Tab bei click öffnen
 
 ---
-## 2026-04-10 07:30:18 | ✨ Feature-Wunsch
+## 2026-04-10 07:30:18 | ✨ Feature-Wunsch | Status: offen
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Weitere KPI: Anzahl Tasks pro Verantwortlichen und durchschnittliche Bearbeitungszeit
 
 ---
-## 2026-04-10 07:32:46 | ✨ Feature-Wunsch
+## 2026-04-10 07:32:46 | ✨ Feature-Wunsch | Status: offen
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Kontext-Übersicht optimieren: Nach Chronologie und Wichtigkeit ordnen und intelligente Einkürzung bzw. Verknüpfung der Informationen. Max. 7-10 Punkte. Jeweils editier- und löschbar.
 
 ---
-## 2026-04-13 07:45:40 | ✨ Feature-Wunsch
+## 2026-04-13 07:45:40 | ✨ Feature-Wunsch | Status: offen
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Pro LOP-Listen-Punkt die Mögichkeit, im Pop-up in einem eigenen Feld externe Links hinzuzufügen, z.B. für Dokumente, etc..
 
 ---
-## 2026-04-13 08:52:02 | 🐛 Fehler
+## 2026-04-13 08:52:02 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Übersetzungsfunktion klappt nicht
+**Lösung:** LanguageSwitcher auf window.location.reload() umgestellt (router.refresh() in startTransition war unzuverlässig).
 
 ---
-## 2026-04-13 08:54:46 | 🐛 Fehler
+## 2026-04-13 08:54:46 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Darkmode klappt nicht
+**Lösung:** dark:-Varianten zu WorkspaceNav, App-Layout und LopTable hinzugefügt. ThemeProvider-Crash (fehlende bridge-Methode) separat gefixt.
 
 ---

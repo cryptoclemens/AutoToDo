@@ -1,19 +1,20 @@
 'use client'
 
-import { useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
-  const [isPending, startTransition] = useTransition()
-  const router = useRouter()
+  const [isPending, setIsPending] = useState(false)
 
   async function switchLocale(locale: string) {
+    if (locale === currentLocale) return
+    setIsPending(true)
     await fetch('/api/locale', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ locale }),
     })
-    startTransition(() => router.refresh())
+    // Full reload ensures Server Components re-read the new locale cookie
+    window.location.reload()
   }
 
   return (

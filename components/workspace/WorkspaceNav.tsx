@@ -120,7 +120,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
   ]
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/70 shadow-sm px-4">
+    <nav className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/70 dark:border-gray-700/50 shadow-sm px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-14">
         {/* Logo / Workspace-Name */}
         <div className="flex items-center gap-6">
@@ -135,7 +135,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
                 {workspace.name.slice(0, 2).toUpperCase()}
               </span>
             )}
-            <span className="font-semibold text-gray-900 text-sm hidden sm:block tracking-tight">
+            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm hidden sm:block tracking-tight">
               {workspace.name}
             </span>
           </Link>
@@ -163,10 +163,10 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
                   href={href}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
                     ${active
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                 >
-                  <span className={active ? 'text-gray-700' : 'text-gray-400'}>{icon}</span>
+                  <span className={active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}>{icon}</span>
                   {label}
                   {active && (
                     <span
@@ -188,7 +188,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
           <ThemeToggle />
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors font-medium">
+            <DropdownMenuTrigger className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 transition-colors font-medium">
               <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
                 {userRole.slice(0, 1).toUpperCase()}
               </span>

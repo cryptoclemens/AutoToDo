@@ -286,7 +286,7 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
               ${standupMode
                 ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50'}`}
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50'}`}
           >
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
               <circle cx="6.5" cy="4" r="2" stroke="currentColor" strokeWidth="1.3" />
@@ -301,18 +301,18 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
       {standupMode ? (
         <div className="space-y-4">
           {standupSections.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-100 py-12 text-center text-gray-400 text-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 py-12 text-center text-gray-400 text-sm">
               Keine offenen Punkte – alles erledigt!
             </div>
           ) : (
             standupSections.map(section => (
               <div key={section.key}>
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-t-xl ${section.bg} border border-b-0 border-gray-100`}>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-t-xl ${section.bg} border border-b-0 border-gray-100 dark:border-gray-800`}>
                   <span className={`w-2 h-2 rounded-full ${section.dot}`} />
                   <span className={`text-xs font-semibold uppercase tracking-wider ${section.color}`}>{section.label}</span>
                   <span className="text-xs text-gray-400 ml-1">({section.items.length})</span>
                 </div>
-                <div className="bg-white rounded-b-xl border border-gray-100 overflow-x-auto">
+                <div className="bg-white dark:bg-gray-900 rounded-b-xl border border-gray-100 dark:border-gray-800 overflow-x-auto">
                   <table className="w-full text-sm">
                     <tbody>
                       {section.items.map((item, index) => (
@@ -336,10 +336,10 @@ export default function LopTable({ initialItems, projectId, canEdit, showAddForm
         </div>
       ) : (
         /* Normale Tabellen-Ansicht */
-        <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto shadow-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-x-auto shadow-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/80 text-xs text-gray-400 uppercase tracking-wider">
+              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 text-xs text-gray-400 uppercase tracking-wider">
                 <th className="px-3 py-2.5 text-center w-8">#</th>
                 <th className="px-3 py-2.5 text-left">{t('title')}</th>
                 <th className="px-3 py-2.5 text-left w-36">{t('status_label')}</th>
@@ -473,7 +473,7 @@ function AddLopItemForm({
   if (!open) return null
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 bg-white border border-blue-200 rounded-lg p-4 space-y-3">
+    <form onSubmit={handleSubmit} className="mt-3 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-900 rounded-lg p-4 space-y-3">
       <div className="flex gap-2">
         <Input
           placeholder="Titel des LOP-Punktes *"
