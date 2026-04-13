@@ -47,3 +47,10 @@ Kontext-Übersicht optimieren: Nach Chronologie und Wichtigkeit ordnen und intel
 Pro LOP-Listen-Punkt die Mögichkeit, im Pop-up in einem eigenen Feld externe Links hinzuzufügen, z.B. für Dokumente, etc..
 
 ---
+## 2026-04-13 08:52:02 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Übersetzungsfunktion klappt nicht
+
+---
