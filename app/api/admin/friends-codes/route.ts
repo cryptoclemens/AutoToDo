@@ -35,19 +35,34 @@ export async function GET() {
       }> | null
     }
 
-  // Enrich redeemed entries with workspace name + user email
+  // Enrich redeemed entries with workspace name + user email + usage counts
   const enriched = await Promise.all((codes ?? []).map(async c => {
-    if (!c.redeemed_workspace_id) return { ...c, workspace_name: null, redeemed_email: null }
-    const [{ data: ws }, { data: { user: redeemedUser } }] = await Promise.all([
+    if (!c.redeemed_workspace_id) return {
+      ...c, workspace_name: null, redeemed_email: null,
+      lopCount: null, transcriptCount: null, lastActivity: null,
+    }
+    const [
+      { data: ws },
+      { data: { user: redeemedUser } },
+      { count: lopCount },
+      { count: transcriptCount },
+      { data: lastLop },
+    ] = await Promise.all([
       supabase.from('workspaces').select('name').eq('id', c.redeemed_workspace_id).single(),
       c.redeemed_by_user_id
         ? supabase.auth.admin.getUserById(c.redeemed_by_user_id)
         : Promise.resolve({ data: { user: null } }),
+      supabase.from('lop_items').select('id', { count: 'exact', head: true }).eq('workspace_id', c.redeemed_workspace_id),
+      supabase.from('transcripts').select('id', { count: 'exact', head: true }).eq('workspace_id', c.redeemed_workspace_id),
+      supabase.from('lop_items').select('created_at').eq('workspace_id', c.redeemed_workspace_id).order('created_at', { ascending: false }).limit(1),
     ])
     return {
       ...c,
       workspace_name: ws?.name ?? null,
       redeemed_email: redeemedUser?.email ?? null,
+      lopCount: lopCount ?? 0,
+      transcriptCount: transcriptCount ?? 0,
+      lastActivity: lastLop?.[0]?.created_at ?? null,
     }
   }))
 

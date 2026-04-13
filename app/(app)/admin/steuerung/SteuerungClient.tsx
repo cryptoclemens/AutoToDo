@@ -15,6 +15,9 @@ interface FriendsCode {
   redeemed_workspace_id: string | null
   workspace_name: string | null
   redeemed_email: string | null
+  lopCount: number | null
+  transcriptCount: number | null
+  lastActivity: string | null
 }
 
 interface WorkspaceKpis {
@@ -192,33 +195,56 @@ export default function SteuerungClient() {
                 <th className="px-6 py-2.5 text-left">Account</th>
                 <th className="px-6 py-2.5 text-left">Workspace</th>
                 <th className="px-6 py-2.5 text-left">Eingelöst</th>
+                <th className="px-6 py-2.5 text-left">Nutzung</th>
+                <th className="px-6 py-2.5 text-left">Letzte Aktivität</th>
                 <th className="px-6 py-2.5 w-28"></th>
               </tr>
             </thead>
             <tbody>
-              {redeemed.map(c => (
-                <tr
-                  key={c.id}
-                  className={`border-b border-gray-100 hover:bg-blue-50/40 transition-colors ${selectedWorkspaceId === c.redeemed_workspace_id ? 'bg-blue-50/60' : ''}`}
-                >
-                  <td className="px-6 py-3 font-mono text-xs text-gray-500 tracking-wider">{c.code}</td>
-                  <td className="px-6 py-3 text-gray-700">{c.redeemed_email ?? <span className="text-gray-300">–</span>}</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{c.workspace_name ?? <span className="text-gray-300">–</span>}</td>
-                  <td className="px-6 py-3 text-gray-400">{c.redeemed_at ? new Date(c.redeemed_at).toLocaleDateString('de-DE') : '–'}</td>
-                  <td className="px-6 py-3">
-                    {c.redeemed_workspace_id && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs text-blue-600 hover:bg-blue-50 font-medium"
-                        onClick={() => loadKpis(c.redeemed_workspace_id!)}
-                      >
-                        KPIs ansehen →
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {redeemed.map(c => {
+                const isActive = (c.lopCount ?? 0) > 0 || (c.transcriptCount ?? 0) > 0
+                return (
+                  <tr
+                    key={c.id}
+                    className={`border-b border-gray-100 hover:bg-blue-50/40 transition-colors ${selectedWorkspaceId === c.redeemed_workspace_id ? 'bg-blue-50/60' : ''}`}
+                  >
+                    <td className="px-6 py-3 font-mono text-xs text-gray-500 tracking-wider">{c.code}</td>
+                    <td className="px-6 py-3 text-gray-700">{c.redeemed_email ?? <span className="text-gray-300">–</span>}</td>
+                    <td className="px-6 py-3 font-medium text-gray-900">{c.workspace_name ?? <span className="text-gray-300">–</span>}</td>
+                    <td className="px-6 py-3 text-gray-400">{c.redeemed_at ? new Date(c.redeemed_at).toLocaleDateString('de-DE') : '–'}</td>
+                    <td className="px-6 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                          isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                          {isActive ? 'Aktiv' : 'Nicht genutzt'}
+                        </span>
+                        {c.lopCount !== null && (
+                          <span className="text-xs text-gray-400">
+                            {c.lopCount} LOP · {c.transcriptCount} Transkripte
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-xs text-gray-400">
+                      {c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('de-DE') : '–'}
+                    </td>
+                    <td className="px-6 py-3">
+                      {c.redeemed_workspace_id && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-blue-600 hover:bg-blue-50 font-medium"
+                          onClick={() => loadKpis(c.redeemed_workspace_id!)}
+                        >
+                          KPIs →
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}
