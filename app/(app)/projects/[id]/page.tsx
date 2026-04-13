@@ -85,25 +85,36 @@ export default async function ProjectPage({ params }: Props) {
     canAdmin = pmMember.role === 'project_admin'
   }
 
-  // LOP-Punkte laden
-  const { data: lopItems } = await supabase
+  // LOP-Punkte laden (mit Fallback falls links-Spalte noch nicht migriert ist)
+  type LopRow = {
+    id: string; title: string; description: string | null
+    responsible: string | null; responsible_user_id: string | null
+    due_date: string | null
+    priority: 'hoch' | 'mittel' | 'niedrig'
+    status: 'offen' | 'in_bearbeitung' | 'abgeschlossen'
+    result: string | null; requires_review: boolean
+    ai_confidence: number | null; source_quote: string | null
+    links?: { url: string; label?: string }[]
+    created_at: string; updated_at: string
+  }
+
+  let { data: lopItems, error: lopError } = await supabase
     .from('lop_items')
     .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, links, created_at, updated_at')
     .eq('project_id', project.id)
     .order('sort_order', { ascending: true, nullsFirst: false })
-    .order('created_at', { ascending: false }) as {
-      data: Array<{
-        id: string; title: string; description: string | null
-        responsible: string | null; responsible_user_id: string | null
-        due_date: string | null
-        priority: 'hoch' | 'mittel' | 'niedrig'
-        status: 'offen' | 'in_bearbeitung' | 'abgeschlossen'
-        result: string | null; requires_review: boolean
-        ai_confidence: number | null; source_quote: string | null
-        links: { url: string; label?: string }[]
-        created_at: string; updated_at: string
-      }> | null
-    }
+    .order('created_at', { ascending: false }) as { data: LopRow[] | null; error: unknown }
+
+  if (lopError) {
+    // Fallback: links column not yet migrated
+    const { data: fallback } = await supabase
+      .from('lop_items')
+      .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, created_at, updated_at')
+      .eq('project_id', project.id)
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false }) as { data: LopRow[] | null }
+    lopItems = fallback
+  }
 
   const strictOpenCount = lopItems?.filter(i => i.status === 'offen').length ?? 0
   const inProgressCount = lopItems?.filter(i => i.status === 'in_bearbeitung').length ?? 0
