@@ -5,32 +5,35 @@
 
 ---
 
-## 2026-03-27 12:05:14 | ✨ Feature-Wunsch | Status: offen
+## 2026-03-27 12:05:14 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Plenum
 **Nutzer:** clemens.pompey@vencly.com
 
 Ich fände es cool, wenn ich auf Excel offline bearbeitete XSLX, die ich vorher von dieser Seite runtergeladen habe, wieder hochladen kann, und dann ein Abbgleich mit der jweiliegen Lop-Liste stattfindet
+**Lösung:** XlsxImportDialog implementiert – XLSX hochladen, Abgleich mit bestehender LOP-Liste, Zusammenführung per Dialog bestätigen.
 
 ---
-## 2026-03-27 12:14:26 | 🐛 Fehler | Status: offen
+## 2026-03-27 12:14:26 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Plenum
 **Nutzer:** clemens.pompey@vencly.com
 
 Die Schreibweise bei den Status ist etwas komisch, z.B. in_bearbeitung
+**Lösung:** StatusBadge und alle Dropdowns zeigen jetzt lesbare Labels: „Offen", „In Bearbeitung", „Abgeschlossen".
 
 ---
-## 2026-04-02 08:20:28 | ✨ Feature-Wunsch | Status: offen
+## 2026-04-02 08:20:28 | ✨ Feature-Wunsch | Status: gestrichen
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Links in LOP-Punkten in Hyperlinks überführen und im neuen Tab bei click öffnen
 
 ---
-## 2026-04-10 07:30:18 | ✨ Feature-Wunsch | Status: offen
+## 2026-04-10 07:30:18 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Weitere KPI: Anzahl Tasks pro Verantwortlichen und durchschnittliche Bearbeitungszeit
+**Lösung:** Projektseite zeigt jetzt beide KPIs: Ø Bearbeitungszeit (badge, bereits vorhanden) + neue Zeile „Offen pro Person" mit den Top-6-Verantwortlichen und ihrer Anzahl offener/in-Bearbeitung-Tasks.
 
 ---
 ## 2026-04-10 07:32:46 | ✨ Feature-Wunsch | Status: bearbeitet

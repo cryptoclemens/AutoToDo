@@ -121,6 +121,16 @@ export default async function ProjectPage({ params }: Props) {
   const avgDays = avgDaysRaw !== null ? Math.round(avgDaysRaw) : null
   const completionPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
+  // Tasks pro Verantwortlichem (offen + in Bearbeitung)
+  const responsibleCountMap = new Map<string, number>()
+  for (const item of (lopItems ?? []).filter(i => i.status !== 'abgeschlossen')) {
+    const key = item.responsible ?? '–'
+    responsibleCountMap.set(key, (responsibleCountMap.get(key) ?? 0) + 1)
+  }
+  const responsibleKpis = Array.from(responsibleCountMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+
   const branding = getEffectiveBranding(project, workspace)
 
   return (
@@ -164,6 +174,17 @@ export default async function ProjectPage({ params }: Props) {
               </span>
             )}
           </div>
+          {/* Tasks pro Verantwortlichem */}
+          {responsibleKpis.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <span className="text-xs text-gray-400">Offen pro Person:</span>
+              {responsibleKpis.map(([name, count]) => (
+                <span key={name} className="text-xs text-gray-600 bg-gray-100 rounded-full px-2 py-0.5">
+                  {name} <span className="font-semibold">{count}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href={`/projects/${project.id}/transcripts`}>
