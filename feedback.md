@@ -54,3 +54,10 @@ Pro LOP-Listen-Punkt die Mögichkeit, im Pop-up in einem eigenen Feld externe Li
 Übersetzungsfunktion klappt nicht
 
 ---
+## 2026-04-13 08:54:46 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Darkmode klappt nicht
+
+---
