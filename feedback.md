@@ -40,3 +40,10 @@ Weitere KPI: Anzahl Tasks pro Verantwortlichen und durchschnittliche Bearbeitung
 Kontext-Übersicht optimieren: Nach Chronologie und Wichtigkeit ordnen und intelligente Einkürzung bzw. Verknüpfung der Informationen. Max. 7-10 Punkte. Jeweils editier- und löschbar.
 
 ---
+## 2026-04-13 07:45:40 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Pro LOP-Listen-Punkt die Mögichkeit, im Pop-up in einem eigenen Feld externe Links hinzuzufügen, z.B. für Dokumente, etc..
+
+---
