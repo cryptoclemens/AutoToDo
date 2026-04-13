@@ -33,18 +33,20 @@ Links in LOP-Punkten in Hyperlinks überführen und im neuen Tab bei click öffn
 Weitere KPI: Anzahl Tasks pro Verantwortlichen und durchschnittliche Bearbeitungszeit
 
 ---
-## 2026-04-10 07:32:46 | ✨ Feature-Wunsch | Status: offen
+## 2026-04-10 07:32:46 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Kontext-Übersicht optimieren: Nach Chronologie und Wichtigkeit ordnen und intelligente Einkürzung bzw. Verknüpfung der Informationen. Max. 7-10 Punkte. Jeweils editier- und löschbar.
+**Lösung:** ContextNotes sortiert jetzt nach Wichtigkeit (Risiko > Entscheidung > Verfügbarkeit > Info), dann nach nächstem Ablaufdatum. Max. 10 Punkte sichtbar mit „Weitere anzeigen"-Toggle. Inline-Bearbeitung per Stift-Icon (Cmd+Enter zum Speichern, Esc zum Abbrechen). Löschen/Archivieren wie bisher per ×-Button.
 
 ---
-## 2026-04-13 07:45:40 | ✨ Feature-Wunsch | Status: offen
+## 2026-04-13 07:45:40 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Pro LOP-Listen-Punkt die Mögichkeit, im Pop-up in einem eigenen Feld externe Links hinzuzufügen, z.B. für Dokumente, etc..
+**Lösung:** Neuer Abschnitt „Externe Links" im LOP-Popup. URL eingeben (mit optionaler Bezeichnung), wird als klickbarer Link im neuen Tab geöffnet. Links werden in einer neuen `links`-Spalte (JSONB) in `lop_items` gespeichert (Migration 021).
 
 ---
 ## 2026-04-13 08:52:02 | 🐛 Fehler | Status: bearbeitet
