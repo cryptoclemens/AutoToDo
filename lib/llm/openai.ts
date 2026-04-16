@@ -13,13 +13,16 @@ export async function processWithOpenAI(
   const makeRequest = async (): Promise<string> => {
     const completion = await client.chat.completions.create({
       model: config.model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt() },
         { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) },
       ],
     })
+    if (completion.choices[0]?.finish_reason === 'length') {
+      throw new Error('LLM-Antwort wurde abgeschnitten (Transkript zu lang). Bitte kürzen und erneut versuchen.')
+    }
     const content = completion.choices[0]?.message?.content
     if (!content) throw new Error('Empty response from OpenAI')
     return content

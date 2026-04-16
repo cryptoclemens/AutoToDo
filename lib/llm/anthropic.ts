@@ -13,10 +13,13 @@ export async function processWithAnthropic(
   const makeRequest = async (): Promise<string> => {
     const message = await client.messages.create({
       model: config.model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: buildSystemPrompt(),
       messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) }],
     })
+    if (message.stop_reason === 'max_tokens') {
+      throw new Error('LLM-Antwort wurde abgeschnitten (Transkript zu lang). Bitte kürzen und erneut versuchen.')
+    }
     const block = message.content[0]
     if (block.type !== 'text') throw new Error('Unexpected response type')
     return block.text
