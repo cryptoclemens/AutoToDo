@@ -1,75 +1,71 @@
 # Requirements: AutoToDo
 
-**Defined:** 2026-04-16
+**Defined:** 2026-04-16 (rekonstruiert aus Tasks.md + Brief.md + feedback.md)
 **Core Value:** Meeting-Nachfolge ohne manuelle Arbeit — Transkript hochladen → LOP sofort strukturiert
 
-## Milestone 6 — Abgeschlossen ✓
+## Meilensteine 1–17 — ABGESCHLOSSEN ✓
 
-Alle Requirements shipped und validated.
+Vollständige Historie in `Tasks.md`. Highlights:
 
-### LOP-Erweiterungen
+- ✓ Auth, Workspaces, Rollen, Onboarding-Wizard, Einladungs-Flow
+- ✓ LOP-Tabelle: Inline-Edit, Filter, Daily-Standup-Modus, Ähnliche-Punkte-Merge
+- ✓ KI-Pipeline BYOK: Anthropic, OpenAI, Azure, Perplexity, Groq, Ollama (extraction + transcription Rollen)
+- ✓ KI-Review-Panel (Konfidenz-Badges, Annehmen/Ablehnen), Whisper-Halluzinations-Erkennung
+- ✓ LOP-Übersetzung on-the-fly (Browser-State, Globe-Button, locale=EN)
+- ✓ ContextNotes: kollabiert, Truncation, Inline-Edit, Wichtigkeits-Sortierung
+- ✓ Externe Links pro LOP-Punkt (JSONB, migration 021)
+- ✓ Projekt-KPIs: % fertig, Ø Bearbeitungszeit, Offen pro Verantwortlichem
+- ✓ XLSX-Export + XLSX-Import (Abgleich mit bestehender LOP)
+- ✓ Workspace- und Projekt-Branding (Logo, --brand Farbe, branding_inherited)
+- ✓ Mehrsprachigkeit DE/EN (next-intl, cookie-basiert)
+- ✓ E-Mail-Digest Mo–Fr (Resend, Vercel Cron), Digest-Toggle
+- ✓ REST API v1 + API-Key-Verwaltung + Webhooks (HMAC-SHA256)
+- ✓ Freemium-Pläne (beta/free/solo/team/business) + Plan-Gates
+- ✓ Friends-Codes für Beta-Zugang
+- ✓ Notion-Integration: Token-Auth + Import als Transkript
+- ✓ AGB, Datenschutz, Impressum, AVV, Cookie-Banner (DSGVO)
+- ✓ Super-Admin Dashboard: KPIs, Workspace-Liste, Aktivitäts-Feed, Code-Nutzung
+- ✓ Tauri Desktop App (M17, separates Repo): Recorder, Whisper, Update-Checker, macOS/Windows
+- ✓ PWA-Manifest, `/record`-Seite, Groq Whisper-Provider
 
-- ✓ **LOP-01**: Externe Links pro LOP-Punkt (URL + optionales Label, max 5, neue Tab) — migration 021
-- ✓ **LOP-02**: LOP-Inhalte on-the-fly übersetzen via BYOK-LLM (Browser-State only, Globe-Button)
-- ✓ **LOP-03**: KPI "Offen pro Verantwortlichem" auf Projektseite (max 6 Personen)
-- ✓ **LOP-04**: Ø Bearbeitungszeit auf Projektseite (aus abgeschlossenen Items)
+## Meilenstein 18 — AKTIV
 
-### ContextNotes
+### Infrastruktur-Migration
 
-- ✓ **CTX-01**: ContextNotes standardmäßig eingeklappt beim Seitenaufruf
-- ✓ **CTX-02**: Text-Truncation bei 120 Zeichen mit "mehr/weniger" Toggle
-- ✓ **CTX-03**: Inline-Editierung von Context-Note-Text (Bleistift-Icon)
-- ✓ **CTX-04**: Sortierung nach Wichtigkeit (risk > decision > availability > info), dann Datum
+- [ ] **INFRA-01**: Hetzner CX32 einrichten + Coolify installieren
+- [ ] **INFRA-02**: Self-hosted Supabase auf Hetzner deployen
+- [ ] **INFRA-03**: Datenmigration Supabase Cloud → Self-hosted
+- [ ] **INFRA-04**: AutoToDo in Coolify deployen + DNS umstellen
+- [ ] **INFRA-05**: Stündlichen pg_dump-Sync zu Supabase Cloud einrichten
 
-### Admin
+*(Details in `docs/hetzner-migration-plan.md`)*
 
-- ✓ **ADM-01**: Super-Admin Übersicht `/admin` — globale KPIs (Workspaces, Nutzer, Inhalte)
-- ✓ **ADM-02**: Workspace-Liste `/admin/workspaces` — alle Workspaces mit Counts + Suche
-- ✓ **ADM-03**: Aktivitäts-Feed auf Übersicht (letzte 25 LOP + 10 Transkripte + 10 Workspaces)
-- ✓ **ADM-04**: Friends-Code Nutzungs-Badge (Aktiv/Nicht genutzt + LOP/Transkript-Counts)
+### UX-Verbesserungen (offen aus Tasks.md)
 
-## Milestone 7 — Aktiv
+- [ ] **UX-01**: Landing Page Hero-Illustration + Feature-Screenshots
+- [ ] **UX-02**: Dark Mode
+- [ ] **UX-03**: PWA Offline-Fallback-Seite
+- [ ] **UX-04**: WorkspaceNav: Projekt-Logo anzeigen auf Projekt-Seite (M13.7 offen)
 
-### Aufgaben-Abhängigkeiten (Wave)
+### LOP-Erweiterungen (Ideen)
 
-- [ ] **WAVE-01**: LOP-Punkt kann auf anderen LOP-Punkt "warten auf" (blockiert-Status)
-- [ ] **WAVE-02**: Blockierte Items visuell als abhängig kennzeichnen in der Tabelle
-- [ ] **WAVE-03**: Abhängigkeitskette beim Status-Ändern prüfen (warnung wenn Vorgänger offen)
+- [ ] **LOP-05**: Aufgaben-Abhängigkeiten ("wartet auf" zwischen LOP-Punkten)
 
-### Desktop App
+## Backlog (M19+)
 
-- [ ] **DESK-01**: Electron-Wrapper für lokale Audio-Aufnahme
-- [ ] **DESK-02**: Aufnahme direkt an Transkript-API übergeben
-
-### Notion-Integration
-
-- [ ] **NOT-01**: LOP-Punkte nach Notion exportieren (unidirektional)
-- [ ] **NOT-02**: Status-Sync Notion → AutoToDo (bidirektional)
-
-## Backlog (v2+)
-
-- Öffentliche API für LOP-Item-Zugriff
-- Slack-Integration: LOP-Punkt-Benachrichtigungen
-- Wiederkehrende Meetings / Projektvorlagen
-- Mobile App (nach Desktop-Validation)
+- SSO (SAML für Enterprise-Plan)
+- Custom Domain Subdomain-Routing (`[slug].autotodo.vencly.com`)
+- Projektvorlagen / wiederkehrende Meetings
+- Slack/Teams Benachrichtigungen (Infrastruktur in M8 bereits vorbereitet)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Eigenes LLM-Hosting | BYOK-Strategie gesetzt; kein Datenschutzrisiko |
-| Eigene E-Mail-Infrastruktur | Resend ist gesetzt und funktioniert |
-| Stripe / PayPal | Mollie ist DSGVO-konform und EU-fokussiert |
-| Vollständige Offline-Fähigkeit | Realtime-Features benötigen Verbindung |
-| Native iOS/Android App | Web-first Priorität |
-
-## Traceability
-
-| Requirement | Milestone | Status |
-|-------------|-----------|--------|
-| WAVE-01–03 | 7 | Pending |
-| DESK-01–02 | 7 | Pending |
-| NOT-01–02 | 7 | Pending |
+| Eigenes LLM-Hosting | BYOK-Strategie gesetzt |
+| Stripe / PayPal | Mollie (EU/DSGVO) gesetzt |
+| Native iOS/Android App | Tauri Desktop + PWA deckt Bedarf |
+| Eigene E-Mail-Infrastruktur | Resend gesetzt |
 
 ---
-*Last updated: 2026-04-16 nach Milestone 6 Abschluss + GSD Setup*
+*Last updated: 2026-04-16 — aus Tasks.md M1–M17 rekonstruiert*

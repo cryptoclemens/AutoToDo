@@ -1,46 +1,68 @@
 # AutoToDo Roadmap
 
-## Milestone 6 — ABGESCHLOSSEN ✓
-*LOP-Erweiterungen, ContextNotes, Admin-Dashboard*
+## Meilensteine 1–17 — ABGESCHLOSSEN ✓
 
-- Phase 6.1 ✓ Externe Links auf LOP-Punkten
-- Phase 6.2 ✓ ContextNotes: eingeklappt, Truncation, Inline-Edit, Sortierung
-- Phase 6.3 ✓ LOP-Übersetzung via BYOK (Browser-State)
-- Phase 6.4 ✓ KPI: Verantwortliche + Ø Bearbeitungszeit auf Projektseite
-- Phase 6.5 ✓ Admin-Bereich: Übersicht, Workspace-Liste, Aktivitäts-Feed
-- Phase 6.6 ✓ Friends-Code Nutzungsverifikation
+Vollständige Aufgaben-Historie in `Tasks.md`.
+
+| Meilenstein | Inhalt |
+|-------------|--------|
+| M1–M6b | SaaS-Kern: Auth, Workspace, LOP, Transkript-Upload, Branding, Vercel |
+| M7–M7e | API, Webhooks, Digest, Branding, Rechtliches, Einstellungen-Hub |
+| M8 | Audit-Log, Rollenverwaltung |
+| M9/M11 | Mollie-Infrastruktur, Freemium-Modell, Gast-System |
+| M9.5 | Mehrsprachigkeit DE/EN (next-intl) |
+| M10/M12 | UX-Polish, Daily-Standup-Modus, Glasmorphismus-Navbar |
+| M13 | Projekt-Level-Branding (migration 016) |
+| M14 | Notion-Integration, Digest-Diagnose |
+| M15 | PWA, Audio-Aufnahme, Groq, Multi-Role LLM (migration 019) |
+| M16 | Nutzer-Feedback 02.04: Escape-Bug, Status-Dropdown, Duplikat-KI, Tooltips |
+| M17 | Tauri Desktop-App (separates Repo), `/desktop`-Seite |
+| M17+ | Admin-Dashboard, ContextNotes, LOP-Links, KPI-Erweiterungen, GSD-Setup |
 
 ---
 
-## Milestone 7 — AKTIV
-*Aufgaben-Abhängigkeiten · Desktop · Notion*
+## Meilenstein 18 — AKTIV
+*Infrastruktur-Migration · UX-Restarbeiten*
 
-### Phase 7.1 — Aufgaben-Abhängigkeiten (Wave-Execution)
+### Phase 18.1 — Hetzner-Migration
+**Ziel:** Self-hosted Supabase + Coolify auf Hetzner CX32
+**Basis:** `docs/hetzner-migration-plan.md` enthält den vollständigen Plan
+**Wave:**
+  - Wave A (parallel): Hetzner CX32 einrichten, Coolify installieren, Self-hosted Supabase deployen
+  - Wave B (nach Wave A): Datenmigration, AutoToDo deployen, DNS umstellen
+  - Wave C (nach Wave B): Stündlichen pg_dump-Sync einrichten, Monitoring
+
+### Phase 18.2 — UX-Restarbeiten
+**Ziel:** Offene Items aus M10/M13
+**Wave:**
+  - Wave A (parallel): Dark Mode, PWA Offline-Fallback, WorkspaceNav Projekt-Logo
+  - Wave B: Landing Page Hero-Illustration + Feature-Screenshots
+
+---
+
+## Meilenstein 19 — BACKLOG
+*LOP-Erweiterungen · Enterprise*
+
+### Phase 19.1 — Aufgaben-Abhängigkeiten
 **Ziel:** LOP-Punkte können voneinander abhängig sein ("wartet auf")
-**Requires:** Migration 022 (depends_on Spalte), UI-Erweiterung LopItemDialog + LopTable
+**Requires:** Migration 022 (depends_on UUID-Spalte)
 **Wave:**
-  - Wave A (parallel): Migration, API-Update (PATCH-Route), Type-Definitionen
-  - Wave B (nach Wave A): UI — Dialog-Erweiterung, Tabellen-Badges, Warn-Logik
+  - Wave A (parallel): Migration, PATCH-Route update, TypeScript-Typen
+  - Wave B (nach A): UI — Dialog-Erweiterung, Tabellen-Badge, Warn-Logik
 
-### Phase 7.2 — Desktop App (Electron)
-**Ziel:** Lokale Audio-Aufnahme direkt aus Desktop-App
-**Depends on:** Phase 7.1 (optional)
-**Wave:**
-  - Wave A: Electron-Shell + IPC-Bridge
-  - Wave B: Audio-Recording + Upload an /api/transcripts
+### Phase 19.2 — Subdomain-Routing
+**Ziel:** `[slug].autotodo.vencly.com` via Vercel Wildcard Domain
+**Note:** Infrastruktur für Slug-Routing in resolveWorkspace() bereits vorbereitet
 
-### Phase 7.3 — Notion-Integration
-**Ziel:** LOP-Punkte nach Notion exportieren, Status rücksynchen
-**Depends on:** MCP-Server bereits installiert (notion MCP)
-**Wave:**
-  - Wave A: Export-Route (POST /api/notion/sync)
-  - Wave B: Bidirektionaler Sync-Mechanismus
+### Phase 19.3 — SSO (SAML)
+**Ziel:** Enterprise-Plan: SAML-SSO via Supabase Auth
+**Depends on:** Business-Plan aktiv + zahlender Kunde
 
 ---
 
-## Backlog (Milestone 8+)
+## Backlog (999.x)
 
-- 999.1 Öffentliche API
-- 999.2 Slack-Benachrichtigungen
-- 999.3 Projektvorlagen / wiederkehrende Meetings
-- 999.4 Mobile App
+- 999.1 Projektvorlagen / wiederkehrende Meetings
+- 999.2 Slack/Teams Benachrichtigungen (Webhook-Infrastruktur M8 vorhanden)
+- 999.3 Native Mobile App (nach PWA-Validation)
+- 999.4 Öffentliche Docs-Seite für REST API v1
