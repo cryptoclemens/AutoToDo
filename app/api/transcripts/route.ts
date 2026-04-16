@@ -7,8 +7,8 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 import { checkTranscriptLimit, incrementTranscriptUsage } from '@/lib/plan-gate'
 
-// Allow up to 60s for LLM processing on Vercel
-export const maxDuration = 60
+// Allow up to 300s for LLM processing on Vercel Pro
+export const maxDuration = 300
 
 const MAX_FILE_SIZE = 500 * 1024 // 500 KB
 const MAX_TEXT_SIZE = 500 * 1024 // 500 KB as characters

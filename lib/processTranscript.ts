@@ -44,10 +44,10 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     return { ok: true, itemsCreated: stored?.items_created ?? 0, itemsUpdated: stored?.items_updated ?? 0 }
   }
 
-  // Mark as processing (reset stuck processing state too)
-  await supabase.from('transcripts').update({ processing_status: 'processing', processing_error: null, error_message: null }).eq('id', transcriptId)
-
   try {
+    // Mark as processing
+    await supabase.from('transcripts').update({ processing_status: 'processing', processing_error: null, error_message: null }).eq('id', transcriptId)
+
     // Retrieve encrypted content
     let encryptedContent: string | null = transcript.encrypted_content
 
