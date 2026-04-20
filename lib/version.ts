@@ -1,2 +1,2 @@
 // AUTO-UPDATED by scripts/bump-version.sh
-export const APP_VERSION = '0.1.194'
+export const APP_VERSION = '0.1.195'
