@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: April 2026 · Version 0.1.148 · M1–M16, M17 (Desktop-App) erledigt
+Letzte Aktualisierung: April 2026 · Version 0.1.190 · M1–M17 erledigt
 
 ---
 
@@ -414,6 +414,8 @@ Letzte Aktualisierung: April 2026 · Version 0.1.148 · M1–M16, M17 (Desktop-A
 | BF.23 | Desktop-App: `alert()` in bridge.js durch `showNotice()` ersetzt (`dialog.message` auf Remote-URLs blockiert) | ✅ Erledigt |
 | BF.24 | Desktop-App: `tauri_plugin_notification` entfernt (injezieret JS in alle WebViews → Konsolen-Fehler) | ✅ Erledigt |
 | BF.25 | Desktop Login-Redirect: `NextResponse.redirect()` vor `createServerClient` erstellen, damit Cookies auf der Response landen | ✅ Erledigt |
+| BF.26 | LLM: `max_tokens` 4096 → 8192 (Anthropic + OpenAI); `stop_reason === 'max_tokens'` / `finish_reason === 'length'` löst verständliche Fehlermeldung aus statt JSON-Parse-Fehler | ✅ Erledigt |
+| BF.27 | Transkript-Verarbeitungs-Pipeline: Timeout-Schutz, Status-Leak nach Fehler behoben, stille Retry-Fehler sichtbar gemacht | ✅ Erledigt |
 
 ---
 
@@ -438,6 +440,8 @@ Letzte Aktualisierung: April 2026 · Version 0.1.148 · M1–M16, M17 (Desktop-A
 | 17.13 | `/desktop`-Seite: öffentlich, GitHub-Release-API, Download-Cards (DMG ARM/Intel, MSI) | ✅ Erledigt |
 | 17.14 | WorkspaceNav: „Desktop-Version"-Link (nur in Web-App, ausgeblendet wenn `window.__autoToDo`) | ✅ Erledigt |
 | 17.15 | Landing Page: Desktop-App-Sektion (dunkle Karte, Feature-Highlights, Download-CTA) | ✅ Erledigt |
+| 17.16 | Meetily-Audiopipeline: `whisper-rs` native Bindings (kein CLI-Sidecar), RNNoise-Denoising @ 48 kHz (`nnnoiseless`), Rubato-Resampling (`SincFixedIn`), VAD-Vorfilter | ✅ Erledigt |
+| 17.17 | Dual-Stream-Aufnahme: Mikrofon + System-Audio (BlackHole/Loopback) automatisch gemischt | ✅ Erledigt |
 
 ---
 

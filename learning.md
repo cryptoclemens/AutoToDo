@@ -529,7 +529,30 @@ const supabase = createServerClient(url, key, {
 })
 ```
 
-### 21.8 GitHub Actions: Tauri Build Matrix
+### 21.9 whisper-rs: native Bindings statt CLI-Sidecar
+**Vorteil:** Kein externes `whisper-cli`-Binary nötig. Modell wird direkt in Rust geladen.
+**macOS:** `whisper-rs = { version = "0.13", features = ["metal"] }` aktiviert Metal-GPU.
+**Nicht-macOS:** `whisper-rs = "0.13"` (CPU-only; `cuda`/`vulkan` als optionale Features ergänzbar).
+Gleiche ggml-Modelldateien wie whisper.cpp CLI — Modell-Download bleibt kompatibel.
+```rust
+let ctx = WhisperContext::new_with_params(
+    model_path,
+    WhisperContextParameters::default(), // use_gpu: true by default
+)?;
+let mut state = ctx.create_state()?;
+let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+params.set_language(Some("de"));
+state.full(params, &audio_16k)?;
+```
+
+### 21.10 Meetily-Audiopipeline (RNNoise + rubato)
+**Pipeline:** WAV → mono f32 → Resample 48 kHz (rubato SincFixedIn) → RNNoise (nnnoiseless, 480-Sample-Frames) → Resample 16 kHz → Whisper
+**Warum 48 kHz für RNNoise:** nnnoiseless/RNNoise läuft nativ bei 48 kHz; auf- oder abweichende Raten erfordern Pre-Resample.
+**rubato SincFixedIn:** Verarbeitet in fixen 4096-Sample-Blöcken; letzter Block wird mit Nullen aufgefüllt.
+**Fallback:** Wenn rubato-Initialisierung fehlschlägt → lineare Interpolation als Notfall-Resampler.
+**Crate-Versionen:** `rubato = "0.15"`, `nnnoiseless = "0.5"`.
+
+### 21.11 GitHub Actions: Tauri Build Matrix
 ```yaml
 matrix:
   include:
@@ -600,6 +623,21 @@ Der Prompt muss **explizit** anweisen:
 - Umbenennung: `update` + `title`-Feld (neues Feld im Schema ergänzen)
 - `create` nur wenn eindeutig kein Bezug zu einem bestehenden Eintrag besteht
 Bestehende Items mit `description` übergeben (nicht nur `title`) – mehr Kontext = besseres Matching.
+
+### 20.3 LLM max_tokens: Trunkierung erkennen statt JSON-Parse-Fehler
+**Problem:** Bei langen Transkripten wurde die LLM-Antwort bei 4096 Tokens abgeschnitten. Das führte zu ungültigem JSON und kryptischen Parse-Fehlern in der UI.
+**Fix:** `max_tokens` auf 8192 erhöhen + explizite Trunkierungs-Erkennung:
+```ts
+// Anthropic
+if (message.stop_reason === 'max_tokens') {
+  throw new Error('LLM-Antwort wurde abgeschnitten (Transkript zu lang).')
+}
+// OpenAI / Azure / Perplexity
+if (completion.choices[0]?.finish_reason === 'length') {
+  throw new Error('LLM-Antwort wurde abgeschnitten (Transkript zu lang).')
+}
+```
+**Regel:** Immer `stop_reason`/`finish_reason` prüfen bevor JSON geparst wird.
 
 ### 20.2 Namens-Matching via Workspace-Mitglieder-Kontext
 Workspace-Mitglieder (Name + E-Mail) als separaten Block in den User-Prompt einfügen:
