@@ -68,3 +68,10 @@ Darkmode klappt nicht
 **Lösung:** dark:-Varianten zu WorkspaceNav, App-Layout und LopTable hinzugefügt. ThemeProvider-Crash (fehlende bridge-Methode) separat gefixt.
 
 ---
+## 2026-04-20 10:37:33 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+es wäre cool, wenn die KI automatisch auch mal die bestehenden LOP-Listen liest und geänderte Schreibweisen, z.B. Namen, automatisch für zukünftige Transskripte übernimmt
+
+---
