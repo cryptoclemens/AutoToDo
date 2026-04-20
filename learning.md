@@ -529,30 +529,49 @@ const supabase = createServerClient(url, key, {
 })
 ```
 
-### 21.9 whisper-rs: native Bindings statt CLI-Sidecar
+### 21.9 whisper-rs: Meetily-konforme FullParams
 **Vorteil:** Kein externes `whisper-cli`-Binary nötig. Modell wird direkt in Rust geladen.
 **macOS:** `whisper-rs = { version = "0.13", features = ["metal"] }` aktiviert Metal-GPU.
-**Nicht-macOS:** `whisper-rs = "0.13"` (CPU-only; `cuda`/`vulkan` als optionale Features ergänzbar).
-Gleiche ggml-Modelldateien wie whisper.cpp CLI — Modell-Download bleibt kompatibel.
+**Meetily-Standard FullParams** (BeamSearch statt Greedy, Stille-Unterdrückung intern):
 ```rust
-let ctx = WhisperContext::new_with_params(
-    model_path,
-    WhisperContextParameters::default(), // use_gpu: true by default
-)?;
-let mut state = ctx.create_state()?;
-let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+let mut params = FullParams::new(SamplingStrategy::BeamSearch { beam_size: 5, patience: 1.0 });
 params.set_language(Some("de"));
-state.full(params, &audio_16k)?;
+params.set_no_timestamps(true);
+params.set_suppress_blank(true);
+params.set_suppress_non_speech_tokens(true);
+params.set_temperature(0.3);
+params.set_entropy_thold(2.4);
+params.set_logprob_thold(-1.0);
+params.set_no_speech_thold(0.55); // Whisper filtert Stille intern – kein externer VAD-Gate nötig
+params.set_max_initial_ts(1.0);
 ```
+**Regel:** Kein externer Binary-Gate vor Whisper. `no_speech_thold=0.55` ersetzt den WebRTC-VAD-Schwellwert.
 
-### 21.10 Meetily-Audiopipeline (RNNoise + rubato)
-**Pipeline:** WAV → mono f32 → Resample 48 kHz (rubato SincFixedIn) → RNNoise (nnnoiseless, 480-Sample-Frames) → Resample 16 kHz → Whisper
-**Warum 48 kHz für RNNoise:** nnnoiseless/RNNoise läuft nativ bei 48 kHz; auf- oder abweichende Raten erfordern Pre-Resample.
+### 21.10 Meetily-Audiopipeline – RNNoise standardmäßig deaktiviert
+**Meetily-Quelle:** `RNNOISE_APPLY_ENABLED: bool = false` — Kommentar: *"Whisper handles noise well internally"*
+**Unsere Pipeline (korrekt):** WAV → mono f32 → rubato SincFixedIn → 16 kHz → Whisper
+**Fehler (historisch):** RNNoise mit normalisierten f32 [-1..1] betrieben → Signal auf ~0 reduziert → Halluzination
+**Warum:** nnnoiseless-Tests zeigen i16-Range-Floats (aus `.raw`-PCM-Bytes gelesen), aber Meetily übergibt normalisierte f32 ohne Skalierung und hat es deaktiviert. Sicherste Lösung: RNNoise weglassen.
 **rubato SincFixedIn:** Verarbeitet in fixen 4096-Sample-Blöcken; letzter Block wird mit Nullen aufgefüllt.
-**Fallback:** Wenn rubato-Initialisierung fehlschlägt → lineare Interpolation als Notfall-Resampler.
-**Crate-Versionen:** `rubato = "0.15"`, `nnnoiseless = "0.5"`.
+**Fallback:** lineare Interpolation wenn rubato-Init fehlschlägt.
+**Crate:** `rubato = "0.15"` (nnnoiseless entfernt).
 
-### 21.11 GitHub Actions: Tauri Build Matrix
+### 21.12 macOS Mikrofonberechtigung: NSMicrophoneUsageDescription Pflicht
+**Problem:** Ohne `NSMicrophoneUsageDescription` in der Info.plist verweigert macOS Ventura/Sonoma den Mikrofonzugriff **ohne Dialog und ohne Fehlermeldung**. cpal bekommt Nullen → Whisper halluziniert auf Stille.
+**Symptom:** 3 Minuten Sprache → „Die Strecke ist nicht so gut. ." (typische Whisper-Halluzination für Stille).
+**Fix in `tauri.conf.json`:**
+```json
+"macOS": {
+  "infoPlist": {
+    "NSMicrophoneUsageDescription": "AutoToDo benötigt Mikrofonzugriff für Meeting-Aufnahmen."
+  }
+}
+```
+**Diagnose:** RMS-Logging nach Aufnahme (`rms < 0.001` → Warnung). Normaler Sprachpegel: RMS > 0.01.
+**Merke:** Das Entitlement `com.apple.security.device.audio-input` allein reicht nicht — der Usage-String ist zusätzlich zwingend.
+**System-Audio (BlackHole/Loopback):** Benötigt NUR Mikrofon-Permission (virtuelle Input-Geräte). Screen-Recording-Permission nur für zukünftiges ScreenCaptureKit (Phase 2).
+
+### 21.13 GitHub Actions: Tauri Build Matrix
 ```yaml
 matrix:
   include:

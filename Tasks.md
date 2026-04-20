@@ -440,8 +440,13 @@ Letzte Aktualisierung: April 2026 · Version 0.1.190 · M1–M17 erledigt
 | 17.13 | `/desktop`-Seite: öffentlich, GitHub-Release-API, Download-Cards (DMG ARM/Intel, MSI) | ✅ Erledigt |
 | 17.14 | WorkspaceNav: „Desktop-Version"-Link (nur in Web-App, ausgeblendet wenn `window.__autoToDo`) | ✅ Erledigt |
 | 17.15 | Landing Page: Desktop-App-Sektion (dunkle Karte, Feature-Highlights, Download-CTA) | ✅ Erledigt |
-| 17.16 | Meetily-Audiopipeline: `whisper-rs` native Bindings (kein CLI-Sidecar), RNNoise-Denoising @ 48 kHz (`nnnoiseless`), Rubato-Resampling (`SincFixedIn`), VAD-Vorfilter | ✅ Erledigt |
+| 17.16 | Audiopipeline: `whisper-rs` native Bindings, Rubato-Resampling direkt → 16 kHz, VAD nur Logging, Whisper-interne Stille-Filterung | ✅ Erledigt |
 | 17.17 | Dual-Stream-Aufnahme: Mikrofon + System-Audio (BlackHole/Loopback) automatisch gemischt | ✅ Erledigt |
+| 17.18 | Whisper FullParams: BeamSearch(5), `no_speech_thold=0.55`, `suppress_blank/non_speech_tokens`, `temperature=0.3` (Meetily-Standard) | ✅ Erledigt |
+| 17.19 | `NSMicrophoneUsageDescription` in `tauri.conf.json`: macOS zeigt Permission-Dialog statt stillem Deny | ✅ Erledigt |
+| 17.20 | Einstellungen: „Audio"-Tab mit Whisper-Modell-Verwaltung (Download, Modell-Wechsel, Fortschrittsbalken) | ✅ Erledigt |
+| 17.21 | Einstellungen: Versionsnummer `vX.Y.Z` neben Überschrift; `lib/version.ts` zentral, von `bump-version.sh` gepflegt | ✅ Erledigt |
+| BF.28 | Desktop-App: `NSMicrophoneUsageDescription` fehlte → macOS verwehrte Mikrofonzugriff ohne Dialog (Stille → Halluzination) | ✅ Erledigt |
 
 ---
 
