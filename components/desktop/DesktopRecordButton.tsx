@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -200,7 +199,6 @@ function AudioSettingsModal({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function DesktopRecordButton({ projectId }: Props) {
-  const router = useRouter()
   const [recordState, setRecordState] = useState<RecordState>('idle')
   const [downloadProgress, setDownloadProgress] = useState('')
   const [result, setResult] = useState<{ created: number; updated: number } | null>(null)
@@ -260,14 +258,14 @@ export default function DesktopRecordButton({ projectId }: Props) {
         setError(data.error ?? 'Unbekannter Fehler')
       } else {
         setResult({ created: data.itemsCreated ?? 0, updated: data.itemsUpdated ?? 0 })
-        router.refresh()
+        setTimeout(() => window.location.reload(), 2000)
       }
     } catch {
       setError('Netzwerkfehler beim Speichern des Transkripts.')
     } finally {
       setRecordState('idle')
     }
-  }, [projectId, router])
+  }, [projectId])
 
   useEffect(() => {
     const bridge = getBridge()
