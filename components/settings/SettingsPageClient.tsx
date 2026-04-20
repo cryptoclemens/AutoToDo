@@ -14,9 +14,10 @@ import WebhooksSettings from './WebhooksSettings'
 import AuditLog from './AuditLog'
 import BillingTab from './BillingTab'
 import NotionIntegrationForm from './NotionIntegrationForm'
+import { AudioSettingsTab } from './AudioSettingsTab'
 import { Plan } from '@/lib/plans'
 
-type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing' | 'integrations'
+type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing' | 'integrations' | 'audio'
 
 const CHANGEABLE_ROLES = ['workspace_admin', 'project_admin', 'editor', 'viewer']
 
@@ -68,6 +69,7 @@ interface Props {
     transcriptsThisMonth: number
   }
   notionInitial: { configured: boolean; connectedAt: string | null }
+  version?: string
 }
 
 const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
@@ -80,9 +82,10 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
   { id: 'api', adminOnly: true },
   { id: 'webhooks', adminOnly: true },
   { id: 'audit', adminOnly: true },
+  { id: 'audio' },
 ]
 
-export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial }: Props) {
+export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial, version }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
 
@@ -183,7 +186,12 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{ts('title')}</h1>
+      <div className="flex items-baseline justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">{ts('title')}</h1>
+        {version && (
+          <span className="text-xs text-gray-400 font-mono">v{version}</span>
+        )}
+      </div>
 
       {/* Tab Bar */}
       <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1 mb-8 w-fit">
@@ -402,6 +410,14 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
         <div>
           <h3 className="text-sm font-semibold text-gray-800 mb-4">{ts('auditTitle')}</h3>
           <AuditLog />
+        </div>
+      )}
+
+      {/* Audio-Einstellungen */}
+      {tab === 'audio' && (
+        <div>
+          <p className="text-sm text-gray-500 mb-6">{ts('audioDesc')}</p>
+          <AudioSettingsTab />
         </div>
       )}
     </div>

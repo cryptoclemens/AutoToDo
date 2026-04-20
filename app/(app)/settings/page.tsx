@@ -5,6 +5,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { isMollieConfigured } from '@/lib/mollie'
+import { APP_VERSION } from '@/lib/version'
 
 export default async function SettingsPage() {
   const authClient = createClient()
@@ -131,6 +132,7 @@ export default async function SettingsPage() {
         transcriptsThisMonth: (usageData as { transcripts_month?: number } | null)?.transcripts_month ?? 0,
       }}
       notionInitial={notionInitial}
+      version={APP_VERSION}
     />
   )
 }

@@ -191,7 +191,8 @@
       "api": "API Keys",
       "webhooks": "Webhooks",
       "audit": "Audit Log",
-      "integrations": "Integrations"
+      "integrations": "Integrations",
+      "audio": "Audio"
     },
     "workspaceDesc": "Customize your workspace logo and accent color.",
     "digestTitle": "Email notifications",
@@ -450,5 +451,22 @@
     "uploadError": "Upload failed. Please try again.",
     "whisperHint": "Requires an OpenAI API key for transcription.",
     "whisperHintLink": "Set up now →"
+  },
+  "audio": {
+    "desktopOnly": "Audio settings are only available in the desktop app.",
+    "whisperTitle": "Whisper Model",
+    "whisperDesc": "The model runs locally on your Mac. Larger models are more accurate but require more storage and time.",
+    "modelActive": "Active model: {model}",
+    "modelNone": "No model downloaded",
+    "recommended": "Recommended",
+    "installed": "Installed",
+    "downloading": "Downloading {model}…",
+    "download": "Download model",
+    "redownload": "Re-download",
+    "modelTinyNote": "Very fast, lowest accuracy",
+    "modelBaseNote": "Fast, for simple recordings",
+    "modelSmallNote": "Good balance of speed and accuracy",
+    "modelMediumNote": "Very accurate, recommended for meetings",
+    "modelLargeNote": "Highest accuracy, slower"
   }
 }

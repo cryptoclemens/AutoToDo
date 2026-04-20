@@ -33,10 +33,12 @@ node -e "
 
 echo "Version bumped: ${CURRENT} → ${NEW}"
 
-# APP_VERSION in marketing page aktualisieren
+# APP_VERSION in marketing page und lib/version.ts aktualisieren
 MARKETING_PAGE="$(git rev-parse --show-toplevel)/app/page.tsx"
+VERSION_FILE="$(git rev-parse --show-toplevel)/lib/version.ts"
 sed -i "s/const APP_VERSION = '[^']*'/const APP_VERSION = '${NEW}'/" "${MARKETING_PAGE}"
+sed -i "s/export const APP_VERSION = '[^']*'/export const APP_VERSION = '${NEW}'/" "${VERSION_FILE}"
 
 # Commit erstellen (ohne Hook-Loop)
-git add "${PACKAGE_JSON}" "${MARKETING_PAGE}"
+git add "${PACKAGE_JSON}" "${MARKETING_PAGE}" "${VERSION_FILE}"
 git commit --no-verify -m "chore: bump version to ${NEW}"

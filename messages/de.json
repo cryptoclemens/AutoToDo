@@ -191,7 +191,8 @@
       "api": "API-Keys",
       "webhooks": "Webhooks",
       "audit": "Audit-Log",
-      "integrations": "Integrationen"
+      "integrations": "Integrationen",
+      "audio": "Audio"
     },
     "workspaceDesc": "Logo und Akzentfarbe deines Workspaces anpassen.",
     "digestTitle": "E-Mail-Benachrichtigungen",
@@ -222,6 +223,7 @@
     "roleSaved": "Rolle aktualisiert.",
     "roleError": "Fehler beim Speichern.",
     "auditTitle": "Aktivitätsverlauf",
+    "audioDesc": "Whisper-Modell für die lokale Transkription in der Desktop-App verwalten.",
     "account": {
       "title": "Konto",
       "changeEmail": "E-Mail-Adresse ändern",
@@ -450,5 +452,22 @@
     "uploadError": "Übertragung fehlgeschlagen. Bitte erneut versuchen.",
     "whisperHint": "Benötigt einen OpenAI-API-Key für die Transkription.",
     "whisperHintLink": "Jetzt hinterlegen →"
+  },
+  "audio": {
+    "desktopOnly": "Audio-Einstellungen sind nur in der Desktop-App verfügbar.",
+    "whisperTitle": "Whisper-Modell",
+    "whisperDesc": "Das Modell läuft lokal auf deinem Mac. Größere Modelle sind genauer, benötigen aber mehr Speicher und Zeit.",
+    "modelActive": "Aktives Modell: {model}",
+    "modelNone": "Kein Modell heruntergeladen",
+    "recommended": "Empfohlen",
+    "installed": "Installiert",
+    "downloading": "{model} wird heruntergeladen…",
+    "download": "Modell herunterladen",
+    "redownload": "Erneut herunterladen",
+    "modelTinyNote": "Sehr schnell, geringste Genauigkeit",
+    "modelBaseNote": "Schnell, für einfache Aufnahmen",
+    "modelSmallNote": "Gute Balance aus Geschwindigkeit und Genauigkeit",
+    "modelMediumNote": "Sehr genau, empfohlen für Meetings",
+    "modelLargeNote": "Höchste Genauigkeit, langsamer"
   }
 }
