@@ -66,10 +66,11 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
     setItems(initialItems)
   }, [initialItems])
 
-  // Auto-refresh every 5 min when no dialog or form is open
+  // Auto-refresh every 5 min when no dialog, form, or active recording
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!selectedItem && !showAddForm && !showReviewPanel && !showMergeDialog) {
+      const isRecording = typeof window !== 'undefined' && window.__autoToDo?.isRecording()
+      if (!selectedItem && !showAddForm && !showReviewPanel && !showMergeDialog && !isRecording) {
         router.refresh()
       }
     }, 5 * 60 * 1000)
