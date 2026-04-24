@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import LopTableRow from './LopTableRow'
 import LopItemDialog, { type LopItem } from './LopItemDialog'
@@ -30,6 +31,7 @@ interface Props {
 
 export default function LopTable({ initialItems, projectId, currentLocale, canEdit, showAddForm: externalShowAddForm, onShowAddFormChange }: Props) {
   const t = useTranslations('lop')
+  const router = useRouter()
   const [items, setItems] = useState<LopItem[]>(initialItems)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
@@ -58,6 +60,21 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
       .then((data: WorkspaceMember[]) => setMembers(data))
       .catch(() => {})
   }, [projectId])
+
+  // Sync local items when server refreshes data (triggered by router.refresh())
+  useEffect(() => {
+    setItems(initialItems)
+  }, [initialItems])
+
+  // Auto-refresh every 5 min when no dialog or form is open
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!selectedItem && !showAddForm && !showReviewPanel && !showMergeDialog) {
+        router.refresh()
+      }
+    }, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [selectedItem, showAddForm, showReviewPanel, showMergeDialog, router])
 
   const reviewItems = items.filter(i => i.requires_review)
   const reviewCount = reviewItems.length
