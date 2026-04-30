@@ -46,13 +46,47 @@ export async function POST(req: NextRequest) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
-  const { data: member } = await supabase
+  const formData = await req.formData()
+  const projectId = formData.get('projectId') as string | null
+  const meetingDate = formData.get('meetingDate') as string | null
+  const pastedText = formData.get('text') as string | null
+  const file = formData.get('file') as File | null
+
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId ist erforderlich.' }, { status: 400 })
+  }
+
+  // Verify project belongs to workspace
+  const { data: project } = await supabase
+    .from('projects').select('id').eq('id', projectId).eq('workspace_id', workspace.id).single() as {
+      data: { id: string } | null
+    }
+  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+
+  // Permission: workspace member (non-viewer) OR project member (editor/project_admin)
+  const { data: wsMember } = await supabase
     .from('workspace_members').select('role')
     .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
       data: { role: string } | null
     }
-  if (!member || member.role === 'viewer') {
+  const wsAllowed = wsMember && wsMember.role !== 'viewer'
+
+  let projAllowed = false
+  if (!wsAllowed) {
+    const { data: projMember } = await supabase
+      .from('project_members').select('role')
+      .eq('project_id', projectId).eq('user_id', user.id).single() as {
+        data: { role: string } | null
+      }
+    projAllowed = !!(projMember && projMember.role !== 'viewer')
+  }
+
+  if (!wsAllowed && !projAllowed) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  if (!pastedText && !file) {
+    return NextResponse.json({ error: 'Entweder Text oder Datei erforderlich.' }, { status: 400 })
   }
 
   // Plan-Gate: Transkript-Limit prüfen
@@ -64,26 +98,6 @@ export async function POST(req: NextRequest) {
   if (!transcriptGate.allowed) {
     return NextResponse.json({ error: transcriptGate.reason, upgradeHint: transcriptGate.upgradeHint }, { status: 402 })
   }
-
-  const formData = await req.formData()
-  const projectId = formData.get('projectId') as string | null
-  const meetingDate = formData.get('meetingDate') as string | null
-  const pastedText = formData.get('text') as string | null
-  const file = formData.get('file') as File | null
-
-  if (!projectId) {
-    return NextResponse.json({ error: 'projectId ist erforderlich.' }, { status: 400 })
-  }
-  if (!pastedText && !file) {
-    return NextResponse.json({ error: 'Entweder Text oder Datei erforderlich.' }, { status: 400 })
-  }
-
-  // Verify project belongs to workspace
-  const { data: project } = await supabase
-    .from('projects').select('id').eq('id', projectId).eq('workspace_id', workspace.id).single() as {
-      data: { id: string } | null
-    }
-  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
 
   // Resolve text content from either source
   let text: string
