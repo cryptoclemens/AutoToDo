@@ -7,7 +7,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 import { checkTranscriptLimit, incrementTranscriptUsage } from '@/lib/plan-gate'
 
-// Allow up to 300s for LLM processing on Vercel Pro
+// Allow up to 300s for LLM processing
 export const maxDuration = 300
 
 const MAX_FILE_SIZE = 500 * 1024 // 500 KB
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Text zu lang (max. 500 KB).' }, { status: 400 })
     }
     text = pastedText
-    originalFilename = 'eingefügter-text.txt'
+    originalFilename = 'eingefuegter-text.txt'
   } else {
     // file is guaranteed non-null here since we checked above
     const f = file!
@@ -128,7 +128,8 @@ export async function POST(req: NextRequest) {
   const encryptedContent = encrypt(text)
 
   // Store in Supabase Storage
-  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${originalFilename}`
+  const safeFilename = originalFilename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "_")
+  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${safeFilename}`
   const { error: storageError } = await supabase.storage
     .from('transcripts')
     .upload(storagePath, Buffer.from(encryptedContent, 'utf8'), {
@@ -164,7 +165,7 @@ export async function POST(req: NextRequest) {
   // Increment monthly usage counter
   await incrementTranscriptUsage(supabase, workspace.id)
 
-  // Process inline (awaited) – fire-and-forget fails on Vercel serverless
+  // Process inline (awaited)
   const result = await runTranscriptProcessing(transcript.id)
 
   return NextResponse.json({
