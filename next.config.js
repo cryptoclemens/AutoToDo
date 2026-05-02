@@ -14,6 +14,11 @@ const nextConfig = {
         hostname: 'supabase.autotodo.vencly.com',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'supabase.autotodo.vencly.com',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   async headers() {
