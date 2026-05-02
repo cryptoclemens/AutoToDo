@@ -14,7 +14,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
 | KI (Extraktion) | Anthropic Claude / OpenAI GPT / Azure OpenAI / Perplexity AI Sonar (BYOK) |
 | KI (Transkription) | OpenAI Whisper / Groq Whisper (whisper-large-v3-turbo, 120 Min/Tag kostenlos) |
-| Deployment | Vercel (maxDuration 60s für LLM-Verarbeitung) · Coolify/Docker (standalone) |
+| Deployment | Docker (Hetzner CX32, standalone) · Self-hosted Supabase |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
 | Billing | Mollie (aktiv; aktiviert sobald `MOLLIE_API_KEY` gesetzt) |
 | Font | System-Schriftart (kein Google Fonts) |
@@ -162,30 +162,36 @@ autotodo/
 - **API v1:** `/api/v1/` via Bearer-Token (SHA-256-gehashte API-Keys), Scope-Prüfung (`read`/`write`) auf allen Endpunkten
 - **Einladungs-Token:** `randomBytes(32)` – 256 Bit Entropie
 - **Input-Validierung:** Zod auf allen API-Routes, UUID-Format-Prüfung auf Query-Parametern
-- **Transkript-Verarbeitung:** Synchron inline im Upload-Request (Vercel-kompatibel, kein fire-and-forget)
+- **Transkript-Verarbeitung:** Synchron inline im Upload-Request (kein fire-and-forget)
 
 ---
 
 ## Deployment
 
-### Vercel
+### Docker (Hetzner CX32 – produktiv)
+
+Das Projekt läuft als Docker-Container (`autotodo-app`) auf einem Hetzner CX32 mit Self-hosted Supabase.
+Deploy-Skript: `/root/deploy/autotodo/deploy.sh`
+
+Das Projekt ist mit `output: 'standalone'` gebaut. `NEXT_PUBLIC_*`-Variablen müssen als **Build-Time**-Vars gesetzt sein (nicht nur Runtime).
 
 Erforderliche Umgebungsvariablen:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_URL        # https://supabase.autotodo.vencly.com
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
-ENCRYPTION_SECRET           # openssl rand -hex 32  (64 Hex-Zeichen)
-INTERNAL_API_SECRET         # beliebiger Secret-String
-NEXT_PUBLIC_APP_URL         # https://autotodo.vencly.com
-NEXT_PUBLIC_APP_DOMAIN      # autotodo.vencly.com
+ENCRYPTION_SECRET               # openssl rand -hex 32  (64 Hex-Zeichen)
+INTERNAL_API_SECRET             # beliebiger Secret-String
+NEXT_PUBLIC_APP_URL             # https://autotodo.vencly.com
+NEXT_PUBLIC_APP_DOMAIN          # autotodo.vencly.com
 # Optional:
-RESEND_API_KEY              # aktiviert E-Mail-Versand (Einladungen + täglicher Digest)
-RESEND_FROM                 # z.B. "AutoToDo <noreply@vencly.app>"
-MOLLIE_API_KEY              # aktiviert Billing-Checkout
-GITHUB_FEEDBACK_TOKEN       # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
-CRON_SECRET                 # Secret für Vercel Cron Job Authorization (täglicher Digest)
+RESEND_API_KEY                  # aktiviert E-Mail-Versand (Einladungen + täglicher Digest)
+RESEND_FROM                     # z.B. "AutoToDo <noreply@vencly.app>"
+MOLLIE_API_KEY                  # aktiviert Billing-Checkout
+GITHUB_FEEDBACK_TOKEN           # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
+GITHUB_FEEDBACK_BRANCH          # Branch für Feedback-Commits (default: claude/github-automated-access-WVPL6)
+CRON_SECRET                     # Secret für den täglichen Digest-Cron (/api/cron/daily-digest)
 ```
 
 Supabase Auth → URL Configuration:
@@ -196,18 +202,11 @@ Supabase Storage:
 - `logos`-Bucket: public (Workspace-Logos)
 - `transcripts`-Bucket: **privat** (verschlüsselte Transkript-Inhalte)
 
-### Coolify / Docker (Self-hosted)
-
-Das Projekt ist mit `output: 'standalone'` gebaut und enthält `sharp` als Produktions-Abhängigkeit.
-Beim Coolify-Deploy müssen `NEXT_PUBLIC_*`-Variablen als **Build-Time**-Vars gesetzt sein (nicht nur Runtime).
-
-Migrationsplan für Hetzner CX32 + Self-hosted Supabase: siehe [`docs/hetzner-migration-plan.md`](./docs/hetzner-migration-plan.md).
-
 ### Custom Domain (Cloudflare)
 
 | Typ | Name | Inhalt | Proxy |
 |-----|------|--------|-------|
-| `CNAME` | `autotodo` | `cname.vercel-dns.com` | DNS-only (grau) |
+| `A` | `autotodo` | `<SERVER_IP>` | DNS-only (grau) |
 
 ---
 
@@ -224,14 +223,14 @@ Migrationsplan für Hetzner CX32 + Self-hosted Supabase: siehe [`docs/hetzner-mi
 | **10.9** | Dark Mode | Offen |
 | **M15.7** | PWA Offline-Fallback-Seite | Offen |
 | **M15.8** | Phase 2: Tauri Desktop-App (System-Audio, separates Repo) | ✅ Erledigt (v0.1.x, macOS ARM/Intel + Windows) |
-| **Hetzner** | Migration auf CX32 + Self-hosted Supabase | Plan fertig, bereit zur Umsetzung |
+| **Hetzner** | Migration auf CX32 + Self-hosted Supabase | ✅ Abgeschlossen |
 
 ## Entwicklungsstand
 
 Siehe [Tasks.md](./Tasks.md) für den aktuellen Bearbeitungsstand nach Meilensteinen.
 Siehe [Brief.md](./Brief.md) für die vollständige Produktspezifikation.
 Siehe [CLAUDE.md](./CLAUDE.md) für Entwicklungsregeln und bekannte Fallstricke.
-Siehe [docs/hetzner-migration-plan.md](./docs/hetzner-migration-plan.md) für den Infrastruktur-Migrationsplan.
+Siehe [Tasks.md](./Tasks.md) für den aktuellen Stand aller offenen Punkte.
 
 ---
 
