@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     // Create the redirect response first so cookies can be attached directly to it.
     // Using createClient() from @/lib/supabase/server writes to next/headers cookieStore
     // which is NOT reflected on a manually created NextResponse — this pattern avoids that.
-    const response = NextResponse.redirect(`${origin}/dashboard`)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || origin
+    const response = NextResponse.redirect(`${appUrl}/dashboard`)
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,5 +44,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=desktop_auth_failed`)
+  return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || origin}/login?error=desktop_auth_failed`)
 }

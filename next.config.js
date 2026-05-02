@@ -4,11 +4,14 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Standalone output: enables a minimal Docker image (only required deps copied).
+  // Used by ./Dockerfile multi-stage build.
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'supabase.autotodo.vencly.com',
         pathname: '/storage/v1/object/public/**',
       },
     ],

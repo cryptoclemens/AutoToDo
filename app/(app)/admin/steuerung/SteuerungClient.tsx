@@ -399,7 +399,7 @@ export default function SteuerungClient() {
               <p className="text-sm text-red-600 font-medium">
                 ⚠ Übersprungen: {String(digestDiag.skipped)}
                 <span className="block text-xs font-normal text-gray-500 mt-1">
-                  → <strong>RESEND_API_KEY</strong> fehlt in den Vercel Environment Variables.
+                  → <strong>RESEND_API_KEY</strong> fehlt in der Server-Konfiguration (.env).
                 </span>
               </p>
             ) : digestDiag.reason ? (

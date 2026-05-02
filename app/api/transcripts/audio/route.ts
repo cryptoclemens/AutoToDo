@@ -122,7 +122,8 @@ export async function POST(req: NextRequest) {
   // Store transcript text (same pattern as main route)
   const originalFilename = meetingName ? `${meetingName}.txt` : `aufnahme-${Date.now()}.txt`
   const encryptedContent = encrypt(text)
-  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${originalFilename}`
+  const safeFilename = originalFilename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "_")
+  const storagePath = `${workspace.id}/${projectId}/${Date.now()}_${safeFilename}`
 
   const { error: storageError } = await supabase.storage
     .from('transcripts')

@@ -86,17 +86,20 @@ export default function DatenschutzPage() {
 
       <Section title="4. Auftragsverarbeiter">
         <p>
-          <strong>Vercel Inc.</strong>, 340 Pine Street, Suite 701, San Francisco, CA 94104, USA<br />
-          Zweck: Hosting, CDN. Grundlage: Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO)<br />
-          Datenschutzrichtlinie: <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">vercel.com/legal/privacy-policy</a>
+          <strong>Hetzner Online GmbH</strong>, Industriestr. 25, 91710 Gunzenhausen, Deutschland<br />
+          Zweck: Serverhosting (Dedicated Server). Serverstandort: Deutschland.<br />
+          Kein Drittlandtransfer. Verarbeitung auf Grundlage eines Auftragsverarbeitungsvertrags (Art. 28 DSGVO).<br />
+          Datenschutzrichtlinie: <a href="https://www.hetzner.com/de/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">hetzner.com/de/legal/privacy-policy</a>
         </p>
         <p>
-          <strong>Supabase Inc.</strong><br />
-          Zweck: Datenbank, Authentifizierung, Storage. Serverstandort: EU (Frankfurt am Main).<br />
-          Datenschutzrichtlinie: <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">supabase.com/privacy</a>
+          <strong>Datenbank, Authentifizierung, Storage:</strong> Self-hosted (Supabase Open Source)
+          auf dem Hetzner-Server der vencly GmbH. Kein externer Auftragsverarbeiter;
+          die Daten verlassen den Server der vencly GmbH nicht.
         </p>
         <p>
-          <strong>Zahlungsanbieter:</strong> <span className="text-amber-600">[TODO – ergänzen, z. B. Stripe Inc.]</span>
+          <strong>Mollie B.V.</strong>, Keizersgracht 126, 1015 CW Amsterdam, Niederlande<br />
+          Zweck: Zahlungsabwicklung. Serverstandort: EU.<br />
+          Datenschutzrichtlinie: <a href="https://www.mollie.com/de/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">mollie.com/de/privacy</a>
         </p>
       </Section>
 

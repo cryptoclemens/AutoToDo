@@ -5,7 +5,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { headers } from 'next/headers'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 
-// Allow up to 300s for LLM processing on Vercel Pro
+// Allow up to 300s for LLM processing
 export const maxDuration = 300
 
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {

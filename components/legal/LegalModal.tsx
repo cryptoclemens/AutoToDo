@@ -223,18 +223,19 @@ function DatenschutzContent() {
           Einladungen, Aktivitätszeitpunkte. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</p>
         <p><strong>c) LLM-API-Keys:</strong> Werden AES-256-GCM-verschlüsselt gespeichert.
           Nur der jeweilige Workspace-Inhaber hat Zugang. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</p>
-        <p><strong>d) Technische Logs:</strong> Server-Logs (IP-Adresse, Zeitstempel) durch Vercel.
+        <p><strong>d) Technische Logs:</strong> Server-Logs (IP-Adresse, Zeitstempel).
           Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an IT-Sicherheit).</p>
         <p><strong>e) Feedback:</strong> Freiwillig eingereichte Nachrichten über den Feedback-Button.
           Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch Absenden).</p>
       </Section>
 
       <Section title="3. Weitergabe an Dritte">
-        <p><strong>Supabase Inc.</strong> (Datenbankhosting, Auth, Storage): Verarbeitung
-          gemäß Auftragsverarbeitungsvertrag (AVV). Serverstandort wählbar in EU (Frankfurt).
-          Datenschutzrichtlinie: supabase.com/privacy</p>
-        <p><strong>Vercel Inc.</strong> (Hosting, CDN): Verarbeitung gemäß Vercel-AVV.
-          Datenschutzrichtlinie: vercel.com/legal/privacy-policy</p>
+        <p><strong>Hetzner Online GmbH</strong>, Industriestr. 25, 91710 Gunzenhausen, Deutschland.
+          Zweck: Serverhosting (Dedicated Server). Serverstandort: Deutschland. Kein Drittlandtransfer.
+          Verarbeitung auf Grundlage eines AVV (Art. 28 DSGVO).
+          Datenschutzrichtlinie: hetzner.com/de/legal/privacy-policy</p>
+        <p><strong>Datenbank, Authentifizierung, Storage:</strong> Self-hosted (Supabase Open Source)
+          auf dem Hetzner-Server der vencly GmbH. Kein externer Auftragsverarbeiter.</p>
         <p><strong>KI-Anbieter (Anthropic, OpenAI, Microsoft Azure, Perplexity AI):</strong> Transkriptinhalte
           werden zur KI-Verarbeitung an den vom Workspace-Betreiber gewählten Anbieter übertragen.
           Die vencly GmbH ist in diesem Verhältnis kein Verantwortlicher für die Verarbeitung durch den

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 
-// Allow up to 60s for LLM processing on Vercel
+// Allow up to 60s for LLM processing
 export const maxDuration = 60
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {

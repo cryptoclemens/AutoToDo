@@ -34,6 +34,10 @@ export async function processWithAnthropic(
     if (msg.includes('529') || msg.includes('overloaded')) {
       await new Promise(r => setTimeout(r, 2000))
       raw = await makeRequest()
+    } else if (msg.includes('credit balance is too low') || msg.includes('billing') || msg.includes('insufficient_quota')) {
+      throw new Error('Ihr Anthropic API-Guthaben ist aufgebraucht. Bitte aktualisieren Sie Ihren API-Key oder laden Sie Credits nach unter Einstellungen → KI.')
+    } else if (msg.includes('401') || msg.includes('authentication') || msg.includes('invalid x-api-key') || msg.includes('invalid_api_key')) {
+      throw new Error('Der hinterlegte Anthropic API-Key ist ungültig. Bitte unter Einstellungen → KI aktualisieren.')
     } else {
       throw err
     }

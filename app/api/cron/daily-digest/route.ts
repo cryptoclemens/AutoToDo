@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 
-// Vercel cron runs at 16:00 UTC (= 17:00 CET / 18:00 CEST, Mo–Fr)
-// vercel.json: { "crons": [{ "path": "/api/cron/daily-digest", "schedule": "0 16 * * 1-5" }] }
+// Cron runs at 16:00 UTC (= 17:00 CET / 18:00 CEST, Mo-Fr) via host crontab
 
 const STATUS_LABELS: Record<string, string> = {
   offen: 'Offen',
@@ -136,7 +135,7 @@ function buildDigestEmail(
 }
 
 export async function GET(request: NextRequest) {
-  // Auth: CRON_SECRET (Vercel setzt dies automatisch in Produktion)
+  // Auth: CRON_SECRET (gesetzt in .env, aufgerufen via host crontab)
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {

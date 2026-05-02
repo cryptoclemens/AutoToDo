@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
       provider: body.provider,
       model: body.model,
       encrypted_api_key: encrypted,
+      key_preview: body.apiKey.slice(0, 4) + "..." + body.apiKey.slice(-4),
       endpoint: body.endpoint ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'workspace_id,role' })

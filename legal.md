@@ -219,13 +219,14 @@ Die Datenübermittlung erfolgt auf Grundlage von Art. 46 Abs. 2 lit. c DSGVO.
 
 ### 4. Auftragsverarbeiter
 
-**Vercel Inc.**, 340 Pine Street, Suite 701, San Francisco, CA 94104, USA
-Zweck: Hosting, CDN. Grundlage: Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO)
-Datenschutzrichtlinie: https://vercel.com/legal/privacy-policy
+**Hetzner Online GmbH**, Industriestr. 25, 91710 Gunzenhausen, Deutschland
+Zweck: Serverhosting (Dedicated Server). Serverstandort: Deutschland.
+Kein Drittlandtransfer. Verarbeitung auf Grundlage eines AVV (Art. 28 DSGVO).
+Datenschutzrichtlinie: https://www.hetzner.com/de/legal/privacy-policy
 
-**Supabase Inc.**
-Zweck: Datenbank, Authentifizierung, Storage. Serverstandort: EU (Frankfurt am Main).
-Datenschutzrichtlinie: https://supabase.com/privacy
+**Datenbank, Authentifizierung, Storage:** Self-hosted (Supabase Open Source)
+auf dem Hetzner-Server der vencly GmbH. Kein externer Auftragsverarbeiter;
+die Daten verlassen den Server der vencly GmbH nicht.
 
 **Zahlungsanbieter:** Mollie B.V., Keizersgracht 126, 1015 CW Amsterdam, Niederlande
 Datenschutzrichtlinie: https://www.mollie.com/de/privacy
@@ -330,7 +331,7 @@ Technische und organisatorische Maßnahmen (TOMs) gemäß Art. 32 DSGVO — Stan
 
 ### Serverstandort & Compliance
 
-- Datenbankserver: Frankfurt am Main, Deutschland (EU)
+- Applikations- und Datenbankserver: Hetzner, Deutschland (EU)
 - DSGVO-konformer Betrieb
 - Kein Tracking, keine Analyse-Cookies
 

@@ -28,7 +28,7 @@ export async function POST() {
   }
 
   const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) return NextResponse.json({ error: 'RESEND_API_KEY ist nicht gesetzt. Bitte in den Vercel Environment Variables hinterlegen.' }, { status: 500 })
+  if (!resendKey) return NextResponse.json({ error: 'RESEND_API_KEY ist nicht gesetzt. Bitte in der .env-Datei hinterlegen.' }, { status: 500 })
 
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://autotodo.vencly.com').replace(/\/$/, '')
   const displayName = (user.user_metadata?.full_name as string | undefined) || user.email
