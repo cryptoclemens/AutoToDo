@@ -75,3 +75,10 @@ Darkmode klappt nicht
 es wäre cool, wenn die KI automatisch auch mal die bestehenden LOP-Listen liest und geänderte Schreibweisen, z.B. Namen, automatisch für zukünftige Transskripte übernimmt
 
 ---
+## 2026-05-05 11:17:23 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+ich hätte gerne DeepSeek als AI-Einstellungsauswahl. Könnt ihr da eine Instanz anbieten
+
+---
