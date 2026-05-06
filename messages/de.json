@@ -258,7 +258,14 @@
       "copied": "Link kopiert.",
       "success": "{count} Einladung erstellt.",
       "successPlural": "{count} Einladungen erstellt.",
-      "errorNoEmail": "Bitte E-Mail-Adresse eingeben."
+      "errorNoEmail": "Bitte E-Mail-Adresse eingeben.",
+      "linkTitle": "Einladungslink generieren",
+      "linkHint": "Teile diesen Link mit beliebigen Personen – jeder kann ihn verwenden (7 Tage gültig).",
+      "generateLink": "Link generieren",
+      "linkGenerated": "Einladungslink erstellt.",
+      "linkExpiry": "Dieser Link ist 7 Tage gültig und kann von mehreren Personen verwendet werden.",
+      "revokeLink": "Link widerrufen",
+      "linkRevoked": "Einladungslink widerrufen."
     },
     "branding": {
       "logoTitle": "Workspace-Logo",

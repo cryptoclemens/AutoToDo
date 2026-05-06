@@ -257,7 +257,14 @@
       "copied": "Link copied.",
       "success": "{count} invitation created.",
       "successPlural": "{count} invitations created.",
-      "errorNoEmail": "Please enter an email address."
+      "errorNoEmail": "Please enter an email address.",
+      "linkTitle": "Generate invite link",
+      "linkHint": "Share this link with anyone – anyone can use it (valid for 7 days).",
+      "generateLink": "Generate link",
+      "linkGenerated": "Invite link created.",
+      "linkExpiry": "This link is valid for 7 days and can be used by multiple people.",
+      "revokeLink": "Revoke link",
+      "linkRevoked": "Invite link revoked."
     },
     "branding": {
       "logoTitle": "Workspace logo",

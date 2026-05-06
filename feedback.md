@@ -82,10 +82,11 @@ es wäre cool, wenn die KI automatisch auch mal die bestehenden LOP-Listen liest
 ich hätte gerne DeepSeek als AI-Einstellungsauswahl. Könnt ihr da eine Instanz anbieten
 
 ---
-## 2026-05-06 14:10:01 | ✨ Feature-Wunsch
+## 2026-05-06 14:10:01 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Neue Team-Mitglieder über Link einladen
+**Lösung:** Einladungslink-Funktion unter Einstellungen → Mitglieder. Admins können einen wiederverwendbaren Link generieren (7 Tage gültig, wählbare Rolle). Jeder mit dem Link kann dem Workspace beitreten ohne vorherige E-Mail-Einladung. Link kann widerrufen werden.
 
 ---

@@ -12,12 +12,25 @@ const schema = z.object({
   projectId: z.string().uuid().optional(),
 })
 
+const linkSchema = z.object({
+  workspaceId: z.string().uuid(),
+  role: z.enum(['editor', 'viewer', 'project_admin', 'workspace_admin']),
+  generateLink: z.literal(true),
+})
+
 export async function POST(request: NextRequest) {
   const authClient = createAuthClient()
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
   const body = await request.json()
+
+  // Route to generic link generation if generateLink flag is set
+  const linkParsed = linkSchema.safeParse(body)
+  if (linkParsed.success) {
+    return handleGenerateLink(request, linkParsed.data)
+  }
+
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
@@ -108,6 +121,55 @@ export async function POST(request: NextRequest) {
     count: inserted.length,
     tokens: inserted.map((i: { email: string; token: string }) => ({ email: i.email, token: i.token })),
   })
+}
+
+/** Generate a generic reusable invite link (no email required) */
+async function handleGenerateLink(
+  _req: NextRequest,
+  data: { workspaceId: string; role: string; generateLink: true }
+) {
+  const authClient = createAuthClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', data.workspaceId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || !['workspace_owner', 'workspace_admin'].includes((member as { role: string }).role)) {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
+  const token = randomBytes(32).toString('hex')
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
+  const { data: inserted, error } = await supabase
+    .from('invitations')
+    .insert({
+      workspace_id: data.workspaceId,
+      email: null,
+      role: data.role,
+      token,
+      invited_by: user.id,
+      is_link: true,
+      expires_at: expiresAt,
+    })
+    .select('id, token')
+    .single()
+
+  if (error || !inserted) {
+    return NextResponse.json({ error: 'Link konnte nicht erstellt werden.' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true, token: inserted.token, id: inserted.id })
 }
 
 /** DELETE /api/invitations?id=<uuid> — Einladung widerrufen */

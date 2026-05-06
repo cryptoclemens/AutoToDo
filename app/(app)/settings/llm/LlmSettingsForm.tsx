@@ -55,6 +55,17 @@ const EXTRACTION_PROVIDERS = [
     keyPlaceholder: 'pplx-…',
     keyHint: 'Key aus perplexity.ai/settings/api',
   },
+  {
+    id: 'deepseek',
+    label: 'DeepSeek',
+    models: [
+      { id: 'deepseek-chat', label: 'DeepSeek-V3 (empfohlen, günstig)' },
+      { id: 'deepseek-reasoner', label: 'DeepSeek-R1 (komplexes Reasoning)' },
+    ],
+    needsEndpoint: false,
+    keyPlaceholder: 'sk-…',
+    keyHint: 'Key aus platform.deepseek.com',
+  },
 ]
 
 const TRANSCRIPTION_PROVIDERS = [

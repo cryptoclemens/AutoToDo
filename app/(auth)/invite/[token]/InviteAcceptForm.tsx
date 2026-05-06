@@ -14,15 +14,16 @@ interface Props {
   email: string
   role: string
   alreadyAccepted?: boolean
+  isGenericLink?: boolean
 }
 
-export default function InviteAcceptForm({ token, workspaceName, email, role, alreadyAccepted }: Props) {
+export default function InviteAcceptForm({ token, workspaceName, email: emailProp, role, alreadyAccepted, isGenericLink }: Props) {
   const router = useRouter()
+  const [email, setEmail] = useState(emailProp)
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  // Invited users who already have an account switch to login mode
   const [isLoginMode, setIsLoginMode] = useState(false)
 
   async function handleAccept(e: React.FormEvent) {
@@ -32,7 +33,6 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
 
     const supabase = createClient()
 
-    // Already-accepted: just sign in and go to dashboard
     if (alreadyAccepted) {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) { setError(signInError.message); setLoading(false); return }
@@ -49,7 +49,6 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
       })
 
       if (signUpError) {
-        // User already has an account → switch to login mode
         if (
           signUpError.message.toLowerCase().includes('already registered') ||
           signUpError.message.toLowerCase().includes('already been registered') ||
@@ -65,7 +64,6 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
         return
       }
     } else {
-      // Login mode: sign in with existing credentials
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
         setError(signInError.message)
@@ -74,8 +72,6 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
       }
     }
 
-    // Accept the invitation server-side.
-    // The accept route resolves the user by session cookie or email lookup (fallback).
     const res = await fetch('/api/invitations/accept', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -89,7 +85,6 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
       return
     }
 
-    // Invited users always go to dashboard — no workspace setup needed
     router.push('/dashboard')
     router.refresh()
   }
@@ -136,7 +131,10 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
       <CardHeader>
         <CardTitle>Einladung annehmen</CardTitle>
         <CardDescription>
-          Sie wurden eingeladen, <strong>{workspaceName}</strong> beizutreten ({role}).
+          {isGenericLink
+            ? <>Du wurdest eingeladen, <strong>{workspaceName}</strong> beizutreten ({role}). Registriere dich oder melde dich an.</>
+            : <>Sie wurden eingeladen, <strong>{workspaceName}</strong> beizutreten ({role}).</>
+          }
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -155,7 +153,17 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
           )}
           <div className="space-y-2">
             <Label>E-Mail</Label>
-            <Input value={email} disabled />
+            {isGenericLink ? (
+              <Input
+                type="email"
+                placeholder="deine@email.de"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+            ) : (
+              <Input value={email} disabled />
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">
@@ -183,6 +191,15 @@ export default function InviteAcceptForm({ token, workspaceName, email, role, al
               onClick={() => { setIsLoginMode(false); setError('') }}
             >
               Zurück zur Registrierung
+            </button>
+          )}
+          {!isLoginMode && (
+            <button
+              type="button"
+              className="text-xs text-gray-500 hover:underline w-full text-center"
+              onClick={() => { setIsLoginMode(true); setError('') }}
+            >
+              Bereits ein Konto? Anmelden
             </button>
           )}
         </form>

@@ -17,21 +17,23 @@ export default async function InvitePage({ params }: Props) {
 
   // Do NOT filter by accepted_at here — a previous failed attempt may have set it.
   // Handle the already-accepted case explicitly below.
+  const now = new Date().toISOString()
   const { data: invitation } = await serviceClient
     .from('invitations')
-    .select('id, workspace_id, project_id, email, role, invited_by, accepted_at, expires_at, workspaces(name, slug)')
+    .select('id, workspace_id, project_id, email, role, invited_by, accepted_at, expires_at, is_link, workspaces(name, slug)')
     .eq('token', params.token)
-    .gt('expires_at', new Date().toISOString())
+    .gt('expires_at', now)
     .maybeSingle() as {
       data: {
         id: string
         workspace_id: string
         project_id: string | null
-        email: string
+        email: string | null
         role: string
         invited_by: string | null
         accepted_at: string | null
         expires_at: string
+        is_link: boolean
         workspaces: { name: string; slug: string } | null
       } | null
     }
@@ -40,15 +42,14 @@ export default async function InvitePage({ params }: Props) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Already accepted → if logged in send to dashboard, else show form with hint
-  if (invitation.accepted_at) {
+  // Email-targeted invite that was already used → show hint or redirect
+  if (!invitation.is_link && invitation.accepted_at) {
     if (user) redirect('/dashboard')
-    // Show form in "already accepted" state — user can still log in and access
     return (
       <InviteAcceptForm
         token={params.token}
         workspaceName={invitation.workspaces.name}
-        email={invitation.email}
+        email={invitation.email ?? ''}
         role={invitation.role}
         alreadyAccepted
       />
@@ -58,7 +59,6 @@ export default async function InvitePage({ params }: Props) {
   // Logged-in user → accept immediately and redirect
   if (user) {
     if (invitation.project_id) {
-      // Project-scoped invite: add only to project_members
       await serviceClient.from('project_members').upsert({
         project_id: invitation.project_id,
         user_id: user.id,
@@ -66,7 +66,6 @@ export default async function InvitePage({ params }: Props) {
         joined_at: new Date().toISOString(),
       }, { onConflict: 'project_id,user_id' })
     } else {
-      // Workspace invite: add to workspace_members
       await serviceClient.from('workspace_members').upsert({
         workspace_id: invitation.workspace_id,
         user_id: user.id,
@@ -75,10 +74,13 @@ export default async function InvitePage({ params }: Props) {
       }, { onConflict: 'workspace_id,user_id' })
     }
 
-    await serviceClient
-      .from('invitations')
-      .update({ accepted_at: new Date().toISOString() })
-      .eq('id', invitation.id)
+    // Only mark email invites as accepted — link invites stay reusable
+    if (!invitation.is_link) {
+      await serviceClient
+        .from('invitations')
+        .update({ accepted_at: new Date().toISOString() })
+        .eq('id', invitation.id)
+    }
 
     redirect('/dashboard')
   }
@@ -87,8 +89,9 @@ export default async function InvitePage({ params }: Props) {
     <InviteAcceptForm
       token={params.token}
       workspaceName={invitation.workspaces.name}
-      email={invitation.email}
+      email={invitation.email ?? ''}
       role={invitation.role}
+      isGenericLink={invitation.is_link}
     />
   )
 }

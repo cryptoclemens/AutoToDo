@@ -1,6 +1,6 @@
 // LLM abstraction layer – types and interfaces
 
-export type LlmProvider = 'anthropic' | 'openai' | 'azure_openai' | 'perplexity'
+export type LlmProvider = 'anthropic' | 'openai' | 'azure_openai' | 'perplexity' | 'deepseek'
 
 export interface ExistingLopItem {
   id: string

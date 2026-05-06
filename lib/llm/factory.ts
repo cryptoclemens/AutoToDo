@@ -3,6 +3,7 @@ import { processWithAnthropic } from './anthropic'
 import { processWithOpenAI } from './openai'
 import { processWithAzureOpenAI } from './azure'
 import { processWithPerplexity } from './perplexity'
+import { processWithDeepseek } from './deepseek'
 
 export async function processTranscriptWithLlm(
   config: LlmConfig,
@@ -19,6 +20,8 @@ export async function processTranscriptWithLlm(
       return processWithAzureOpenAI(config, transcriptText, existingItems, members)
     case 'perplexity':
       return processWithPerplexity(config, transcriptText, existingItems, members)
+    case 'deepseek':
+      return processWithDeepseek(config, transcriptText, existingItems, members)
     default:
       throw new Error(`Unsupported LLM provider: ${(config as LlmConfig).provider}`)
   }
