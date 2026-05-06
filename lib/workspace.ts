@@ -33,7 +33,7 @@ export async function resolveWorkspace(
     .from('workspace_members')
     .select(`workspaces(${SELECT})`)
     .eq('user_id', userId)
-    .order('created_at', { ascending: true })
+    .order('joined_at', { ascending: true })
     .limit(1)
     .maybeSingle()
 
