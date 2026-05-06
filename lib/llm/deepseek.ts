@@ -7,6 +7,7 @@ export async function processWithDeepseek(
   transcriptText: string,
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
+  knownNames: string[] = [],
 ): Promise<ProcessTranscriptResult> {
   const client = new OpenAI({
     apiKey: config.apiKey,
@@ -19,7 +20,7 @@ export async function processWithDeepseek(
       max_tokens: 4096,
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) },
+        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames) },
       ],
     })
     const content = completion.choices[0]?.message?.content

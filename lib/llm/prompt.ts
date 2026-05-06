@@ -63,9 +63,10 @@ KONTEXT-NOTIZEN (context_notes):
 
 WICHTIG – Personennamen:
 - Im Abschnitt "Workspace-Mitglieder" sind die korrekten Namen aller Teammitglieder aufgelistet
-- Gleiche Namen aus dem Transkript mit dieser Liste ab (auch bei Tippfehlern, z.B. "Katarina" → "Katharina")
-- Verwende im Feld "responsible" immer den exakten Namen aus der Mitgliederliste
-- Für Personen die nicht in der Liste stehen (Externe, Kunden): übernehme den Namen aus dem Transkript
+- Im Abschnitt "Bekannte Personennamen" stehen externe Personen (Kunden, Dienstleister) mit ihrer etablierten Schreibweise aus früheren Transkripten
+- Gleiche Namen aus dem Transkript mit beiden Listen ab (auch bei Tippfehlern oder Abkürzungen, z.B. "Katarina" → "Katharina", "Hr. Müller" → "Thomas Müller")
+- Verwende im Feld "responsible" immer den exakten Namen aus einer der beiden Listen wenn ein Match erkennbar ist
+- Für Personen die in keiner Liste stehen: übernehme den Namen so wie er im Transkript steht
 
 Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
 }
@@ -74,6 +75,7 @@ export function buildUserPrompt(
   transcriptText: string,
   existingItems: Array<{ id: string; title: string; description: string | null; status: string }>,
   members: Array<{ display_name: string; email: string }>,
+  knownNames: string[] = [],
 ): string {
   const itemsList = existingItems.length > 0
     ? `\n\nBestehende LOP-Punkte:\n${existingItems.map(i => {
@@ -86,5 +88,12 @@ export function buildUserPrompt(
     ? `\n\nWorkspace-Mitglieder:\n${members.map(m => `- ${m.display_name} (${m.email})`).join('\n')}`
     : ''
 
-  return `Analysiere das folgende Meeting-Transkript und extrahiere alle Aufgaben und Statusänderungen.${itemsList}${membersList}\n\nTranskript:\n${transcriptText}`
+  // Names already used as "responsible" in previous transcripts — authoritative spellings
+  const memberNameSet = new Set(members.map(m => m.display_name.toLowerCase()))
+  const externalNames = knownNames.filter(n => !memberNameSet.has(n.toLowerCase()))
+  const knownNamesList = externalNames.length > 0
+    ? `\n\nBekannte Personennamen (aus früheren Transkripten – diese Schreibweise verwenden):\n${externalNames.map(n => `- ${n}`).join('\n')}`
+    : ''
+
+  return `Analysiere das folgende Meeting-Transkript und extrahiere alle Aufgaben und Statusänderungen.${itemsList}${membersList}${knownNamesList}\n\nTranskript:\n${transcriptText}`
 }

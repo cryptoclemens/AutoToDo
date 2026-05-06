@@ -7,6 +7,7 @@ export async function processWithAnthropic(
   transcriptText: string,
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
+  knownNames: string[] = [],
 ): Promise<ProcessTranscriptResult> {
   const client = new Anthropic({ apiKey: config.apiKey })
 
@@ -15,7 +16,7 @@ export async function processWithAnthropic(
       model: config.model,
       max_tokens: 8192,
       system: buildSystemPrompt(),
-      messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) }],
+      messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames) }],
     })
     if (message.stop_reason === 'max_tokens') {
       throw new Error('LLM-Antwort wurde abgeschnitten (Transkript zu lang). Bitte kürzen und erneut versuchen.')

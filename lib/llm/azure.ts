@@ -7,6 +7,7 @@ export async function processWithAzureOpenAI(
   transcriptText: string,
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
+  knownNames: string[] = [],
 ): Promise<ProcessTranscriptResult> {
   if (!config.endpoint) throw new Error('Azure Endpoint-URL ist erforderlich.')
 
@@ -24,7 +25,7 @@ export async function processWithAzureOpenAI(
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) },
+        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames) },
       ],
     })
     const content = completion.choices[0]?.message?.content

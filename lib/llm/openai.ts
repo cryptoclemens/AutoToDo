@@ -7,6 +7,7 @@ export async function processWithOpenAI(
   transcriptText: string,
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
+  knownNames: string[] = [],
 ): Promise<ProcessTranscriptResult> {
   const client = new OpenAI({ apiKey: config.apiKey })
 
@@ -17,7 +18,7 @@ export async function processWithOpenAI(
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members) },
+        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames) },
       ],
     })
     if (completion.choices[0]?.finish_reason === 'length') {

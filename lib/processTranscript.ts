@@ -100,11 +100,24 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     // Load existing LOP items for context (include description for dedup)
     const { data: existingItems } = await supabase
       .from('lop_items')
-      .select('id, title, description, status')
+      .select('id, title, description, status, responsible')
       .eq('project_id', transcript.project_id)
       .neq('status', 'abgeschlossen') as {
-        data: Array<{ id: string; title: string; description: string | null; status: string }> | null
+        data: Array<{ id: string; title: string; description: string | null; status: string; responsible: string | null }> | null
       }
+
+    // Collect known responsible names from ALL lop_items (including closed) as learned spellings
+    const { data: allResponsibles } = await supabase
+      .from('lop_items')
+      .select('responsible')
+      .eq('project_id', transcript.project_id)
+      .not('responsible', 'is', null) as {
+        data: Array<{ responsible: string }> | null
+      }
+
+    const knownNames = [...new Set(
+      (allResponsibles ?? []).map(r => r.responsible).filter(Boolean) as string[]
+    )]
 
     // Load workspace members for name matching
     const { data: memberRows } = await supabase
@@ -128,10 +141,10 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     // Process with LLM (with retry on JSON parse error)
     let result
     try {
-      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [], members)
+      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [], members, knownNames)
     } catch {
       await new Promise(r => setTimeout(r, 1500))
-      result = await processTranscriptWithLlm(config, transcriptText, [], members)
+      result = await processTranscriptWithLlm(config, transcriptText, [], members, knownNames)
     }
 
     // Apply actions
