@@ -82,3 +82,10 @@ es wäre cool, wenn die KI automatisch auch mal die bestehenden LOP-Listen liest
 ich hätte gerne DeepSeek als AI-Einstellungsauswahl. Könnt ihr da eine Instanz anbieten
 
 ---
+## 2026-05-06 14:10:01 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Neue Team-Mitglieder über Link einladen
+
+---
