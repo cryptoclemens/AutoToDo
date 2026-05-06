@@ -42,21 +42,45 @@ export default async function TranscriptsPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) redirect('/onboarding')
+  // Ensure user has at least one workspace (redirect to onboarding if not)
+  const resolvedWorkspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!resolvedWorkspace) redirect('/onboarding')
 
+  // Look up the project by ID without workspace filter — users with multiple workspaces
+  // can end up with the "wrong" workspace from the fallback, causing a false 404.
+  // We verify access explicitly via workspace_members / project_members below.
   const { data: project } = await supabase
-    .from('projects').select('id, name').eq('id', params.id).eq('workspace_id', workspace.id).single() as {
-      data: { id: string; name: string } | null
+    .from('projects').select('id, name, workspace_id').eq('id', params.id).single() as {
+      data: { id: string; name: string; workspace_id: string } | null
     }
   if (!project) notFound()
 
+  // Load the project's actual workspace (may differ from resolvedWorkspace)
+  const { data: workspaceData } = await supabase
+    .from('workspaces').select('id, name, slug, brand_color, logo_url')
+    .eq('id', project.workspace_id).single() as {
+      data: { id: string; name: string; slug: string; brand_color: string; logo_url: string | null } | null
+    }
+  if (!workspaceData) notFound()
+  const workspace = workspaceData
+
+  // Verify user has access: workspace member OR project member
   const { data: member } = await supabase
     .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle() as {
       data: { role: string } | null
     }
-  const canUpload = member?.role !== 'viewer'
+
+  let canUpload = member ? member.role !== 'viewer' : false
+  if (!member) {
+    const { data: projMember } = await supabase
+      .from('project_members').select('role')
+      .eq('project_id', project.id).eq('user_id', user.id).maybeSingle() as {
+        data: { role: string } | null
+      }
+    if (!projMember) notFound()
+    canUpload = projMember!.role !== 'viewer'
+  }
 
   // Check if Notion integration is configured (silently fails if migration not yet applied)
   let notionConfigured = false

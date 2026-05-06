@@ -28,11 +28,12 @@ export async function resolveWorkspace(
     if (data) return data as WorkspaceRow
   }
 
-  // Fallback: first workspace the user belongs to
+  // Fallback: oldest workspace the user belongs to (deterministic across refreshes)
   const { data } = await supabase
     .from('workspace_members')
     .select(`workspaces(${SELECT})`)
     .eq('user_id', userId)
+    .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle()
 
