@@ -115,9 +115,9 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
         data: Array<{ responsible: string }> | null
       }
 
-    const knownNames = [...new Set(
+    const knownNames = Array.from(new Set(
       (allResponsibles ?? []).map(r => r.responsible).filter(Boolean) as string[]
-    )]
+    ))
 
     // Load workspace members for name matching
     const { data: memberRows } = await supabase
