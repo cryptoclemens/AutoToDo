@@ -83,7 +83,7 @@ async function appendFeedbackToGitHub(entry: {
 
   const repo = 'cryptoclemens/AutoToDo'
   const path = 'feedback.md'
-  const branch = process.env.GITHUB_FEEDBACK_BRANCH ?? 'claude/github-automated-access-WVPL6'
+  const branch = process.env.GITHUB_FEEDBACK_BRANCH ?? 'main'
   const apiBase = `https://api.github.com/repos/${repo}/contents/${path}`
   const authHeaders = {
     Authorization: `Bearer ${token}`,
