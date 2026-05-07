@@ -62,10 +62,9 @@ KONTEXT-NOTIZEN (context_notes):
 - Wenn keine Kontext-Infos vorhanden: leeres Array []
 
 WICHTIG – Personennamen:
-- Im Abschnitt "Workspace-Mitglieder" sind die korrekten Namen aller Teammitglieder aufgelistet
-- Im Abschnitt "Bekannte Personennamen" stehen externe Personen (Kunden, Dienstleister) mit ihrer etablierten Schreibweise aus früheren Transkripten
-- Gleiche Namen aus dem Transkript mit beiden Listen ab (auch bei Tippfehlern oder Abkürzungen, z.B. "Katarina" → "Katharina", "Hr. Müller" → "Thomas Müller")
-- Verwende im Feld "responsible" immer den exakten Namen aus einer der beiden Listen wenn ein Match erkennbar ist
+- Die Namen in "Workspace-Mitglieder" und "Bekannte Personennamen" sind die verbindlichen Schreibweisen — verwende sie EXAKT so wie angegeben, ohne Korrekturen
+- Gleiche Namen aus dem Transkript mit diesen Listen ab: z.B. wenn nur der Nachname genannt wird ("Müller"), eine Abkürzung ("Hr. M.") oder eine leicht andere Schreibweise — dann wähle den passenden Eintrag aus der Liste
+- Steht "Katarina" in der Liste, dann verwende "Katarina" — nicht "Katharina" oder eine andere Variante
 - Für Personen die in keiner Liste stehen: übernehme den Namen so wie er im Transkript steht
 
 Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
