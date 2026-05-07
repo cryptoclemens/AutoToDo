@@ -68,18 +68,20 @@ Darkmode klappt nicht
 **Lösung:** dark:-Varianten zu WorkspaceNav, App-Layout und LopTable hinzugefügt. ThemeProvider-Crash (fehlende bridge-Methode) separat gefixt.
 
 ---
-## 2026-04-20 10:37:33 | ✨ Feature-Wunsch
+## 2026-04-20 10:37:33 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 es wäre cool, wenn die KI automatisch auch mal die bestehenden LOP-Listen liest und geänderte Schreibweisen, z.B. Namen, automatisch für zukünftige Transskripte übernimmt
+**Lösung:** KI liest jetzt alle `responsible`-Felder aus bestehenden LOP-Punkten (inkl. abgeschlossener) und gibt diese als „Bekannte Personennamen" an den Prompt weiter. Workspace-Mitglieder werden separat aufgeführt. Beide Listen gelten als verbindliche Schreibweisen. Fix: Beispiel „Katarina → Katharina" aus Prompt entfernt – der Prompt stellt nun klar, dass Namen aus den Listen EXAKT so übernommen werden müssen.
 
 ---
-## 2026-05-05 11:17:23 | ✨ Feature-Wunsch
+## 2026-05-05 11:17:23 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 ich hätte gerne DeepSeek als AI-Einstellungsauswahl. Könnt ihr da eine Instanz anbieten
+**Lösung:** DeepSeek als BYOK-Provider implementiert (deepseek-chat, deepseek-reasoner). Nutzer hinterlegen ihren eigenen Key aus platform.deepseek.com. Migration 022 erweitert den DB-Constraint um „deepseek".
 
 ---
 ## 2026-05-06 14:10:01 | ✨ Feature-Wunsch | Status: bearbeitet
