@@ -61,7 +61,10 @@ export async function GET(request: NextRequest) {
   }
 
   const lopItems = [...(byUserId ?? []), ...byName]
-    .filter(i => i.title && i.title.trim().toLowerCase() !== 'eingefügter text')
+    .filter(i => {
+      const t = i.title?.trim().toLowerCase() ?? ''
+      return t !== '' && t !== 'eingefügter text' && t !== 'eingefuegter text'
+    })
 
   // Transkripte des Monats im Workspace/Projekt
   let txQuery = supabase
