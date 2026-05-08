@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const month = searchParams.get('month') // YYYY-MM
+  const projectId = searchParams.get('projectId') ?? null
   if (!month || !/^\d{4}-\d{2}$/.test(month)) {
     return NextResponse.json({ error: 'Parameter month (YYYY-MM) fehlt.' }, { status: 400 })
   }
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
   const end = `${month}-${String(endDate.getDate()).padStart(2, '0')}`
 
   // Fetch LOP items for this user in the month (updated within range)
-  const { data: lopItems } = await supabase
+  let lopQuery = supabase
     .from('lop_items')
     .select('title, updated_at, status')
     .eq('workspace_id', workspace.id)
@@ -38,15 +39,19 @@ export async function GET(request: NextRequest) {
     .gte('updated_at', `${start}T00:00:00`)
     .lte('updated_at', `${end}T23:59:59`)
     .order('updated_at', { ascending: true })
+  if (projectId) lopQuery = lopQuery.eq('project_id', projectId)
+  const { data: lopItems } = await lopQuery
 
   // Fetch transcripts with meeting_date in the month
-  const { data: transcripts } = await supabase
+  let txQuery = supabase
     .from('transcripts')
     .select('original_filename, meeting_date')
     .eq('workspace_id', workspace.id)
     .gte('meeting_date', start)
     .lte('meeting_date', end)
     .order('meeting_date', { ascending: true })
+  if (projectId) txQuery = txQuery.eq('project_id', projectId)
+  const { data: transcripts } = await txQuery
 
   // Group by date
   const days: Record<string, { lop: string[]; meetings: string[] }> = {}

@@ -34,9 +34,11 @@ function dayLabel(date: string): string {
 
 interface Props {
   onClose: () => void
+  projectId?: string
+  projectName?: string
 }
 
-export default function TaetigkeitsnachweisModal({ onClose }: Props) {
+export default function TaetigkeitsnachweisModal({ onClose, projectId, projectName }: Props) {
   const today = new Date()
   const initMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 
@@ -50,7 +52,10 @@ export default function TaetigkeitsnachweisModal({ onClose }: Props) {
   const load = useCallback(async (m: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/taetigkeitsnachweise?month=${m}`)
+      const url = projectId
+        ? `/api/taetigkeitsnachweise?month=${m}&projectId=${projectId}`
+        : `/api/taetigkeitsnachweise?month=${m}`
+      const res = await fetch(url)
       if (!res.ok) return
       const data: { days: Record<string, DayData> } = await res.json()
       setRawDays(data.days)
@@ -115,7 +120,9 @@ export default function TaetigkeitsnachweisModal({ onClose }: Props) {
         <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
           {/* Header */}
           <div className="tn-no-print flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 className="text-base font-semibold text-gray-900">Tätigkeitsnachweis</h2>
+            <h2 className="text-base font-semibold text-gray-900">
+              Tätigkeitsnachweis{projectName ? ` – ${projectName}` : ''}
+            </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
@@ -159,7 +166,9 @@ export default function TaetigkeitsnachweisModal({ onClose }: Props) {
 
           {/* Print header (only shown when printing) */}
           <div className="hidden print:block px-6 pt-4 pb-2">
-            <h1 className="text-lg font-bold">Tätigkeitsnachweis – {formatMonthLabel(month)}</h1>
+            <h1 className="text-lg font-bold">
+              Tätigkeitsnachweis{projectName ? ` – ${projectName}` : ''} – {formatMonthLabel(month)}
+            </h1>
           </div>
 
           {/* Table */}
