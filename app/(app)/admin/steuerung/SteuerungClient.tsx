@@ -60,6 +60,37 @@ export default function SteuerungClient() {
   const [kpisLoading, setKpisLoading] = useState(false)
   const [digestDiag, setDigestDiag] = useState<Record<string, unknown> | null>(null)
   const [digestTesting, setDigestTesting] = useState(false)
+  const [respNames, setRespNames] = useState<{ name: string; count: number }[]>([])
+  const [respFrom, setRespFrom] = useState('')
+  const [respTo, setRespTo] = useState('')
+  const [respMerging, setRespMerging] = useState(false)
+
+  const loadRespNames = useCallback(async () => {
+    const res = await fetch('/api/admin/responsible-names')
+    if (res.ok) setRespNames(await res.json())
+  }, [])
+
+  useEffect(() => { loadRespNames() }, [loadRespNames])
+
+  async function handleRespMerge() {
+    if (!respFrom || !respTo || respFrom === respTo) return
+    setRespMerging(true)
+    const res = await fetch('/api/admin/responsible-names', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: respFrom, to: respTo }),
+    })
+    if (res.ok) {
+      const { updated } = await res.json() as { updated: number }
+      toast.success(`${updated} LOP-Punkte aktualisiert.`)
+      setRespFrom('')
+      setRespTo('')
+      await loadRespNames()
+    } else {
+      toast.error('Zusammenführen fehlgeschlagen.')
+    }
+    setRespMerging(false)
+  }
 
   const loadCodes = useCallback(async () => {
     setLoading(true)
@@ -485,6 +516,78 @@ export default function SteuerungClient() {
           ) : null}
         </div>
       )}
+
+      {/* Verantwortliche normalisieren */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <h2 className="text-sm font-semibold text-gray-900 mb-1">Verantwortliche zusammenführen</h2>
+        <p className="text-xs text-gray-400 mb-4">
+          Namen-Aliase normalisieren – alle LOP-Punkte mit dem &quot;Von&quot;-Namen werden auf den &quot;Nach&quot;-Namen umgestellt.
+        </p>
+
+        {/* Namen-Übersicht */}
+        {respNames.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-5">
+            {respNames.map(r => (
+              <span
+                key={r.name}
+                className="inline-flex items-center gap-1.5 text-xs bg-gray-50 border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full cursor-pointer hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors"
+                onClick={() => setRespFrom(prev => prev === r.name ? '' : r.name)}
+                style={{ outline: respFrom === r.name ? '2px solid #3b82f6' : undefined }}
+              >
+                {r.name}
+                <span className="text-gray-400 font-medium">{r.count}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col gap-1 flex-1 min-w-36">
+            <label className="text-xs text-gray-400">Von</label>
+            <select
+              value={respFrom}
+              onChange={e => setRespFrom(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">– Name wählen –</option>
+              {respNames.map(r => (
+                <option key={r.name} value={r.name}>{r.name} ({r.count})</option>
+              ))}
+            </select>
+          </div>
+          <div className="pt-5 text-gray-400 text-lg">→</div>
+          <div className="flex flex-col gap-1 flex-1 min-w-36">
+            <label className="text-xs text-gray-400">Nach</label>
+            <select
+              value={respTo}
+              onChange={e => setRespTo(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">– Ziel wählen –</option>
+              {respNames.filter(r => r.name !== respFrom).map(r => (
+                <option key={r.name} value={r.name}>{r.name} ({r.count})</option>
+              ))}
+            </select>
+          </div>
+          <div className="pt-5">
+            <Button
+              onClick={handleRespMerge}
+              disabled={respMerging || !respFrom || !respTo}
+              variant="outline"
+              size="sm"
+              className="rounded-lg border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-40"
+            >
+              {respMerging ? 'Wird zusammengeführt…' : 'Zusammenführen'}
+            </Button>
+          </div>
+        </div>
+
+        {respFrom && respTo && (
+          <p className="mt-3 text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-lg">
+            {respNames.find(r => r.name === respFrom)?.count ?? 0} LOP-Punkte werden von &quot;{respFrom}&quot; auf &quot;{respTo}&quot; umgestellt.
+          </p>
+        )}
+      </div>
 
       {/* Digest-Diagnose */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">

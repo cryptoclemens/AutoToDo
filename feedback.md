@@ -135,11 +135,12 @@ Stauts Feld "in_Berarbeitung" durch "In Bearbeitung" ersetzen.
 **Lösung:** AdminOverviewClient und MergeSuggestionDialog zeigen jetzt "In Bearbeitung" statt des Rohwerts.
 
 ---
-## B-006 | 2026-05-07 11:50:25 | 🐛 Fehler | Status: offen
+## B-006 | 2026-05-07 11:50:25 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Verantwortlichkeiten unter "Markus" "Markus Wanzek I Plenum" zusammen mergen.
+**Lösung:** DB-Backfill: "Markus Wanzek I Plenum" und "Markus Wanzek" → "Markus" (20 LOP-Punkte). Admin-Steuerung: neues Tool "Verantwortliche zusammenführen" für zukünftige Alias-Normalisierung.
 
 ---
 ## F-011 | 2026-05-07 11:51:14 | ✨ Feature-Wunsch | Status: offen
