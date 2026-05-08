@@ -25,24 +25,44 @@ export async function GET(request: NextRequest) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
+  // Anzeigename des Nutzers für Fallback-Suche über responsible-Textfeld
+  const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
+  const displayName: string | null =
+    authUser?.user?.user_metadata?.full_name ?? authUser?.user?.user_metadata?.name ?? null
+
   const start = `${month}-01`
   const [y, m] = month.split('-').map(Number)
-  const endDate = new Date(y, m, 0) // last day of month
+  const endDate = new Date(y, m, 0)
   const end = `${month}-${String(endDate.getDate()).padStart(2, '0')}`
 
-  // Fetch LOP items for this user in the month (updated within range)
-  let lopQuery = supabase
-    .from('lop_items')
-    .select('title, updated_at, status')
-    .eq('workspace_id', workspace.id)
-    .eq('responsible_user_id', user.id)
-    .gte('updated_at', `${start}T00:00:00`)
-    .lte('updated_at', `${end}T23:59:59`)
-    .order('updated_at', { ascending: true })
-  if (projectId) lopQuery = lopQuery.eq('project_id', projectId)
-  const { data: lopItems } = await lopQuery
+  // LOP-Items: per responsible_user_id ODER per Anzeigename (Fallback für ältere Einträge)
+  const buildLopQuery = (matchCol: string, matchVal: string) => {
+    let q = supabase
+      .from('lop_items')
+      .select('title, updated_at')
+      .eq('workspace_id', workspace.id)
+      .eq(matchCol, matchVal)
+      .gte('updated_at', `${start}T00:00:00`)
+      .lte('updated_at', `${end}T23:59:59`)
+      .order('updated_at', { ascending: true })
+    if (projectId) q = q.eq('project_id', projectId)
+    return q
+  }
 
-  // Fetch transcripts with meeting_date in the month
+  const { data: byUserId } = await buildLopQuery('responsible_user_id', user.id)
+
+  // Fallback: responsible-Text enthält den Anzeigenamen (nur wenn kein responsible_user_id gesetzt)
+  let byName: { title: string; updated_at: string }[] = []
+  if (displayName) {
+    const { data } = await buildLopQuery('responsible', displayName)
+    // Deduplizieren: Items, die bereits per user_id gefunden wurden, ausschließen
+    const byUserIdDates = new Set((byUserId ?? []).map(i => i.updated_at.slice(0, 10) + '|' + i.title))
+    byName = (data ?? []).filter(i => !byUserIdDates.has(i.updated_at.slice(0, 10) + '|' + i.title))
+  }
+
+  const lopItems = [...(byUserId ?? []), ...byName]
+
+  // Transkripte des Monats im Workspace/Projekt
   let txQuery = supabase
     .from('transcripts')
     .select('original_filename, meeting_date')
@@ -53,7 +73,7 @@ export async function GET(request: NextRequest) {
   if (projectId) txQuery = txQuery.eq('project_id', projectId)
   const { data: transcripts } = await txQuery
 
-  // Group by date
+  // Nach Datum gruppieren
   const days: Record<string, { lop: string[]; meetings: string[] }> = {}
 
   const getOrCreate = (date: string) => {
@@ -61,18 +81,17 @@ export async function GET(request: NextRequest) {
     return days[date]
   }
 
-  for (const item of lopItems ?? []) {
+  for (const item of lopItems) {
     const date = item.updated_at.slice(0, 10)
     getOrCreate(date).lop.push(item.title)
   }
 
   for (const t of transcripts ?? []) {
     if (!t.meeting_date) continue
-    const date = t.meeting_date
     const name = t.original_filename
       ? t.original_filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
       : 'Meeting'
-    getOrCreate(date).meetings.push(name)
+    getOrCreate(t.meeting_date).meetings.push(name)
   }
 
   return NextResponse.json({ days })

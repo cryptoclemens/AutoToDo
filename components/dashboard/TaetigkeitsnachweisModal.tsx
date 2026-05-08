@@ -176,20 +176,19 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                         </td>
                         <td className="py-1.5 align-top">
                           <div className="relative">
-                            <input
-                              type="text"
+                            <textarea
                               maxLength={MAX_LEN}
                               autoComplete="off"
                               autoCorrect="off"
                               spellCheck={false}
-                              name={`tn-${date}`}
+                              rows={val.length > 80 ? 2 : 1}
                               value={val}
                               onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
-                              className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300"
+                              className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300 resize-none"
                               placeholder="–"
                             />
                             {remaining <= 40 && (
-                              <span className={`absolute right-1.5 top-1.5 text-xs tabular-nums ${remaining <= 10 ? 'text-red-400' : 'text-amber-400'}`}>
+                              <span className={`absolute right-1.5 bottom-1.5 text-xs tabular-nums ${remaining <= 10 ? 'text-red-400' : 'text-amber-400'}`}>
                                 {remaining}
                               </span>
                             )}
