@@ -60,11 +60,7 @@ export async function GET(request: NextRequest) {
     byName = (data ?? []).filter(i => !byUserIdDates.has(i.updated_at.slice(0, 10) + '|' + i.title))
   }
 
-  const lopItems = [...(byUserId ?? []), ...byName]
-    .filter(i => {
-      const t = i.title?.trim().toLowerCase() ?? ''
-      return t !== '' && t !== 'eingefügter text' && t !== 'eingefuegter text'
-    })
+  const lopItems = [...(byUserId ?? []), ...byName].filter(i => i.title?.trim())
 
   // Transkripte des Monats im Workspace/Projekt
   let txQuery = supabase
@@ -90,14 +86,11 @@ export async function GET(request: NextRequest) {
     getOrCreate(date).lop.push(item.title)
   }
 
-  const PLACEHOLDER = /^eingef[uü]egter\s*text$/i
-
   for (const t of transcripts ?? []) {
     if (!t.meeting_date) continue
     const name = t.original_filename
       ? t.original_filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
       : 'Meeting'
-    if (PLACEHOLDER.test(name.trim())) continue
     getOrCreate(t.meeting_date).meetings.push(name)
   }
 

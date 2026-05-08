@@ -10,7 +10,7 @@ interface DayData {
 const MAX_LEN = 200
 
 function combine(day: DayData): string {
-  const parts = [...day.lop, ...day.meetings].filter(Boolean)
+  const parts = (day.lop.length > 0 ? day.lop : day.meetings).filter(Boolean)
   if (parts.length === 0) return ''
   const joined = parts.join('; ')
   return joined.length <= MAX_LEN ? joined : joined.slice(0, MAX_LEN - 1).trimEnd() + '…'
