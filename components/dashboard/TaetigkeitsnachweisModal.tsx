@@ -49,6 +49,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
   const [loading, setLoading] = useState(false)
   const [rawDays, setRawDays] = useState<Record<string, DayData>>({})
   const [fields, setFields] = useState<Record<string, string>>({})
+  const [editingDate, setEditingDate] = useState<string | null>(null)
 
   const load = useCallback(async (m: string) => {
     setLoading(true)
@@ -175,19 +176,26 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                           {dayLabel(date)}
                         </td>
                         <td className="py-1.5 align-top">
-                          <div className="relative">
-                            <textarea
-                              maxLength={MAX_LEN}
-                              autoComplete="off"
-                              autoCorrect="off"
-                              spellCheck={false}
-                              rows={val.length > 80 ? 2 : 1}
-                              value={val}
-                              onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
-                              className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300 resize-none"
-                              placeholder="–"
-                            />
-                            {remaining <= 40 && (
+                          <div className="relative" onClick={() => setEditingDate(date)}>
+                            {editingDate === date ? (
+                              <textarea
+                                maxLength={MAX_LEN}
+                                autoComplete="off"
+                                autoCorrect="off"
+                                spellCheck={false}
+                                rows={val.length > 80 ? 2 : 1}
+                                value={val}
+                                autoFocus
+                                onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
+                                onBlur={() => setEditingDate(null)}
+                                className="w-full text-xs bg-white border border-blue-300 rounded px-1.5 py-1 focus:outline-none text-gray-800 resize-none"
+                              />
+                            ) : (
+                              <div className="w-full text-xs px-1.5 py-1 rounded border border-transparent group-hover:border-gray-200 text-gray-700 cursor-text min-h-[24px] whitespace-pre-wrap break-words">
+                                {val || <span className="text-gray-300">–</span>}
+                              </div>
+                            )}
+                            {editingDate === date && remaining <= 40 && (
                               <span className={`absolute right-1.5 bottom-1.5 text-xs tabular-nums ${remaining <= 10 ? 'text-red-400' : 'text-amber-400'}`}>
                                 {remaining}
                               </span>
