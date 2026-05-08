@@ -1,0 +1,74 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
+import { resolveWorkspace } from '@/lib/workspace'
+
+export async function GET(request: NextRequest) {
+  const authClient = createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
+
+  const { searchParams } = new URL(request.url)
+  const month = searchParams.get('month') // YYYY-MM
+  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+    return NextResponse.json({ error: 'Parameter month (YYYY-MM) fehlt.' }, { status: 400 })
+  }
+
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const slug = headers().get('x-workspace-slug') ?? ''
+  const workspace = await resolveWorkspace(supabase, user.id, slug)
+  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+
+  const start = `${month}-01`
+  const [y, m] = month.split('-').map(Number)
+  const endDate = new Date(y, m, 0) // last day of month
+  const end = `${month}-${String(endDate.getDate()).padStart(2, '0')}`
+
+  // Fetch LOP items for this user in the month (updated within range)
+  const { data: lopItems } = await supabase
+    .from('lop_items')
+    .select('title, updated_at, status')
+    .eq('workspace_id', workspace.id)
+    .eq('responsible_user_id', user.id)
+    .gte('updated_at', `${start}T00:00:00`)
+    .lte('updated_at', `${end}T23:59:59`)
+    .order('updated_at', { ascending: true })
+
+  // Fetch transcripts with meeting_date in the month
+  const { data: transcripts } = await supabase
+    .from('transcripts')
+    .select('original_filename, meeting_date')
+    .eq('workspace_id', workspace.id)
+    .gte('meeting_date', start)
+    .lte('meeting_date', end)
+    .order('meeting_date', { ascending: true })
+
+  // Group by date
+  const days: Record<string, { lop: string[]; meetings: string[] }> = {}
+
+  const getOrCreate = (date: string) => {
+    if (!days[date]) days[date] = { lop: [], meetings: [] }
+    return days[date]
+  }
+
+  for (const item of lopItems ?? []) {
+    const date = item.updated_at.slice(0, 10)
+    getOrCreate(date).lop.push(item.title)
+  }
+
+  for (const t of transcripts ?? []) {
+    if (!t.meeting_date) continue
+    const date = t.meeting_date
+    const name = t.original_filename
+      ? t.original_filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
+      : 'Meeting'
+    getOrCreate(date).meetings.push(name)
+  }
+
+  return NextResponse.json({ days })
+}

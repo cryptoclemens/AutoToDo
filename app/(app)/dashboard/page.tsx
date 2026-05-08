@@ -9,6 +9,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { getEffectiveBranding } from '@/lib/branding'
+import TaetigkeitsnachweisButton from '@/components/dashboard/TaetigkeitsnachweisButton'
 
 export default async function DashboardPage() {
   const authClient = createClient()
@@ -161,13 +162,16 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{wsMember ? workspace.name : 'Projektmitglied'}</p>
         </div>
-        {wsMember && (
-          <Link href="/projects/new">
-            <Button style={{ backgroundColor: 'var(--brand)' }}>
-              + {t('newProject')}
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <TaetigkeitsnachweisButton />
+          {wsMember && (
+            <Link href="/projects/new">
+              <Button style={{ backgroundColor: 'var(--brand)' }}>
+                + {t('newProject')}
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Statistik-Karten */}
