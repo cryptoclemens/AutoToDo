@@ -5,6 +5,15 @@
 
 ---
 
+## Feature-Updates auf dem Dashboard
+
+Bei jedem neuen Feature (F-xxx) **immer** einen Eintrag in `components/dashboard/DashboardUpdates.tsx` ergänzen:
+- Ganz oben in das `UPDATES`-Array einfügen (neueste zuerst)
+- Felder: `id` (z.B. `'F-015'`), `date` (deutsches Format), `title` (kurzer Name), `description` (1 Satz, was der Nutzer damit tun kann)
+- Kein Code, keine technischen Details – nutzerorientiert formulieren
+
+---
+
 ## Build & Validation (Projekt-spezifisch)
 
 `npm run build` schlägt lokal fehl wegen fehlendem Internetzugang (Google Fonts).

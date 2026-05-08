@@ -1,0 +1,114 @@
+'use client'
+
+import { useState } from 'react'
+
+interface Update {
+  id: string
+  date: string
+  title: string
+  description: string
+}
+
+// Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
+const UPDATES: Update[] = [
+  {
+    id: 'F-014',
+    date: '08.05.2026',
+    title: 'Tagesplanung',
+    description: 'Klemmbrett-Icon in der Navigation öffnet deine tägliche Planung. Beim Starten einer Aufnahme erscheint ein Stand-up-Hinweis. Der Tätigkeitsnachweis übernimmt den gespeicherten Tagesplan automatisch.',
+  },
+  {
+    id: 'F-013',
+    date: '08.05.2026',
+    title: 'Tätigkeitsnachweis',
+    description: 'Button auf jeder LOP-Liste zeigt eine monatstabellare Übersicht deiner Tätigkeiten – vorausgefüllt aus LOP-Punkten, editierbar, druckbar als PDF.',
+  },
+  {
+    id: 'F-012',
+    date: '07.05.2026',
+    title: 'Dashboard-Auswertungen',
+    description: 'Fortschritt pro Person und wöchentliche Burn-Rate – eingeklappt unter „Auswertungen" auf dem Dashboard.',
+  },
+  {
+    id: 'F-009',
+    date: '07.05.2026',
+    title: 'Co-Verantwortliche',
+    description: 'LOP-Punkte können mehrere Verantwortliche haben – im Bearbeiten-Dialog unter dem Hauptverantwortlichen.',
+  },
+  {
+    id: 'F-008',
+    date: '06.05.2026',
+    title: 'Einladungslink',
+    description: 'Neue Mitglieder per Link einladen – ohne E-Mail. Unter Einstellungen → Mitglieder, Gültigkeit 7 Tage.',
+  },
+  {
+    id: 'F-007',
+    date: '05.05.2026',
+    title: 'DeepSeek als KI-Anbieter',
+    description: 'DeepSeek (deepseek-chat, deepseek-reasoner) als BYOK-Option in den KI-Einstellungen verfügbar.',
+  },
+]
+
+const INITIAL_VISIBLE = 3
+
+export default function DashboardUpdates() {
+  const [open, setOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+
+  const visible = showAll ? UPDATES : UPDATES.slice(0, INITIAL_VISIBLE)
+
+  return (
+    <div className="mt-10 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors text-left"
+      >
+        <div className="flex items-center gap-2.5">
+          <span className="text-sm font-semibold text-gray-800">Updates</span>
+          <span className="text-xs text-white rounded-full px-2 py-0.5 font-medium" style={{ backgroundColor: 'var(--brand, #2563eb)' }}>
+            Neu
+          </span>
+          {!open && (
+            <span className="text-xs text-gray-400 hidden sm:inline">
+              {UPDATES[0].title} · {UPDATES[0].date}
+            </span>
+          )}
+        </div>
+        <svg
+          width="14" height="14" viewBox="0 0 14 14" fill="none"
+          className={`text-gray-400 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
+        >
+          <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 divide-y divide-gray-50">
+          {visible.map(u => (
+            <div key={u.id} className="flex gap-4 px-5 py-3.5">
+              <div className="shrink-0 pt-0.5">
+                <span className="text-xs font-mono text-gray-300">{u.id}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 mb-0.5">
+                  <span className="text-sm font-semibold text-gray-800">{u.title}</span>
+                  <span className="text-xs text-gray-400">{u.date}</span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">{u.description}</p>
+              </div>
+            </div>
+          ))}
+
+          {UPDATES.length > INITIAL_VISIBLE && (
+            <button
+              onClick={() => setShowAll(s => !s)}
+              className="w-full py-2.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              {showAll ? 'Weniger anzeigen' : `${UPDATES.length - INITIAL_VISIBLE} ältere Updates anzeigen`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

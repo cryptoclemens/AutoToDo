@@ -10,6 +10,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { getEffectiveBranding } from '@/lib/branding'
 import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics'
+import DashboardUpdates from '@/components/dashboard/DashboardUpdates'
 
 export default async function DashboardPage() {
   const authClient = createClient()
@@ -296,6 +297,8 @@ export default async function DashboardPage() {
           )})}
         </div>
       )}
+      <DashboardUpdates />
+
       {/* Archivierte Projekte */}
       {archivedProjects.length > 0 && (
         <div className="mt-10">
