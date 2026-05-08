@@ -12,6 +12,7 @@ import ContextNotes from '@/components/project/ContextNotes'
 import XlsxImportDialog from '@/components/projects/XlsxImportDialog'
 import { Button } from '@/components/ui/button'
 import TaetigkeitsnachweisButton from '@/components/dashboard/TaetigkeitsnachweisButton'
+import TagesplanungButton from '@/components/workspace/TagesplanungButton'
 
 interface Props {
   params: { id: string }
@@ -201,6 +202,7 @@ export default async function ProjectPage({ params }: Props) {
           )}
         </div>
         <div className="flex flex-wrap gap-2">
+          <TagesplanungButton size="sm" />
           <TaetigkeitsnachweisButton projectId={project.id} projectName={project.name} size="sm" />
           <Link href={`/projects/${project.id}/transcripts`}>
             <Button size="sm" style={{ backgroundColor: 'var(--brand)' }} className="text-white rounded-lg">
