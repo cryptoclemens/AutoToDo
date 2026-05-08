@@ -199,6 +199,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                         <input
                           type="text"
                           maxLength={100}
+                          autoComplete="off"
                           value={field1[date] ?? ''}
                           onChange={e => setField1(prev => ({ ...prev, [date]: e.target.value }))}
                           className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300"
@@ -212,6 +213,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                         <input
                           type="text"
                           maxLength={100}
+                          autoComplete="off"
                           value={field2[date] ?? ''}
                           onChange={e => setField2(prev => ({ ...prev, [date]: e.target.value }))}
                           className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300"
