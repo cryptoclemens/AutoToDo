@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   let suggestion = ''
   const todayPlan = (plans ?? []).find(p => p.date === date)
   if (!todayPlan?.text) {
-    let lopQ = supabase
+    const lopQ = supabase
       .from('lop_items')
       .select('title')
       .eq('workspace_id', workspace.id)
