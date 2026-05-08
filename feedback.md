@@ -84,6 +84,27 @@ ich hätte gerne DeepSeek als AI-Einstellungsauswahl. Könnt ihr da eine Instanz
 **Lösung:** DeepSeek als BYOK-Provider implementiert (deepseek-chat, deepseek-reasoner). Nutzer hinterlegen ihren eigenen Key aus platform.deepseek.com. Migration 022 erweitert den DB-Constraint um „deepseek".
 
 ---
+## 2026-05-02 08:56:42 | 🐛 Fehler | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Firmen- und LOP-Logo werden nicht mehr angezeigt
+
+---
+## 2026-05-02 09:15:02 | 🐛 Fehler | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Logos von Firmen und der Lop-Listen werden nicht angezeigt
+
+---
+## 2026-05-02 09:41:43 | 💬 Allgemein | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+geile App
+
+---
 ## 2026-05-06 14:10:01 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
