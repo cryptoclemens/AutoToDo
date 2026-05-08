@@ -121,11 +121,12 @@ Hinzufügen von Co-Verantwortlichen, wenn man zusammen an einem Task arbeitet. M
 **Lösung:** Neues Feld co_responsibles (JSONB) auf lop_items. Im LOP-Dialog: Workspace-Mitglieder per Dropdown hinzufügen, als Chips mit ×-Button angezeigt. Wird mit gespeichert.
 
 ---
-## F-010 | 2026-05-07 11:48:14 | ✨ Feature-Wunsch | Status: offen
+## F-010 | 2026-05-07 11:48:14 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Kontext Feld wird zu lang. Bitte immer nur die relevanten für den Tag/die Woche und nicht mehr relevante automatisch löschen.
+**Lösung:** GET-Route archiviert automatisch: abgelaufene Notizen (relevant_until < heute) sowie info/availability > 14 Tage und risk/decision > 30 Tage ohne Deadline. Im Header kurzer Hinweis wenn etwas bereinigt wurde.
 
 ---
 ## G-002 | 2026-05-07 11:49:00 | 💬 Allgemein | Status: bearbeitet

@@ -46,12 +46,20 @@ export default function ContextNotes({ projectId }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const [saving, setSaving] = useState(false)
+  const [autoArchived, setAutoArchived] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     fetch(`/api/projects/${projectId}/context-notes`)
       .then(r => r.ok ? r.json() : { notes: [] })
-      .then(d => { setNotes(d.notes ?? []); setLoaded(true) })
+      .then(d => {
+        setNotes(d.notes ?? [])
+        setLoaded(true)
+        if (d.autoArchived > 0) {
+          setAutoArchived(d.autoArchived)
+          setTimeout(() => setAutoArchived(0), 4000)
+        }
+      })
       .catch(() => setLoaded(true))
   }, [projectId])
 
@@ -123,6 +131,11 @@ export default function ContextNotes({ projectId }: Props) {
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-gray-800">Kontext</span>
           <span className="text-xs text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{active.length}</span>
+          {autoArchived > 0 && (
+            <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 animate-pulse">
+              {autoArchived} abgelaufen bereinigt
+            </span>
+          )}
         </div>
         <svg
           width="14" height="14" viewBox="0 0 14 14" fill="none"
