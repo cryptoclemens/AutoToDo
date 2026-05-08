@@ -38,14 +38,18 @@ export async function POST(request: NextRequest) {
 
   // DB-Speicherung (resilient – schlägt fehl wenn Migration 007 noch nicht angewendet)
   let savedToDb = false
+  let categorySeq = 0
   try {
-    const { error } = await supabase.from('feedback').insert({
+    const { data: row, error } = await supabase.from('feedback').insert({
       workspace_id: workspace?.id ?? null,
       user_id: user.id,
       message: parsed.data.message,
       category: parsed.data.category,
-    })
-    if (!error) savedToDb = true
+    }).select('category_seq').single()
+    if (!error) {
+      savedToDb = true
+      categorySeq = row?.category_seq ?? 0
+    }
   } catch {
     // Tabelle existiert noch nicht – ignorieren, GitHub-Fallback greift
   }
@@ -58,6 +62,7 @@ export async function POST(request: NextRequest) {
       category: parsed.data.category,
       userEmail: user.email ?? 'unbekannt',
       workspaceName: workspace?.name ?? 'unbekannt',
+      categorySeq,
     })
   } catch {
     // GitHub nicht erreichbar oder Token fehlt – ignorieren
@@ -69,7 +74,10 @@ export async function POST(request: NextRequest) {
     }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true })
+  const prefix = parsed.data.category === 'feature' ? 'F' : parsed.data.category === 'bug' ? 'B' : 'G'
+  const feedbackId = categorySeq > 0 ? `${prefix}-${String(categorySeq).padStart(3, '0')}` : undefined
+
+  return NextResponse.json({ ok: true, id: feedbackId })
 }
 
 async function appendFeedbackToGitHub(entry: {
@@ -77,6 +85,7 @@ async function appendFeedbackToGitHub(entry: {
   category: string
   userEmail: string
   workspaceName: string
+  categorySeq: number
 }): Promise<boolean> {
   const token = process.env.GITHUB_FEEDBACK_TOKEN
   if (!token) return false
@@ -106,8 +115,10 @@ async function appendFeedbackToGitHub(entry: {
 
   const ts = new Date().toISOString().replace('T', ' ').slice(0, 19)
   const label = CATEGORY_LABELS[entry.category] ?? entry.category
+  const prefix = entry.category === 'feature' ? 'F' : entry.category === 'bug' ? 'B' : 'G'
+  const idStr = entry.categorySeq > 0 ? `${prefix}-${String(entry.categorySeq).padStart(3, '0')} | ` : ''
   const newEntry = [
-    `## ${ts} | ${label}`,
+    `## ${idStr}${ts} | ${label}`,
     `**Workspace:** ${entry.workspaceName}`,
     `**Nutzer:** ${entry.userEmail}`,
     ``,
