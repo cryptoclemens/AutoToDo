@@ -65,6 +65,12 @@ const STATUS_STYLES: Record<string, string> = {
   abgeschlossen: 'bg-green-50 text-green-700',
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  offen: 'Offen',
+  in_bearbeitung: 'In Bearbeitung',
+  abgeschlossen: 'Abgeschlossen',
+}
+
 function fmtDate(s: string) {
   return new Date(s).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
@@ -181,7 +187,7 @@ export default function AdminOverviewClient() {
                         <div>
                           <span className="text-gray-800 text-xs font-medium truncate block max-w-[240px]">{item.title}</span>
                           <span className={`text-xs px-1.5 py-0.5 rounded-full ${STATUS_STYLES[item.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                            {item.status.replace('_', ' ')}
+                            {STATUS_LABELS[item.status] ?? item.status}
                           </span>
                           {item.responsible && (
                             <span className="ml-1.5 text-xs text-gray-400">→ {item.responsible}</span>

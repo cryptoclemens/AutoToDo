@@ -127,11 +127,12 @@ Hinzufügen von Co-Verantwortlichen, wenn man zusammen an einem Task arbeitet. M
 Kontext Feld wird zu lang. Bitte immer nur die relevanten für den Tag/die Woche und nicht mehr relevante automatisch löschen.
 
 ---
-## G-002 | 2026-05-07 11:49:00 | 💬 Allgemein | Status: offen
+## G-002 | 2026-05-07 11:49:00 | 💬 Allgemein | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Stauts Feld "in_Berarbeitung" durch "In Bearbeitung" ersetzen.
+**Lösung:** AdminOverviewClient und MergeSuggestionDialog zeigen jetzt "In Bearbeitung" statt des Rohwerts.
 
 ---
 ## B-006 | 2026-05-07 11:50:25 | 🐛 Fehler | Status: offen

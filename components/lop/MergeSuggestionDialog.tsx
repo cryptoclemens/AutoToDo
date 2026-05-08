@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button'
 import type { SimilarPair } from '@/lib/similarity'
 import type { LopItem } from './LopItemDialog'
 
+const STATUS_LABELS: Record<string, string> = {
+  offen: 'Offen',
+  in_bearbeitung: 'In Bearbeitung',
+  abgeschlossen: 'Abgeschlossen',
+}
+
 interface Props {
   pairs: SimilarPair[]
   items: LopItem[]
@@ -93,7 +99,7 @@ export default function MergeSuggestionDialog({ pairs, items, onMerge, onDismiss
                   </span>
                 )}
                 <span className="text-xs text-gray-400 bg-white border border-gray-100 px-2 py-0.5 rounded-full">
-                  {item.status}
+                  {STATUS_LABELS[item.status] ?? item.status}
                 </span>
               </div>
               <Button
