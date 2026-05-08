@@ -244,7 +244,15 @@
       "passwordSuccess": "Password changed successfully.",
       "passwordError": "Error changing password.",
       "passwordMin": "Password must be at least 8 characters.",
-      "passwordMismatch": "Passwords do not match."
+      "passwordMismatch": "Passwords do not match.",
+      "displayNameTitle": "Display Name",
+      "displayNameLabel": "Name",
+      "displayNameHint": "This is how you appear in LOP items and transcripts.",
+      "displayNameSaving": "Saving…",
+      "displayNameSave": "Save",
+      "displayNameSuccess": "Display name saved.",
+      "displayNameError": "Failed to save display name.",
+      "displayNameEmpty": "Display name must not be empty."
     },
     "invite": {
       "title": "Invite member",

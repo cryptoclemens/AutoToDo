@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,15 @@ export function AccountSettings({ currentEmail }: Props) {
   const [confirmPw, setConfirmPw] = useState('')
   const [savingEmail, setSavingEmail] = useState(false)
   const [savingPw, setSavingPw] = useState(false)
+  const [displayName, setDisplayName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      const name = data.user?.user_metadata?.full_name ?? data.user?.user_metadata?.name ?? ''
+      setDisplayName(name)
+    })
+  }, [])
 
   async function handleEmailSave(e: React.FormEvent) {
     e.preventDefault()
@@ -33,6 +42,22 @@ export function AccountSettings({ currentEmail }: Props) {
       toast.error(err instanceof Error ? err.message : ts('account.emailError'))
     } finally {
       setSavingEmail(false)
+    }
+  }
+
+  async function handleDisplayNameSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!displayName.trim()) { toast.error(ts('account.displayNameEmpty')); return }
+    setSavingName(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ data: { full_name: displayName.trim() } })
+      if (error) throw error
+      toast.success(ts('account.displayNameSuccess'))
+    } catch {
+      toast.error(ts('account.displayNameError'))
+    } finally {
+      setSavingName(false)
     }
   }
 
@@ -57,6 +82,28 @@ export function AccountSettings({ currentEmail }: Props) {
 
   return (
     <div className="space-y-6 max-w-lg">
+      {/* Anzeigename */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">{ts('account.displayNameTitle')}</h2>
+        <form onSubmit={handleDisplayNameSave} className="space-y-3">
+          <div className="space-y-1">
+            <Label className="text-xs">{ts('account.displayNameLabel')}</Label>
+            <Input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              required
+              className="text-sm"
+              placeholder="z.B. Markus"
+            />
+            <p className="text-xs text-gray-400">{ts('account.displayNameHint')}</p>
+          </div>
+          <Button type="submit" size="sm" disabled={savingName || !displayName.trim()}>
+            {savingName ? ts('account.displayNameSaving') : ts('account.displayNameSave')}
+          </Button>
+        </form>
+      </div>
+
       {/* E-Mail */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">{ts('account.emailTitle')}</h2>

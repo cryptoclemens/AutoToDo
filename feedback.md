@@ -143,11 +143,12 @@ Verantwortlichkeiten unter "Markus" "Markus Wanzek I Plenum" zusammen mergen.
 **Lösung:** DB-Backfill: "Markus Wanzek I Plenum" und "Markus Wanzek" → "Markus" (20 LOP-Punkte). Admin-Steuerung: neues Tool "Verantwortliche zusammenführen" für zukünftige Alias-Normalisierung.
 
 ---
-## F-011 | 2026-05-07 11:51:14 | ✨ Feature-Wunsch | Status: offen
+## F-011 | 2026-05-07 11:51:14 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Mein eigenes Profil ändern -> Ich will mein Anzeigename "Markus Wanzek I Plenum" ändern zu Markus
+**Lösung:** Neues Feld "Anzeigename" im Konto-Tab der Einstellungen. Name wird in user_metadata.full_name gespeichert und gilt für LOP-Punkte und Transkripte.
 
 ---
 ## F-012 | 2026-05-07 11:52:21 | ✨ Feature-Wunsch | Status: offen
