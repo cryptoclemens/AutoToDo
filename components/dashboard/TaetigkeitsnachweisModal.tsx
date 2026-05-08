@@ -7,10 +7,13 @@ interface DayData {
   meetings: string[]
 }
 
-function truncate(parts: string[], maxLen: number): string {
+const MAX_LEN = 200
+
+function combine(day: DayData): string {
+  const parts = [...day.lop, ...day.meetings].filter(Boolean)
   if (parts.length === 0) return ''
   const joined = parts.join('; ')
-  return joined.length <= maxLen ? joined : joined.slice(0, maxLen - 1).trimEnd() + '…'
+  return joined.length <= MAX_LEN ? joined : joined.slice(0, MAX_LEN - 1).trimEnd() + '…'
 }
 
 function formatMonthLabel(month: string): string {
@@ -45,9 +48,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
   const [month, setMonth] = useState(initMonth)
   const [loading, setLoading] = useState(false)
   const [rawDays, setRawDays] = useState<Record<string, DayData>>({})
-  // field1 = LOP-Tätigkeiten, field2 = Meetings – beide editierbar
-  const [field1, setField1] = useState<Record<string, string>>({})
-  const [field2, setField2] = useState<Record<string, string>>({})
+  const [fields, setFields] = useState<Record<string, string>>({})
 
   const load = useCallback(async (m: string) => {
     setLoading(true)
@@ -59,19 +60,15 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
       if (!res.ok) return
       const data: { days: Record<string, DayData> } = await res.json()
       setRawDays(data.days)
-      // Pre-populate editable fields from API data
-      const f1: Record<string, string> = {}
-      const f2: Record<string, string> = {}
+      const f: Record<string, string> = {}
       for (const [date, day] of Object.entries(data.days)) {
-        f1[date] = truncate(day.lop, 100)
-        f2[date] = truncate(day.meetings, 100)
+        f[date] = combine(day)
       }
-      setField1(f1)
-      setField2(f2)
+      setFields(f)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [projectId])
 
   useEffect(() => { load(month) }, [month, load])
 
@@ -86,17 +83,10 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
     setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
   }
 
-  const days = daysInMonth(month)
-  // Only show days that have data or are in rawDays
-  const activeDays = days.filter(d => rawDays[d] || field1[d] || field2[d])
-
-  function handlePrint() {
-    window.print()
-  }
+  const activeDays = daysInMonth(month).filter(d => rawDays[d] || fields[d])
 
   return (
     <>
-      {/* Print styles */}
       <style>{`
         @media print {
           body > *:not(#tn-print-root) { display: none !important; }
@@ -106,18 +96,11 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
         }
       `}</style>
 
-      {/* Backdrop */}
-      <div
-        className="tn-no-print fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="tn-no-print fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
-      <div
-        id="tn-print-root"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-      >
-        <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+      <div id="tn-print-root" className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
           {/* Header */}
           <div className="tn-no-print flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h2 className="text-base font-semibold text-gray-900">
@@ -132,10 +115,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
 
           {/* Month nav */}
           <div className="tn-no-print flex items-center gap-3 px-6 py-3 border-b border-gray-50">
-            <button
-              onClick={prevMonth}
-              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
-            >
+            <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -143,17 +123,14 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
             <span className="text-sm font-medium text-gray-800 min-w-[140px] text-center">
               {formatMonthLabel(month)}
             </span>
-            <button
-              onClick={nextMonth}
-              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
-            >
+            <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
             <div className="ml-auto">
               <button
-                onClick={handlePrint}
+                onClick={() => window.print()}
                 className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -164,7 +141,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
             </div>
           </div>
 
-          {/* Print header (only shown when printing) */}
+          {/* Print-only header */}
           <div className="hidden print:block px-6 pt-4 pb-2">
             <h1 className="text-lg font-bold">
               Tätigkeitsnachweis{projectName ? ` – ${projectName}` : ''} – {formatMonthLabel(month)}
@@ -178,61 +155,56 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
             ) : activeDays.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-sm text-gray-400 gap-1">
                 <span>Keine Einträge in {formatMonthLabel(month)}</span>
-                <span className="text-xs">Tätigkeiten erscheinen hier, wenn du als Verantwortlicher in LOP-Punkten eingetragen bist.</span>
+                <span className="text-xs">Tätigkeiten erscheinen, wenn du als Verantwortlicher in LOP-Punkten eingetragen bist.</span>
               </div>
             ) : (
               <table className="tn-table w-full text-sm border-collapse">
                 <thead>
                   <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-2 pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap w-28">Tag</th>
-                    <th className="text-left py-2 pr-3 text-xs font-semibold text-gray-500">Tätigkeit 1 (LOP)</th>
-                    <th className="text-left py-2 text-xs font-semibold text-gray-500">Tätigkeit 2 (Meetings)</th>
+                    <th className="text-left py-2 pr-4 text-xs font-semibold text-gray-500 whitespace-nowrap w-28">Tag</th>
+                    <th className="text-left py-2 text-xs font-semibold text-gray-500">Tätigkeit</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {activeDays.map(date => (
-                    <tr key={date} className="border-b border-gray-50 hover:bg-gray-50/50 group">
-                      <td className="py-2 pr-3 text-xs text-gray-500 whitespace-nowrap align-top pt-2.5">
-                        {dayLabel(date)}
-                      </td>
-                      <td className="py-1.5 pr-3 align-top">
-                        <input
-                          type="text"
-                          maxLength={100}
-                          autoComplete="off"
-                          value={field1[date] ?? ''}
-                          onChange={e => setField1(prev => ({ ...prev, [date]: e.target.value }))}
-                          className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300"
-                          placeholder="–"
-                        />
-                        {(field1[date]?.length ?? 0) > 80 && (
-                          <span className="text-xs text-amber-500 ml-1">{100 - (field1[date]?.length ?? 0)}</span>
-                        )}
-                      </td>
-                      <td className="py-1.5 align-top">
-                        <input
-                          type="text"
-                          maxLength={100}
-                          autoComplete="off"
-                          value={field2[date] ?? ''}
-                          onChange={e => setField2(prev => ({ ...prev, [date]: e.target.value }))}
-                          className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300"
-                          placeholder="–"
-                        />
-                        {(field2[date]?.length ?? 0) > 80 && (
-                          <span className="text-xs text-amber-500 ml-1">{100 - (field2[date]?.length ?? 0)}</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {activeDays.map(date => {
+                    const val = fields[date] ?? ''
+                    const remaining = MAX_LEN - val.length
+                    return (
+                      <tr key={date} className="border-b border-gray-50 hover:bg-gray-50/50 group">
+                        <td className="py-2 pr-4 text-xs text-gray-500 whitespace-nowrap align-top pt-2.5">
+                          {dayLabel(date)}
+                        </td>
+                        <td className="py-1.5 align-top">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              maxLength={MAX_LEN}
+                              autoComplete="off"
+                              autoCorrect="off"
+                              spellCheck={false}
+                              name={`tn-${date}`}
+                              value={val}
+                              onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
+                              className="w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 focus:outline-none focus:border-blue-300 focus:bg-white group-hover:border-gray-200 transition-colors text-gray-800 placeholder:text-gray-300"
+                              placeholder="–"
+                            />
+                            {remaining <= 40 && (
+                              <span className={`absolute right-1.5 top-1.5 text-xs tabular-nums ${remaining <= 10 ? 'text-red-400' : 'text-amber-400'}`}>
+                                {remaining}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             )}
           </div>
 
-          {/* Footer hint */}
           <div className="tn-no-print px-6 py-3 border-t border-gray-50 text-xs text-gray-400">
-            Felder werden automatisch aus LOP-Punkten und Meetings befüllt und können bearbeitet werden.
+            Automatisch befüllt aus LOP-Punkten und Meetings – editierbar, max. {MAX_LEN} Zeichen.
           </div>
         </div>
       </div>
