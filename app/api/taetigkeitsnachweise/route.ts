@@ -39,12 +39,12 @@ export async function GET(request: NextRequest) {
   const buildLopQuery = (matchCol: string, matchVal: string) => {
     let q = supabase
       .from('lop_items')
-      .select('title, updated_at')
+      .select('title, created_at')
       .eq('workspace_id', workspace.id)
       .eq(matchCol, matchVal)
-      .gte('updated_at', `${start}T00:00:00`)
-      .lte('updated_at', `${end}T23:59:59`)
-      .order('updated_at', { ascending: true })
+      .gte('created_at', `${start}T00:00:00`)
+      .lte('created_at', `${end}T23:59:59`)
+      .order('created_at', { ascending: true })
     if (projectId) q = q.eq('project_id', projectId)
     return q
   }
@@ -52,12 +52,12 @@ export async function GET(request: NextRequest) {
   const { data: byUserId } = await buildLopQuery('responsible_user_id', user.id)
 
   // Fallback: responsible-Text enthält den Anzeigenamen (nur wenn kein responsible_user_id gesetzt)
-  let byName: { title: string; updated_at: string }[] = []
+  let byName: { title: string; created_at: string }[] = []
   if (displayName) {
     const { data } = await buildLopQuery('responsible', displayName)
     // Deduplizieren: Items, die bereits per user_id gefunden wurden, ausschließen
-    const byUserIdDates = new Set((byUserId ?? []).map(i => i.updated_at.slice(0, 10) + '|' + i.title))
-    byName = (data ?? []).filter(i => !byUserIdDates.has(i.updated_at.slice(0, 10) + '|' + i.title))
+    const byUserIdDates = new Set((byUserId ?? []).map(i => i.created_at.slice(0, 10) + '|' + i.title))
+    byName = (data ?? []).filter(i => !byUserIdDates.has(i.created_at.slice(0, 10) + '|' + i.title))
   }
 
   const lopItems = [...(byUserId ?? []), ...byName].filter(i => i.title?.trim())
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
   }
 
   for (const item of lopItems) {
-    const date = item.updated_at.slice(0, 10)
+    const date = item.created_at.slice(0, 10)
     getOrCreate(date).lop.push(item.title)
   }
 
