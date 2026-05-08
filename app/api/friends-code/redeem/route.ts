@@ -22,42 +22,46 @@ export async function POST(request: NextRequest) {
 
   const supabase = db()
 
-  // Look up the code
   const { data: friendsCode } = await supabase
     .from('friends_codes')
-    .select('id, code, redeemed_at')
+    .select('id, code, use_count, max_uses')
     .eq('code', normalizedCode)
     .maybeSingle() as {
-      data: { id: string; code: string; redeemed_at: string | null } | null
+      data: { id: string; code: string; use_count: number; max_uses: number } | null
     }
 
   if (!friendsCode) {
     return NextResponse.json({ error: 'Ungültiger Friends-Code.' }, { status: 404 })
   }
-  if (friendsCode.redeemed_at) {
-    return NextResponse.json({ error: 'Dieser Code wurde bereits eingelöst.' }, { status: 409 })
+  if (friendsCode.use_count >= friendsCode.max_uses) {
+    return NextResponse.json({ error: 'Dieser Code wurde bereits vollständig eingelöst.' }, { status: 409 })
   }
 
-  // Find the user's workspace
   const slug = headers().get('x-workspace-slug') ?? ''
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Kein Workspace gefunden.' }, { status: 404 })
 
-  // Upgrade workspace to 'team' plan
   await supabase
     .from('workspaces')
     .update({ plan: 'team', plan_expires_at: null })
     .eq('id', workspace.id)
 
-  // Mark code as redeemed
-  await supabase
-    .from('friends_codes')
-    .update({
+  const newCount = friendsCode.use_count + 1
+  const isExhausted = newCount >= friendsCode.max_uses
+  await supabase.from('friends_codes').update({
+    use_count: newCount,
+    ...(isExhausted ? {
       redeemed_at: new Date().toISOString(),
       redeemed_by_user_id: user.id,
       redeemed_workspace_id: workspace.id,
-    })
-    .eq('id', friendsCode.id)
+    } : {}),
+  }).eq('id', friendsCode.id)
+
+  await supabase.from('friends_code_redemptions').insert({
+    code_id: friendsCode.id,
+    redeemed_by_user_id: user.id,
+    redeemed_workspace_id: workspace.id,
+  })
 
   return NextResponse.json({ ok: true, plan: 'team' })
 }

@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 
+interface Redemption {
+  id: string
+  redeemed_at: string
+  redeemed_email: string | null
+  workspace_id: string | null
+  workspace_name: string | null
+}
+
 interface FriendsCode {
   id: string
   code: string
@@ -13,11 +21,14 @@ interface FriendsCode {
   redeemed_at: string | null
   redeemed_by_user_id: string | null
   redeemed_workspace_id: string | null
+  max_uses: number
+  use_count: number
   workspace_name: string | null
   redeemed_email: string | null
   lopCount: number | null
   transcriptCount: number | null
   lastActivity: string | null
+  redemptions: Redemption[]
 }
 
 interface WorkspaceKpis {
@@ -42,6 +53,8 @@ export default function SteuerungClient() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [newLabel, setNewLabel] = useState('')
+  const [newMaxUses, setNewMaxUses] = useState(1)
+  const [expandedCodes, setExpandedCodes] = useState<Set<string>>(new Set())
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null)
   const [kpis, setKpis] = useState<WorkspaceKpis | null>(null)
   const [kpisLoading, setKpisLoading] = useState(false)
@@ -62,12 +75,20 @@ export default function SteuerungClient() {
     const res = await fetch('/api/admin/friends-codes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label: newLabel.trim() || null }),
+      body: JSON.stringify({ label: newLabel.trim() || null, max_uses: newMaxUses }),
     })
     if (res.ok) {
       const code = await res.json() as FriendsCode
-      setCodes(prev => [{ ...code, workspace_name: null, redeemed_email: null }, ...prev])
+      setCodes(prev => [{
+        ...code,
+        max_uses: newMaxUses,
+        use_count: 0,
+        workspace_name: null,
+        redeemed_email: null,
+        redemptions: [],
+      }, ...prev])
       setNewLabel('')
+      setNewMaxUses(1)
       toast.success(`Code ${code.code} erstellt.`)
     } else {
       toast.error('Fehler beim Generieren.')
@@ -90,6 +111,14 @@ export default function SteuerungClient() {
     setKpisLoading(false)
   }
 
+  function toggleExpand(id: string) {
+    setExpandedCodes(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
   async function handleDigestTest() {
     setDigestTesting(true)
     setDigestDiag(null)
@@ -104,8 +133,8 @@ export default function SteuerungClient() {
     }
   }
 
-  const redeemed = codes.filter(c => c.redeemed_at)
-  const available = codes.filter(c => !c.redeemed_at)
+  const available = codes.filter(c => c.use_count < c.max_uses)
+  const redeemed = codes.filter(c => c.use_count >= c.max_uses)
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -121,6 +150,17 @@ export default function SteuerungClient() {
             className="text-sm flex-1"
             onKeyDown={e => { if (e.key === 'Enter') handleGenerate() }}
           />
+          <div className="flex items-center gap-2 shrink-0">
+            <label className="text-xs text-gray-500 whitespace-nowrap">Max. Einlösungen</label>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={newMaxUses}
+              onChange={e => setNewMaxUses(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+              className="text-sm w-16 text-center"
+            />
+          </div>
           <Button
             onClick={handleGenerate}
             disabled={generating}
@@ -150,6 +190,7 @@ export default function SteuerungClient() {
               <tr className="border-b border-gray-100 bg-gray-50/80 text-xs text-gray-400 uppercase tracking-wider">
                 <th className="px-6 py-2.5 text-left">Code</th>
                 <th className="px-6 py-2.5 text-left">Bezeichnung</th>
+                <th className="px-6 py-2.5 text-left">Einlösungen</th>
                 <th className="px-6 py-2.5 text-left">Erstellt</th>
                 <th className="px-6 py-2.5 w-24"></th>
               </tr>
@@ -159,6 +200,17 @@ export default function SteuerungClient() {
                 <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50/70">
                   <td className="px-6 py-3 font-mono font-semibold text-gray-900 tracking-wider">{c.code}</td>
                   <td className="px-6 py-3 text-gray-500">{c.label ?? <span className="text-gray-300">–</span>}</td>
+                  <td className="px-6 py-3">
+                    {c.max_uses === 1 ? (
+                      <span className="text-xs text-gray-400">Einmalig</span>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                        c.use_count > 0 ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {c.use_count}/{c.max_uses} genutzt
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-3 text-gray-400">{new Date(c.created_at).toLocaleDateString('de-DE')}</td>
                   <td className="px-6 py-3">
                     <Button
@@ -186,14 +238,13 @@ export default function SteuerungClient() {
           </h2>
         </div>
         {redeemed.length === 0 ? (
-          <div className="px-6 py-8 text-center text-gray-400 text-sm">Noch keine Codes eingelöst.</div>
+          <div className="px-6 py-8 text-center text-gray-400 text-sm">Noch keine Codes vollständig eingelöst.</div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/80 text-xs text-gray-400 uppercase tracking-wider">
                 <th className="px-6 py-2.5 text-left">Code</th>
-                <th className="px-6 py-2.5 text-left">Account</th>
-                <th className="px-6 py-2.5 text-left">Workspace</th>
+                <th className="px-6 py-2.5 text-left">Account / Workspace</th>
                 <th className="px-6 py-2.5 text-left">Eingelöst</th>
                 <th className="px-6 py-2.5 text-left">Nutzung</th>
                 <th className="px-6 py-2.5 text-left">Letzte Aktivität</th>
@@ -202,47 +253,116 @@ export default function SteuerungClient() {
             </thead>
             <tbody>
               {redeemed.map(c => {
+                const isMulti = c.max_uses > 1
                 const isActive = (c.lopCount ?? 0) > 0 || (c.transcriptCount ?? 0) > 0
+                const isExpanded = expandedCodes.has(c.id)
+
                 return (
-                  <tr
-                    key={c.id}
-                    className={`border-b border-gray-100 hover:bg-blue-50/40 transition-colors ${selectedWorkspaceId === c.redeemed_workspace_id ? 'bg-blue-50/60' : ''}`}
-                  >
-                    <td className="px-6 py-3 font-mono text-xs text-gray-500 tracking-wider">{c.code}</td>
-                    <td className="px-6 py-3 text-gray-700">{c.redeemed_email ?? <span className="text-gray-300">–</span>}</td>
-                    <td className="px-6 py-3 font-medium text-gray-900">{c.workspace_name ?? <span className="text-gray-300">–</span>}</td>
-                    <td className="px-6 py-3 text-gray-400">{c.redeemed_at ? new Date(c.redeemed_at).toLocaleDateString('de-DE') : '–'}</td>
-                    <td className="px-6 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                          isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                          {isActive ? 'Aktiv' : 'Nicht genutzt'}
-                        </span>
-                        {c.lopCount !== null && (
-                          <span className="text-xs text-gray-400">
-                            {c.lopCount} LOP · {c.transcriptCount} Transkripte
+                  <>
+                    <tr
+                      key={c.id}
+                      className={`border-b border-gray-100 hover:bg-blue-50/40 transition-colors ${selectedWorkspaceId === c.redeemed_workspace_id ? 'bg-blue-50/60' : ''}`}
+                    >
+                      <td className="px-6 py-3 font-mono text-xs text-gray-500 tracking-wider">{c.code}</td>
+
+                      {isMulti ? (
+                        <td className="px-6 py-3">
+                          <span className="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                            {c.use_count} Nutzer / {c.use_count} Workspace{c.use_count !== 1 ? 's' : ''}
                           </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-3 text-xs text-gray-400">
-                      {c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('de-DE') : '–'}
-                    </td>
-                    <td className="px-6 py-3">
-                      {c.redeemed_workspace_id && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs text-blue-600 hover:bg-blue-50 font-medium"
-                          onClick={() => loadKpis(c.redeemed_workspace_id!)}
-                        >
-                          KPIs →
-                        </Button>
+                        </td>
+                      ) : (
+                        <td className="px-6 py-3">
+                          <div className="text-gray-700 text-xs">{c.redeemed_email ?? <span className="text-gray-300">–</span>}</div>
+                          <div className="text-gray-400 text-xs">{c.workspace_name ?? ''}</div>
+                        </td>
                       )}
-                    </td>
-                  </tr>
+
+                      <td className="px-6 py-3 text-gray-400 text-xs">
+                        {isMulti
+                          ? (c.redemptions[0] ? new Date(c.redemptions[0].redeemed_at).toLocaleDateString('de-DE') : '–')
+                          : (c.redeemed_at ? new Date(c.redeemed_at).toLocaleDateString('de-DE') : '–')
+                        }
+                      </td>
+
+                      <td className="px-6 py-3">
+                        {isMulti ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            {c.use_count}/{c.max_uses} eingelöst
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                              isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-400'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                              {isActive ? 'Aktiv' : 'Nicht genutzt'}
+                            </span>
+                            {c.lopCount !== null && (
+                              <span className="text-xs text-gray-400">{c.lopCount} LOP · {c.transcriptCount} Transkripte</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-3 text-xs text-gray-400">
+                        {!isMulti && (c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('de-DE') : '–')}
+                      </td>
+
+                      <td className="px-6 py-3 flex items-center gap-1">
+                        {isMulti ? (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-blue-600 hover:bg-blue-50 font-medium"
+                            onClick={() => toggleExpand(c.id)}
+                          >
+                            {isExpanded ? 'Einklappen ↑' : 'Details ↓'}
+                          </Button>
+                        ) : (
+                          c.redeemed_workspace_id && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs text-blue-600 hover:bg-blue-50 font-medium"
+                              onClick={() => loadKpis(c.redeemed_workspace_id!)}
+                            >
+                              KPIs →
+                            </Button>
+                          )
+                        )}
+                      </td>
+                    </tr>
+
+                    {/* Expandable sub-rows for multi-use codes */}
+                    {isMulti && isExpanded && c.redemptions.map((r, i) => (
+                      <tr key={r.id} className="bg-blue-50/30 border-b border-blue-50">
+                        <td className="px-6 py-2.5 pl-10 text-xs text-gray-400">#{i + 1}</td>
+                        <td className="px-6 py-2.5">
+                          <div className="text-xs text-gray-700">{r.redeemed_email ?? <span className="text-gray-300">–</span>}</div>
+                          <div className="text-xs text-gray-400">{r.workspace_name ?? ''}</div>
+                        </td>
+                        <td className="px-6 py-2.5 text-xs text-gray-400">
+                          {new Date(r.redeemed_at).toLocaleDateString('de-DE')}
+                        </td>
+                        <td className="px-6 py-2.5" />
+                        <td className="px-6 py-2.5" />
+                        <td className="px-6 py-2.5">
+                          {r.workspace_id && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 text-xs text-blue-600 hover:bg-blue-50"
+                              onClick={() => loadKpis(r.workspace_id!)}
+                            >
+                              KPIs →
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
                 )
               })}
             </tbody>
@@ -279,7 +399,6 @@ export default function SteuerungClient() {
             <div className="px-6 py-12 text-center text-gray-400 text-sm">Wird geladen…</div>
           ) : kpis ? (
             <div className="p-6 space-y-6">
-              {/* KPI-Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   { label: 'Mitglieder', value: kpis.kpis.memberCount, color: 'text-blue-700', bg: 'bg-blue-50' },
@@ -308,7 +427,6 @@ export default function SteuerungClient() {
                 ))}
               </div>
 
-              {/* Weekly Activity */}
               <div>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Aktivität (letzte 8 Wochen)</h3>
                 <div className="flex items-end gap-1 h-16">
@@ -317,10 +435,7 @@ export default function SteuerungClient() {
                     const h = Math.round((w.count / max) * 48) + 4
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1" title={`${w.date}: ${w.count} Items`}>
-                        <div
-                          className="w-full rounded-sm bg-blue-500 opacity-70 hover:opacity-100 transition-opacity"
-                          style={{ height: `${h}px` }}
-                        />
+                        <div className="w-full rounded-sm bg-blue-500 opacity-70 hover:opacity-100 transition-opacity" style={{ height: `${h}px` }} />
                         <span className="text-xs text-gray-300" style={{ fontSize: '9px' }}>
                           {new Date(w.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
                         </span>
@@ -330,7 +445,6 @@ export default function SteuerungClient() {
                 </div>
               </div>
 
-              {/* Members */}
               <div>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Mitglieder</h3>
                 <div className="border border-gray-100 rounded-xl overflow-hidden">
