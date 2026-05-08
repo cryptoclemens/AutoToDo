@@ -25,7 +25,7 @@ async function getLatestRelease(): Promise<GithubRelease | null> {
     }
     const res = await fetch(
       'https://api.github.com/repos/cryptoclemens/AutoToDo-Desktop/releases?per_page=1',
-      { headers, next: { revalidate: 300 } }
+      { headers, next: { revalidate: 60 } }
     )
     if (!res.ok) return null
     const releases: GithubRelease[] = await res.json()
