@@ -90,11 +90,14 @@ export async function GET(request: NextRequest) {
     getOrCreate(date).lop.push(item.title)
   }
 
+  const PLACEHOLDER = /^eingef[uü]egter\s*text$/i
+
   for (const t of transcripts ?? []) {
     if (!t.meeting_date) continue
     const name = t.original_filename
       ? t.original_filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
       : 'Meeting'
+    if (PLACEHOLDER.test(name.trim())) continue
     getOrCreate(t.meeting_date).meetings.push(name)
   }
 
