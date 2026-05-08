@@ -202,7 +202,7 @@ export default async function ProjectPage({ params }: Props) {
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <TagesplanungButton size="sm" />
+          <TagesplanungButton projectId={project.id} size="sm" />
           <TaetigkeitsnachweisButton projectId={project.id} projectName={project.name} size="sm" />
           <Link href={`/projects/${project.id}/transcripts`}>
             <Button size="sm" style={{ backgroundColor: 'var(--brand)' }} className="text-white rounded-lg">

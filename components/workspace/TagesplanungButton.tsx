@@ -6,10 +6,11 @@ import dynamic from 'next/dynamic'
 const TagesplanungModal = dynamic(() => import('./TagesplanungModal'), { ssr: false })
 
 interface Props {
+  projectId: string
   size?: 'sm' | 'default'
 }
 
-export default function TagesplanungButton({ size = 'default' }: Props) {
+export default function TagesplanungButton({ projectId, size = 'default' }: Props) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -29,7 +30,7 @@ export default function TagesplanungButton({ size = 'default' }: Props) {
         </svg>
         Tagesplanung
       </button>
-      {open && <TagesplanungModal onClose={() => setOpen(false)} />}
+      {open && <TagesplanungModal projectId={projectId} onClose={() => setOpen(false)} />}
     </>
   )
 }

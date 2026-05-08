@@ -5,8 +5,7 @@ import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
 import { z } from 'zod'
 
-// GET /api/daily-plan?date=YYYY-MM-DD[&days=14]
-// Returns plan for the given date + recent history
+// GET /api/daily-plan?date=YYYY-MM-DD&projectId=UUID[&days=14]
 export async function GET(request: NextRequest) {
   const authClient = createClient()
   const { data: { user } } = await authClient.auth.getUser()
@@ -23,9 +22,12 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date') ?? new Date().toISOString().slice(0, 10)
+  const projectId = searchParams.get('projectId')
   const days = Math.min(Number(searchParams.get('days') ?? '14'), 60)
 
-  // Fetch last N days of plans
+  if (!projectId) return NextResponse.json({ error: 'projectId fehlt.' }, { status: 400 })
+
+  // Fetch last N days of plans for this project
   const since = new Date(date)
   since.setDate(since.getDate() - days + 1)
 
@@ -33,12 +35,12 @@ export async function GET(request: NextRequest) {
     .from('daily_plans')
     .select('date, text')
     .eq('user_id', user.id)
-    .eq('workspace_id', workspace.id)
+    .eq('project_id', projectId)
     .gte('date', since.toISOString().slice(0, 10))
     .lte('date', date)
     .order('date', { ascending: false })
 
-  // Auto-suggest for today: open/in-progress LOP items where user is responsible
+  // Auto-suggest: open/in-progress LOP items for this project where user is responsible
   const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
   const displayName: string | null =
     authUser?.user?.user_metadata?.full_name ?? authUser?.user?.user_metadata?.name ?? null
@@ -46,23 +48,22 @@ export async function GET(request: NextRequest) {
   let suggestion = ''
   const todayPlan = (plans ?? []).find(p => p.date === date)
   if (!todayPlan?.text) {
-    const lopQ = supabase
+    const baseQ = supabase
       .from('lop_items')
       .select('title')
-      .eq('workspace_id', workspace.id)
+      .eq('project_id', projectId)
       .in('status', ['offen', 'in_bearbeitung'])
       .order('updated_at', { ascending: false })
       .limit(5)
 
-    // Try by user_id first, then by display name
-    const { data: byId } = await lopQ.eq('responsible_user_id', user.id)
+    const { data: byId } = await baseQ.eq('responsible_user_id', user.id)
     let items = byId ?? []
 
     if (items.length === 0 && displayName) {
       const { data: byName } = await supabase
         .from('lop_items')
         .select('title')
-        .eq('workspace_id', workspace.id)
+        .eq('project_id', projectId)
         .eq('responsible', displayName)
         .in('status', ['offen', 'in_bearbeitung'])
         .order('updated_at', { ascending: false })
@@ -84,10 +85,11 @@ export async function GET(request: NextRequest) {
 
 const putSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  projectId: z.string().uuid(),
   text: z.string().max(300),
 })
 
-// PUT /api/daily-plan — upsert plan for a given date
+// PUT /api/daily-plan — upsert plan for a given date + project
 export async function PUT(request: NextRequest) {
   const authClient = createClient()
   const { data: { user } } = await authClient.auth.getUser()
@@ -109,8 +111,15 @@ export async function PUT(request: NextRequest) {
   const { error } = await supabase
     .from('daily_plans')
     .upsert(
-      { user_id: user.id, workspace_id: workspace.id, date: parsed.data.date, text: parsed.data.text, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,workspace_id,date' }
+      {
+        user_id: user.id,
+        workspace_id: workspace.id,
+        project_id: parsed.data.projectId,
+        date: parsed.data.date,
+        text: parsed.data.text,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,project_id,date' }
     )
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

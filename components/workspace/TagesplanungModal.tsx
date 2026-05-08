@@ -29,9 +29,9 @@ function formatDateShort(dateStr: string): string {
 const MAX_LEN = 300
 const HISTORY_DAYS = 14
 
-interface Props { onClose: () => void }
+interface Props { onClose: () => void; projectId: string }
 
-export default function TagesplanungModal({ onClose }: Props) {
+export default function TagesplanungModal({ onClose, projectId }: Props) {
   const today = isoToday()
 
   const [date, setDate] = useState(today)
@@ -53,7 +53,7 @@ export default function TagesplanungModal({ onClose }: Props) {
     }
     setLoading(true)
     try {
-      const res = await fetch(`/api/daily-plan?date=${d}&days=${HISTORY_DAYS}`)
+      const res = await fetch(`/api/daily-plan?date=${d}&days=${HISTORY_DAYS}&projectId=${projectId}`)
       if (!res.ok) return
       const json = await res.json()
       // Populate cache for all returned history too
@@ -80,7 +80,7 @@ export default function TagesplanungModal({ onClose }: Props) {
     await fetch('/api/daily-plan', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: targetDate, text: value }),
+      body: JSON.stringify({ date: targetDate, projectId, text: value }),
     })
     setSaving(false)
     setSaved(true)
