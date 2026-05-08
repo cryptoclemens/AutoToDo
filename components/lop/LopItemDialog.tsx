@@ -26,6 +26,11 @@ export interface LopLink {
   label?: string
 }
 
+export interface CoResponsible {
+  name: string
+  user_id?: string | null
+}
+
 export interface LopItem {
   id: string
   title: string
@@ -40,6 +45,7 @@ export interface LopItem {
   ai_confidence: number | null
   source_quote: string | null
   links?: LopLink[]
+  co_responsibles?: CoResponsible[]
 }
 
 interface Props {
@@ -68,7 +74,7 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
   const [linkError, setLinkError] = useState('')
 
   useEffect(() => {
-    setDraft(item ? { ...item, links: item.links ?? [] } : null)
+    setDraft(item ? { ...item, links: item.links ?? [], co_responsibles: item.co_responsibles ?? [] } : null)
     setActivity(null)
     setNewLinkUrl('')
     setNewLinkLabel('')
@@ -97,6 +103,7 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
       status: draft.status,
       result: draft.result,
       links: draft.links ?? [],
+      co_responsibles: draft.co_responsibles ?? [],
     })
     setSaving(false)
     onClose()
@@ -240,6 +247,65 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Co-Verantwortliche */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-500">Co-Verantwortliche</Label>
+              {/* Chips */}
+              {(draft.co_responsibles ?? []).length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {(draft.co_responsibles ?? []).map((cr, idx) => (
+                    <span key={idx} className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">
+                      {cr.name}
+                      {canEdit && (
+                        <button
+                          onClick={() => setDraft(d => d ? { ...d, co_responsibles: (d.co_responsibles ?? []).filter((_, i) => i !== idx) } : d)}
+                          className="hover:text-red-500 transition-colors ml-0.5"
+                          title="Entfernen"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                            <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          </svg>
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Add dropdown (edit mode) */}
+              {canEdit && (
+                <select
+                  className="h-8 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-600 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
+                  value=""
+                  onChange={e => {
+                    const val = e.target.value
+                    if (!val) return
+                    const member = members.find(m => m.user_id === val)
+                    if (!member) return
+                    const already = (draft.co_responsibles ?? []).some(cr => cr.user_id === val || cr.name === member.display_name)
+                    if (already) return
+                    setDraft(d => d ? { ...d, co_responsibles: [...(d.co_responsibles ?? []), { name: member.display_name, user_id: member.user_id }] } : d)
+                    e.target.value = ''
+                  }}
+                >
+                  <option value="">+ Co-Verantwortlichen hinzufügen…</option>
+                  {members
+                    .filter(m => {
+                      const already = (draft.co_responsibles ?? []).some(cr => cr.user_id === m.user_id)
+                      const isMain = draft.responsible_user_id === m.user_id
+                      return !already && !isMain
+                    })
+                    .map(m => (
+                      <option key={m.user_id} value={m.user_id}>{m.display_name}</option>
+                    ))
+                  }
+                </select>
+              )}
+              {/* View-only empty */}
+              {!canEdit && (draft.co_responsibles ?? []).length === 0 && (
+                <p className="text-sm text-gray-400 italic">–</p>
+              )}
             </div>
 
             {/* Ergebnis */}

@@ -19,6 +19,10 @@ const updateSchema = z.object({
     url: z.string().url().max(2000),
     label: z.string().max(200).optional(),
   })).optional(),
+  co_responsibles: z.array(z.object({
+    name: z.string().max(100),
+    user_id: z.string().uuid().nullable().optional(),
+  })).optional(),
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

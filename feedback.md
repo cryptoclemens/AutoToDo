@@ -113,11 +113,12 @@ Neue Team-Mitglieder über Link einladen
 **Lösung:** Einladungslink-Funktion unter Einstellungen → Mitglieder. Admins können einen wiederverwendbaren Link generieren (7 Tage gültig, wählbare Rolle). Jeder mit dem Link kann dem Workspace beitreten ohne vorherige E-Mail-Einladung. Link kann widerrufen werden.
 
 ---
-## F-009 | 2026-05-07 11:47:27 | ✨ Feature-Wunsch | Status: offen
+## F-009 | 2026-05-07 11:47:27 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Hinzufügen von Co-Verantwortlichen, wenn man zusammen an einem Task arbeitet. Macht das Sinn?
+**Lösung:** Neues Feld co_responsibles (JSONB) auf lop_items. Im LOP-Dialog: Workspace-Mitglieder per Dropdown hinzufügen, als Chips mit ×-Button angezeigt. Wird mit gespeichert.
 
 ---
 ## F-010 | 2026-05-07 11:48:14 | ✨ Feature-Wunsch | Status: offen
