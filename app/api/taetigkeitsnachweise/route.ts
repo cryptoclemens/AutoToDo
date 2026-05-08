@@ -62,13 +62,14 @@ export async function GET(request: NextRequest) {
 
   const lopItems = [...(byUserId ?? []), ...byName].filter(i => i.title?.trim())
 
-  // Transkripte des Monats im Workspace/Projekt
+  // Transkripte des Monats im Workspace/Projekt (Text-Paste-Uploads ausschließen)
   let txQuery = supabase
     .from('transcripts')
     .select('original_filename, meeting_date')
     .eq('workspace_id', workspace.id)
     .gte('meeting_date', start)
     .lte('meeting_date', end)
+    .not('original_filename', 'in', '("__paste__","eingefuegter-text.txt","eingefügter-text.txt")')
     .order('meeting_date', { ascending: true })
   if (projectId) txQuery = txQuery.eq('project_id', projectId)
   const { data: transcripts } = await txQuery

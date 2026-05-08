@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Text zu lang (max. 500 KB).' }, { status: 400 })
     }
     text = pastedText
-    originalFilename = 'eingefuegter-text.txt'
+    originalFilename = '__paste__'
   } else {
     // file is guaranteed non-null here since we checked above
     const f = file!
