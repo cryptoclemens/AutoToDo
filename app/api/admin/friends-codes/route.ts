@@ -47,14 +47,14 @@ export async function GET() {
     : { data: [] as Array<{ id: string; code_id: string; redeemed_at: string; redeemed_by_user_id: string | null; redeemed_workspace_id: string | null }> }
 
   // Batch-fetch workspace names for all unique workspace IDs in redemptions
-  const uniqueWsIds = [...new Set((allRedemptions ?? []).map(r => r.redeemed_workspace_id).filter(Boolean) as string[])]
+  const uniqueWsIds = Array.from(new Set((allRedemptions ?? []).map(r => r.redeemed_workspace_id).filter(Boolean) as string[]))
   const { data: wsList } = uniqueWsIds.length > 0
     ? await supabase.from('workspaces').select('id, name').in('id', uniqueWsIds)
     : { data: [] as Array<{ id: string; name: string }> }
   const wsNameMap = Object.fromEntries((wsList ?? []).map(w => [w.id, w.name]))
 
   // Batch-fetch user emails for all unique user IDs in redemptions
-  const uniqueUserIds = [...new Set((allRedemptions ?? []).map(r => r.redeemed_by_user_id).filter(Boolean) as string[])]
+  const uniqueUserIds = Array.from(new Set((allRedemptions ?? []).map(r => r.redeemed_by_user_id).filter(Boolean) as string[]))
   const emailMap: Record<string, string> = {}
   await Promise.all(uniqueUserIds.map(async uid => {
     const { data: { user: u } } = await supabase.auth.admin.getUserById(uid)
