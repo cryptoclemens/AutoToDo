@@ -19,6 +19,7 @@ export default function RecordPage() {
   const [error, setError] = useState('')
   const [seconds, setSeconds] = useState(0)
   const [transcriptId, setTranscriptId] = useState<string | null>(null)
+  const [showStandupHint, setShowStandupHint] = useState(false)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -60,6 +61,8 @@ export default function RecordPage() {
       mediaRecorderRef.current = mr
       setState('recording')
       startTimer()
+      setShowStandupHint(true)
+      setTimeout(() => setShowStandupHint(false), 8000)
     } catch (err) {
       if (err instanceof DOMException) {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -182,6 +185,21 @@ export default function RecordPage() {
               <div className="flex items-center gap-2 text-red-600 font-mono text-lg font-bold">
                 <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
                 {formatTime(seconds)}
+              </div>
+            )}
+
+            {showStandupHint && (
+              <div className="w-full flex items-start gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800 animate-pulse">
+                <span className="text-lg leading-none">👋</span>
+                <div>
+                  <p className="font-semibold">Stand-up</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Bitte kurz berichten, was jeder heute macht.</p>
+                </div>
+                <button onClick={() => setShowStandupHint(false)} className="ml-auto text-blue-300 hover:text-blue-500">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
               </div>
             )}
 

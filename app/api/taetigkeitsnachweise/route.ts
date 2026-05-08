@@ -73,12 +73,26 @@ export async function GET(request: NextRequest) {
   if (projectId) txQuery = txQuery.eq('project_id', projectId)
   const { data: transcripts } = await txQuery
 
+  // Gespeicherte Tagespläne des Nutzers im Monat
+  const { data: dailyPlans } = await supabase
+    .from('daily_plans')
+    .select('date, text')
+    .eq('user_id', user.id)
+    .eq('workspace_id', workspace.id)
+    .gte('date', start)
+    .lte('date', end)
+
   // Nach Datum gruppieren
-  const days: Record<string, { lop: string[]; meetings: string[] }> = {}
+  const days: Record<string, { lop: string[]; meetings: string[]; plan?: string }> = {}
 
   const getOrCreate = (date: string) => {
     if (!days[date]) days[date] = { lop: [], meetings: [] }
     return days[date]
+  }
+
+  // Tagesplan hat Vorrang – direkt eintragen
+  for (const p of dailyPlans ?? []) {
+    if (p.text?.trim()) getOrCreate(p.date).plan = p.text
   }
 
   for (const item of lopItems) {

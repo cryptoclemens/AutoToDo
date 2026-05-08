@@ -18,6 +18,9 @@ import HowToModal from '@/components/HowToModal'
 import SecurityModal from '@/components/SecurityModal'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import ThemeToggle from '@/components/ThemeToggle'
+import dynamic from 'next/dynamic'
+
+const TagesplanungModal = dynamic(() => import('./TagesplanungModal'), { ssr: false })
 
 interface Props {
   workspace: { id: string; name: string; slug: string; brand_color: string; logo_url: string | null }
@@ -81,6 +84,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isDesktopApp, setIsDesktopApp] = useState(false)
   const [projectLogo, setProjectLogo] = useState<ProjectLogoData | null>(null)
+  const [tagesplanungOpen, setTagesplanungOpen] = useState(false)
 
   const projectIdMatch = pathname.match(/\/projects\/([a-f0-9-]{36})/)
   const projectId = projectIdMatch ? projectIdMatch[1] : null
@@ -182,6 +186,19 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
 
         {/* Right section */}
         <div className="flex items-center gap-1.5">
+          {/* Tagesplanung */}
+          <button
+            onClick={() => setTagesplanungOpen(true)}
+            title="Tagesplanung"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M5 8h6M5 5h6M5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+          </button>
+          {tagesplanungOpen && <TagesplanungModal onClose={() => setTagesplanungOpen(false)} />}
+
           <LanguageSwitcher currentLocale={locale} />
           <SecurityModal />
           <HowToModal />

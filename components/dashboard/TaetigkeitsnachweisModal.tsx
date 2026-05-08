@@ -5,11 +5,17 @@ import { useState, useEffect, useCallback } from 'react'
 interface DayData {
   lop: string[]
   meetings: string[]
+  plan?: string
 }
 
 const MAX_LEN = 200
 
 function combine(day: DayData): string {
+  // Gespeicherter Tagesplan hat Vorrang
+  if (day.plan?.trim()) {
+    const p = day.plan.trim()
+    return p.length <= MAX_LEN ? p : p.slice(0, MAX_LEN - 1).trimEnd() + '…'
+  }
   const parts = (day.lop.length > 0 ? day.lop : day.meetings).filter(Boolean)
   if (parts.length === 0) return ''
   const joined = parts.join('; ')
