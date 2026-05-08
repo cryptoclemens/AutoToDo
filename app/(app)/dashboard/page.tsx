@@ -9,6 +9,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { getEffectiveBranding } from '@/lib/branding'
+import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics'
 
 export default async function DashboardPage() {
   const authClient = createClient()
@@ -142,12 +143,12 @@ export default async function DashboardPage() {
   }
   const burnRate = Object.entries(weeklyMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([week, count]) => {
-      const d = new Date(week)
-      // ISO week number
-      const dayOfYear = Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86400000)
-      const weekNum = Math.ceil((dayOfYear + ((new Date(d.getFullYear(), 0, 1).getDay() + 6) % 7)) / 7)
-      return { week: String(weekNum), count }
+    .map(([monday, count]) => {
+      const start = new Date(monday + 'T00:00:00')
+      const end = new Date(start)
+      end.setDate(end.getDate() + 6)
+      const fmt = (d: Date) => d.toLocaleDateString('de-DE', { day: 'numeric', month: 'numeric' })
+      return { label: `${fmt(start)}–${fmt(end)}`, count }
     })
 
   const t = await getTranslations('dashboard')
@@ -224,61 +225,11 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Fortschritt pro Person + Burn-Rate */}
-      {totalCount > 0 && (personProgress.length > 0 || burnRate.some(b => b.count > 0)) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-
-          {/* Fortschritt pro Person */}
-          {personProgress.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('progressTitle')}</h2>
-              <div className="space-y-3">
-                {personProgress.map(p => {
-                  const pct = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0
-                  return (
-                    <div key={p.name}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-gray-700 truncate max-w-[60%]">{p.name}</span>
-                        <span className="text-xs text-gray-400 shrink-0 ml-2">
-                          {p.done}/{p.total} {t('progressDone')}
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${pct}%`, backgroundColor: 'var(--brand, #2563eb)' }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Burn-Rate */}
-          {burnRate.some(b => b.count > 0) && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('burnTitle')}</h2>
-              <div className="flex items-end gap-1.5 h-24">
-                {burnRate.map((w, i) => {
-                  const max = Math.max(...burnRate.map(x => x.count), 1)
-                  const h = max > 0 ? Math.max(Math.round((w.count / max) * 72) + 4, w.count > 0 ? 8 : 4) : 4
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1" title={`${t('burnWeek')} ${w.week}: ${w.count} ${t('burnCompleted')}`}>
-                      <span className="text-xs text-gray-400" style={{ fontSize: '9px' }}>{w.count > 0 ? w.count : ''}</span>
-                      <div
-                        className="w-full rounded-t-sm transition-all"
-                        style={{ height: `${h}px`, backgroundColor: w.count > 0 ? 'var(--brand, #2563eb)' : '#e5e7eb', opacity: w.count > 0 ? 0.8 : 1 }}
-                      />
-                      <span className="text-xs text-gray-300" style={{ fontSize: '9px' }}>{w.week}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+      {totalCount > 0 && (
+        <DashboardAnalytics
+          personProgress={personProgress}
+          burnRate={burnRate}
+        />
       )}
 
       {!projects || projects.length === 0 ? (
