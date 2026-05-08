@@ -146,7 +146,6 @@ export default async function DashboardPage() {
     .map(([week, count]) => {
       const d = new Date(week)
       // ISO week number
-      const jan4 = new Date(d.getFullYear(), 0, 4)
       const dayOfYear = Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86400000)
       const weekNum = Math.ceil((dayOfYear + ((new Date(d.getFullYear(), 0, 1).getDay() + 6) % 7)) / 7)
       return { week: String(weekNum), count }
