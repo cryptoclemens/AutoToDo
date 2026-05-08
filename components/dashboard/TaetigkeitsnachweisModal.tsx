@@ -185,13 +185,26 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                           <div className="relative" onClick={() => setEditingDate(date)}>
                             {editingDate === date ? (
                               <textarea
+                                ref={el => {
+                                  if (el) {
+                                    // readOnly trick: prevents Chrome clipboard paste suggestion
+                                    el.readOnly = true
+                                    setTimeout(() => {
+                                      el.readOnly = false
+                                      el.focus()
+                                      el.setSelectionRange(el.value.length, el.value.length)
+                                    }, 50)
+                                  }
+                                }}
                                 maxLength={MAX_LEN}
                                 autoComplete="off"
                                 autoCorrect="off"
+                                autoCapitalize="off"
                                 spellCheck={false}
+                                data-lpignore="true"
+                                data-1p-ignore="true"
                                 rows={val.length > 80 ? 2 : 1}
                                 value={val}
-                                autoFocus
                                 onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
                                 onBlur={() => setEditingDate(null)}
                                 className="w-full text-xs bg-white border border-blue-300 rounded px-1.5 py-1 focus:outline-none text-gray-800 resize-none"
