@@ -108,7 +108,13 @@
     "statOpen": "Open",
     "statOverdue": "Overdue",
     "statDone": "Done",
-    "statTotal": "Total"
+    "statTotal": "Total",
+    "progressTitle": "Progress per Person",
+    "burnTitle": "Burn Rate (last 8 weeks)",
+    "burnWeek": "CW",
+    "burnCompleted": "completed",
+    "progressDone": "done",
+    "progressOpen": "open"
   },
   "project": {
     "uploadTranscript": "Upload transcript",

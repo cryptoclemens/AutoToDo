@@ -108,7 +108,13 @@
     "statOpen": "Offen",
     "statOverdue": "Überfällig",
     "statDone": "Erledigt",
-    "statTotal": "Gesamt"
+    "statTotal": "Gesamt",
+    "progressTitle": "Fortschritt pro Person",
+    "burnTitle": "Burn-Rate (letzte 8 Wochen)",
+    "burnWeek": "KW",
+    "burnCompleted": "abgeschlossen",
+    "progressDone": "erledigt",
+    "progressOpen": "offen"
   },
   "project": {
     "uploadTranscript": "Transkript hochladen",

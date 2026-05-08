@@ -86,7 +86,7 @@ export default async function DashboardPage() {
   const { data: allItems } = projectIds.length > 0
     ? await supabase
         .from('lop_items')
-        .select('status, due_date')
+        .select('status, due_date, responsible, updated_at')
         .in('project_id', projectIds)
     : { data: [] }
 
@@ -101,6 +101,55 @@ export default async function DashboardPage() {
   ).length
   const doneCount = (allItems ?? []).filter(i => i.status === 'abgeschlossen').length
   const totalCount = (allItems ?? []).length
+
+  // Fortschritt pro Person (top 8, mind. 1 Task)
+  type PersonProgress = { name: string; done: number; total: number }
+  const personMap: Record<string, PersonProgress> = {}
+  for (const item of (allItems ?? [])) {
+    const name = item.responsible?.trim()
+    if (!name) continue
+    if (!personMap[name]) personMap[name] = { name, done: 0, total: 0 }
+    personMap[name].total++
+    if (item.status === 'abgeschlossen') personMap[name].done++
+  }
+  const personProgress = Object.values(personMap)
+    .filter(p => p.total >= 1)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 8)
+
+  // Burn-Rate: abgeschlossene Tasks pro Woche, letzte 8 Wochen
+  const eightWeeksAgo = new Date(today)
+  eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56)
+
+  const weeklyMap: Record<string, number> = {}
+  // Pre-fill last 8 weeks so empty weeks show as 0
+  for (let w = 0; w < 8; w++) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - (7 - w) * 7)
+    const monday = new Date(d)
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7))
+    const key = monday.toISOString().slice(0, 10)
+    weeklyMap[key] = 0
+  }
+  for (const item of (allItems ?? [])) {
+    if (item.status !== 'abgeschlossen' || !item.updated_at) continue
+    const d = new Date(item.updated_at)
+    if (d < eightWeeksAgo) continue
+    const monday = new Date(d)
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7))
+    const key = monday.toISOString().slice(0, 10)
+    weeklyMap[key] = (weeklyMap[key] ?? 0) + 1
+  }
+  const burnRate = Object.entries(weeklyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([week, count]) => {
+      const d = new Date(week)
+      // ISO week number
+      const jan4 = new Date(d.getFullYear(), 0, 4)
+      const dayOfYear = Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86400000)
+      const weekNum = Math.ceil((dayOfYear + ((new Date(d.getFullYear(), 0, 1).getDay() + 6) % 7)) / 7)
+      return { week: String(weekNum), count }
+    })
 
   const t = await getTranslations('dashboard')
   const locale = await getLocale()
@@ -173,6 +222,63 @@ export default async function DashboardPage() {
               </svg>
             }
           />
+        </div>
+      )}
+
+      {/* Fortschritt pro Person + Burn-Rate */}
+      {totalCount > 0 && (personProgress.length > 0 || burnRate.some(b => b.count > 0)) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+
+          {/* Fortschritt pro Person */}
+          {personProgress.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('progressTitle')}</h2>
+              <div className="space-y-3">
+                {personProgress.map(p => {
+                  const pct = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0
+                  return (
+                    <div key={p.name}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-700 truncate max-w-[60%]">{p.name}</span>
+                        <span className="text-xs text-gray-400 shrink-0 ml-2">
+                          {p.done}/{p.total} {t('progressDone')}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, backgroundColor: 'var(--brand, #2563eb)' }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Burn-Rate */}
+          {burnRate.some(b => b.count > 0) && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('burnTitle')}</h2>
+              <div className="flex items-end gap-1.5 h-24">
+                {burnRate.map((w, i) => {
+                  const max = Math.max(...burnRate.map(x => x.count), 1)
+                  const h = max > 0 ? Math.max(Math.round((w.count / max) * 72) + 4, w.count > 0 ? 8 : 4) : 4
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1" title={`${t('burnWeek')} ${w.week}: ${w.count} ${t('burnCompleted')}`}>
+                      <span className="text-xs text-gray-400" style={{ fontSize: '9px' }}>{w.count > 0 ? w.count : ''}</span>
+                      <div
+                        className="w-full rounded-t-sm transition-all"
+                        style={{ height: `${h}px`, backgroundColor: w.count > 0 ? 'var(--brand, #2563eb)' : '#e5e7eb', opacity: w.count > 0 ? 0.8 : 1 }}
+                      />
+                      <span className="text-xs text-gray-300" style={{ fontSize: '9px' }}>{w.week}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

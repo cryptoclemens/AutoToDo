@@ -153,12 +153,13 @@ Mein eigenes Profil ändern -> Ich will mein Anzeigename "Markus Wanzek I Plenum
 **Lösung:** Neues Feld "Anzeigename" im Konto-Tab der Einstellungen. Name wird in user_metadata.full_name gespeichert und gilt für LOP-Punkte und Transkripte.
 
 ---
-## F-012 | 2026-05-07 11:52:21 | ✨ Feature-Wunsch | Status: offen
+## F-012 | 2026-05-07 11:52:21 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Im Dashboard weitere Funktionen ergänzen:
 z.B. Übersicht wie viel pro Person schon geschafft wurde und Burn-Rate
+**Lösung:** Zwei neue Karten im Dashboard: "Fortschritt pro Person" (Fortschrittsbalken erledigt/gesamt, Top 8) und "Burn-Rate" (Balkendiagramm abgeschlossener Tasks pro KW, letzte 8 Wochen).
 
 ---
 ## F-013 | 2026-05-08 08:50:21 | ✨ Feature-Wunsch | Status: offen
