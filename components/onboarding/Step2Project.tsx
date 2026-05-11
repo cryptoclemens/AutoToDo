@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { BUNDESLAENDER } from '@/lib/holidays'
 
 interface Props {
   workspaceId: string
@@ -16,6 +17,7 @@ interface Props {
 export default function Step2Project({ workspaceId, userId: _userId, onDone }: Props) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [bundesland, setBundesland] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -27,7 +29,7 @@ export default function Step2Project({ workspaceId, userId: _userId, onDone }: P
     const res = await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workspaceId, name, description: description || null }),
+      body: JSON.stringify({ workspaceId, name, description: description || null, bundesland: bundesland || null }),
     })
 
     if (!res.ok) {
@@ -71,6 +73,25 @@ export default function Step2Project({ workspaceId, userId: _userId, onDone }: P
               onChange={e => setDescription(e.target.value)}
               rows={3}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="bundesland">
+              Bundesland <span className="text-gray-400">(optional)</span>
+            </Label>
+            <select
+              id="bundesland"
+              value={bundesland}
+              onChange={e => setBundesland(e.target.value)}
+              className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">– Kein Bundesland –</option>
+              {BUNDESLAENDER.map(bl => (
+                <option key={bl.code} value={bl.code}>{bl.name}</option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-400">
+              Wird für den Tätigkeitsnachweis verwendet — Feiertage und Wochenenden dieses Bundeslandes werden ausgeblendet.
+            </p>
           </div>
 
           {error && (
