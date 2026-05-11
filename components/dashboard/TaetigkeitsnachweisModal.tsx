@@ -55,6 +55,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
   const [loading, setLoading] = useState(false)
   const [rawDays, setRawDays] = useState<Record<string, DayData>>({})
   const [fields, setFields] = useState<Record<string, string>>({})
+  const [workingDays, setWorkingDays] = useState<string[]>([])
   const [editingDate, setEditingDate] = useState<string | null>(null)
 
   const load = useCallback(async (m: string) => {
@@ -65,8 +66,9 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
         : `/api/taetigkeitsnachweise?month=${m}`
       const res = await fetch(url)
       if (!res.ok) return
-      const data: { days: Record<string, DayData> } = await res.json()
+      const data: { days: Record<string, DayData>; workingDays: string[] } = await res.json()
       setRawDays(data.days)
+      setWorkingDays(data.workingDays ?? daysInMonth(m))
       const f: Record<string, string> = {}
       for (const [date, day] of Object.entries(data.days)) {
         f[date] = combine(day)
@@ -90,7 +92,8 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
     setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
   }
 
-  const activeDays = daysInMonth(month).filter(d => rawDays[d] || fields[d])
+  // Alle Arbeitstage anzeigen (nicht nur Tage mit Daten)
+  const activeDays = workingDays.length > 0 ? workingDays : daysInMonth(month)
 
   return (
     <>

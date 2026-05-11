@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { BUNDESLAENDER } from '@/lib/holidays'
 
 interface Props {
   project: {
@@ -17,13 +18,15 @@ interface Props {
     branding_inherited: boolean
   }
   workspaceId: string
+  bundesland?: string | null
 }
 
-export default function ProjectBrandingForm({ project, workspaceId: _workspaceId }: Props) {
+export default function ProjectBrandingForm({ project, workspaceId: _workspaceId, bundesland: initialBundesland }: Props) {
   const router = useRouter()
   const [brandColor, setBrandColor] = useState(project.brand_color ?? '#2563EB')
   const [logoUrl, setLogoUrl] = useState<string | null>(project.logo_url)
   const [inherited, setInherited] = useState(project.branding_inherited)
+  const [bundesland, setBundesland] = useState<string>(initialBundesland ?? '')
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -72,11 +75,15 @@ export default function ProjectBrandingForm({ project, workspaceId: _workspaceId
       const res = await fetch(`/api/settings/projects/${project.id}/branding`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brand_color: brandColor, branding_inherited: inherited }),
+        body: JSON.stringify({
+          brand_color: brandColor,
+          branding_inherited: inherited,
+          bundesland: bundesland || null,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Speichern fehlgeschlagen.')
-      toast.success('Projekt-Branding gespeichert.')
+      toast.success('Projekt-Einstellungen gespeichert.')
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Speichern fehlgeschlagen.')
@@ -87,6 +94,29 @@ export default function ProjectBrandingForm({ project, workspaceId: _workspaceId
 
   return (
     <form onSubmit={handleSave} className="space-y-6 max-w-lg">
+
+      {/* Bundesland */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">Bundesland</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Wird für den Tätigkeitsnachweis verwendet — Wochenenden und gesetzliche Feiertage dieses Bundeslandes werden ausgeblendet.
+          </p>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Bundesland des Projekts</Label>
+          <select
+            value={bundesland}
+            onChange={e => setBundesland(e.target.value)}
+            className="w-full h-9 rounded-md border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">– Kein Bundesland –</option>
+            {BUNDESLAENDER.map(bl => (
+              <option key={bl.code} value={bl.code}>{bl.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Inherit toggle */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">

@@ -5,9 +5,12 @@ import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
 import { z } from 'zod'
 
+const BUNDESLAENDER = ['BW','BY','BE','BB','HB','HH','HE','MV','NI','NW','RP','SL','SN','ST','SH','TH']
+
 const schema = z.object({
   brand_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).nullable().optional(),
   branding_inherited: z.boolean().optional(),
+  bundesland: z.string().refine(v => v === null || BUNDESLAENDER.includes(v)).nullable().optional(),
 })
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -41,6 +44,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const updates: Record<string, unknown> = {}
   if (parsed.data.brand_color !== undefined) updates.brand_color = parsed.data.brand_color
   if (parsed.data.branding_inherited !== undefined) updates.branding_inherited = parsed.data.branding_inherited
+  if (parsed.data.bundesland !== undefined) updates.bundesland = parsed.data.bundesland
 
   const { data, error } = await supabase
     .from('projects')

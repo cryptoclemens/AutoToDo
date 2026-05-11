@@ -194,18 +194,20 @@ Katarina, Katharina und Katharina Lugunja wird mehrmals angezeigt; Clemens und C
 **Lösung:** Migration 029 fügt `completed_at` hinzu (Backfill: 88 Items). API setzt `completed_at` exakt beim Wechsel auf „abgeschlossen" (und löscht es bei Rückstufung). Projektseite berechnet Ø aus `completed_at - created_at`.
 
 ---
-## F-016 | 2026-05-09 11:54:22 | ✨ Feature-Wunsch | Status: offen
+## F-016 | 2026-05-09 11:54:22 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Tätigkeitsnachweis: deutschlandweite gesetzliche Feiertage + Wochenenden ausschließen, lokale Feiertage je konfiguriertem Projekt-Bundesland berücksichtigen. Max. 2×100 Zeichen pro Tag. Logik: abgehakte Daily-Todos + Transkript + hinterlegte Deadlines + Tagesplanung. Wiederholende Aufgaben über mehrere Tage sollen korrekt abgebildet werden.
+**Lösung:** `lib/holidays.ts` mit Gaußscher Osterberechnung + allen 16 Bundesländern. Migration 030: `bundesland`-Feld auf `projects`. Projekt-Branding-Seite hat neuen Bundesland-Selektor. API gibt `workingDays[]` zurück (Wochenenden + Feiertage gefiltert). Tätigkeitsnachweis zeigt alle Arbeitstage; LOP-Logik nutzt `completed_at` + `due_date` statt `created_at`.
 
 ---
-## F-017 | 2026-05-09 12:00:02 | ✨ Feature-Wunsch | Status: offen
+## F-017 | 2026-05-09 12:00:02 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Rollenkonzept entwickeln (noch nicht umsetzen) – erst Konzept erstellen: Welche Rollen muss es geben (z.B. Admin, Team-Lead)? Welche Rechte haben unterschiedliche Rollen (z.B. Rechteauswahl, Bezahlfunktion, Auswertungsfunktion, Änderungsfunktion, neue Projekte erstellen, neue Teammitglieder einladen)?
+**Lösung:** `docs/rollen-konzept.md` mit 6 Rollen (Inhaber, Admin, Team-Lead, Mitarbeiter, Betrachter, Gast), vollständiger Berechtigungsmatrix und Implementierungsplan. Noch nicht in Code umgesetzt.
 
 ---
 ## F-014 | 2026-05-08 13:10:45 | ✨ Feature-Wunsch | Status: bearbeitet

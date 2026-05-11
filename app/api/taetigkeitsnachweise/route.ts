@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
+import { getWorkingDays } from '@/lib/holidays'
 
 export async function GET(request: NextRequest) {
   const authClient = createClient()
@@ -25,44 +26,51 @@ export async function GET(request: NextRequest) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
-  // Anzeigename des Nutzers für Fallback-Suche über responsible-Textfeld
   const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
   const displayName: string | null =
     authUser?.user?.user_metadata?.full_name ?? authUser?.user?.user_metadata?.name ?? null
 
-  const start = `${month}-01`
   const [y, m] = month.split('-').map(Number)
-  const endDate = new Date(y, m, 0)
-  const end = `${month}-${String(endDate.getDate()).padStart(2, '0')}`
+  const start = `${month}-01`
+  const end = `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`
 
-  // LOP-Items: per responsible_user_id ODER per Anzeigename (Fallback für ältere Einträge)
+  // Bundesland des Projekts für Feiertags-Filterung
+  let bundesland: string | null = null
+  if (projectId) {
+    const { data: proj } = await supabase
+      .from('projects').select('bundesland').eq('id', projectId).single()
+    bundesland = proj?.bundesland ?? null
+  }
+
+  const workingDays = getWorkingDays(y, m, bundesland)
+
+  // LOP-Items: fällig ODER abgeschlossen im Monat
   const buildLopQuery = (matchCol: string, matchVal: string) => {
     let q = supabase
       .from('lop_items')
-      .select('title, created_at')
+      .select('title, due_date, completed_at')
       .eq('workspace_id', workspace.id)
       .eq(matchCol, matchVal)
-      .gte('created_at', `${start}T00:00:00`)
-      .lte('created_at', `${end}T23:59:59`)
-      .order('created_at', { ascending: true })
+      .or(
+        `and(due_date.gte.${start},due_date.lte.${end}),` +
+        `and(completed_at.gte.${start}T00:00:00,completed_at.lte.${end}T23:59:59)`
+      )
     if (projectId) q = q.eq('project_id', projectId)
     return q
   }
 
   const { data: byUserId } = await buildLopQuery('responsible_user_id', user.id)
 
-  // Fallback: responsible-Text enthält den Anzeigenamen (nur wenn kein responsible_user_id gesetzt)
-  let byName: { title: string; created_at: string }[] = []
+  let byName: { title: string; due_date: string | null; completed_at: string | null }[] = []
   if (displayName) {
     const { data } = await buildLopQuery('responsible', displayName)
-    // Deduplizieren: Items, die bereits per user_id gefunden wurden, ausschließen
-    const byUserIdDates = new Set((byUserId ?? []).map(i => i.created_at.slice(0, 10) + '|' + i.title))
-    byName = (data ?? []).filter(i => !byUserIdDates.has(i.created_at.slice(0, 10) + '|' + i.title))
+    const seen = new Set((byUserId ?? []).map(i => i.title))
+    byName = (data ?? []).filter(i => !seen.has(i.title))
   }
 
   const lopItems = [...(byUserId ?? []), ...byName].filter(i => i.title?.trim())
 
-  // Transkripte des Monats im Workspace/Projekt (Text-Paste-Uploads ausschließen)
+  // Transkripte
   let txQuery = supabase
     .from('transcripts')
     .select('original_filename, meeting_date')
@@ -74,7 +82,7 @@ export async function GET(request: NextRequest) {
   if (projectId) txQuery = txQuery.eq('project_id', projectId)
   const { data: transcripts } = await txQuery
 
-  // Gespeicherte Tagespläne des Nutzers im Monat
+  // Tagespläne
   const { data: dailyPlans } = await supabase
     .from('daily_plans')
     .select('date, text')
@@ -83,7 +91,6 @@ export async function GET(request: NextRequest) {
     .gte('date', start)
     .lte('date', end)
 
-  // Nach Datum gruppieren
   const days: Record<string, { lop: string[]; meetings: string[]; plan?: string }> = {}
 
   const getOrCreate = (date: string) => {
@@ -91,14 +98,22 @@ export async function GET(request: NextRequest) {
     return days[date]
   }
 
-  // Tagesplan hat Vorrang – direkt eintragen
   for (const p of dailyPlans ?? []) {
     if (p.text?.trim()) getOrCreate(p.date).plan = p.text
   }
 
   for (const item of lopItems) {
-    const date = item.created_at.slice(0, 10)
-    getOrCreate(date).lop.push(item.title)
+    // Abgeschlossene Items erscheinen am Abschlusstag
+    if (item.completed_at) {
+      const d = item.completed_at.slice(0, 10)
+      if (d >= start && d <= end) getOrCreate(d).lop.push(item.title)
+    }
+    // Items mit Deadline erscheinen zusätzlich am Fälligkeitstag
+    if (item.due_date && item.due_date >= start && item.due_date <= end) {
+      const d = item.due_date
+      const existing = days[d]?.lop ?? []
+      if (!existing.includes(item.title)) getOrCreate(d).lop.push(item.title)
+    }
   }
 
   for (const t of transcripts ?? []) {
@@ -109,5 +124,5 @@ export async function GET(request: NextRequest) {
     getOrCreate(t.meeting_date).meetings.push(name)
   }
 
-  return NextResponse.json({ days })
+  return NextResponse.json({ days, workingDays })
 }

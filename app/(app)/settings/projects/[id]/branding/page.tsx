@@ -36,11 +36,11 @@ export default async function ProjectBrandingPage({ params }: Props) {
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, brand_color, logo_url, branding_inherited')
+    .select('id, name, brand_color, logo_url, branding_inherited, bundesland')
     .eq('id', params.id)
     .eq('workspace_id', workspace.id)
     .single() as {
-      data: { id: string; name: string; brand_color: string | null; logo_url: string | null; branding_inherited: boolean } | null
+      data: { id: string; name: string; brand_color: string | null; logo_url: string | null; branding_inherited: boolean; bundesland: string | null } | null
     }
 
   if (!project) notFound()
@@ -56,7 +56,7 @@ export default async function ProjectBrandingPage({ params }: Props) {
       <p className="text-sm text-gray-500 mb-6">
         Eigenes Logo und Akzentfarbe für &bdquo;{project.name}&ldquo; — überschreibt das Workspace-Branding.
       </p>
-      <ProjectBrandingForm project={project} workspaceId={workspace.id} />
+      <ProjectBrandingForm project={project} workspaceId={workspace.id} bundesland={project.bundesland} />
     </div>
   )
 }
