@@ -82,9 +82,16 @@ export async function PATCH(
   const existing = await checkEditPermission(user.id, params.id, supabase)
   if (!existing) return NextResponse.json({ error: 'Nicht gefunden oder keine Berechtigung.' }, { status: 403 })
 
+  const updatePayload: Record<string, unknown> = { ...parsed.data }
+  if (parsed.data.status === 'abgeschlossen' && existing.status !== 'abgeschlossen') {
+    updatePayload.completed_at = new Date().toISOString()
+  } else if (parsed.data.status && parsed.data.status !== 'abgeschlossen') {
+    updatePayload.completed_at = null
+  }
+
   const { data, error } = await supabase
     .from('lop_items')
-    .update(parsed.data)
+    .update(updatePayload)
     .eq('id', params.id)
     .select()
     .single()

@@ -97,12 +97,12 @@ export default async function ProjectPage({ params }: Props) {
     result: string | null; requires_review: boolean
     ai_confidence: number | null; source_quote: string | null
     links?: { url: string; label?: string }[]
-    created_at: string; updated_at: string
+    created_at: string; updated_at: string; completed_at: string | null
   }
 
   const { data: lopItemsInit, error: lopError } = await supabase
     .from('lop_items')
-    .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, links, created_at, updated_at')
+    .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, links, created_at, updated_at, completed_at')
     .eq('project_id', project.id)
     .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false }) as { data: LopRow[] | null; error: unknown }
@@ -124,10 +124,10 @@ export default async function ProjectPage({ params }: Props) {
   const doneCount = lopItems?.filter(i => i.status === 'abgeschlossen').length ?? 0
   const totalCount = lopItems?.length ?? 0
 
-  // Durchschnittliche Bearbeitungszeit für abgeschlossene Punkte (updated_at - created_at)
+  // Durchschnittliche Bearbeitungszeit: completed_at - created_at
   const doneTimes = (lopItems ?? [])
-    .filter(i => i.status === 'abgeschlossen')
-    .map(i => (new Date(i.updated_at).getTime() - new Date(i.created_at).getTime()) / 86_400_000)
+    .filter(i => i.status === 'abgeschlossen' && i.completed_at)
+    .map(i => (new Date(i.completed_at!).getTime() - new Date(i.created_at).getTime()) / 86_400_000)
     .filter(d => d >= 0)
   const avgDaysRaw = doneTimes.length > 0
     ? doneTimes.reduce((a, b) => a + b, 0) / doneTimes.length

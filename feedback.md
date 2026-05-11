@@ -186,6 +186,14 @@ Katarina, Katharina und Katharina Lugunja wird mehrmals angezeigt; Clemens und C
 **Lösung:** DB-Backfill: „Katharina" + „Katharina Lugonia" → „Katarina" (35 Punkte), „Clemens Pompeÿ" → „Clemens" (24 Punkte). Prävention: Freitext-Feld in `ResponsibleSelect` zeigt jetzt per `<datalist>` Autocomplete aller bekannten Namen aus der aktuellen LOP-Liste.
 
 ---
+## B-008 | 2026-05-11 | 🐛 Fehler | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Ø Bearbeitungszeit zeigt 23 Tage – zu hoch, weil updated_at statt Abschluss-Zeitpunkt verwendet wurde.
+**Lösung:** Migration 029 fügt `completed_at` hinzu (Backfill: 88 Items). API setzt `completed_at` exakt beim Wechsel auf „abgeschlossen" (und löscht es bei Rückstufung). Projektseite berechnet Ø aus `completed_at - created_at`.
+
+---
 ## F-016 | 2026-05-09 11:54:22 | ✨ Feature-Wunsch | Status: offen
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
