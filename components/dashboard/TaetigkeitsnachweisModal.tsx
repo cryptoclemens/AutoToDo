@@ -53,7 +53,6 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
 
   const [month, setMonth] = useState(initMonth)
   const [loading, setLoading] = useState(false)
-  const [rawDays, setRawDays] = useState<Record<string, DayData>>({})
   const [fields, setFields] = useState<Record<string, string>>({})
   const [workingDays, setWorkingDays] = useState<string[]>([])
   const [editingDate, setEditingDate] = useState<string | null>(null)
@@ -67,7 +66,6 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
       const res = await fetch(url)
       if (!res.ok) return
       const data: { days: Record<string, DayData>; workingDays: string[] } = await res.json()
-      setRawDays(data.days)
       setWorkingDays(data.workingDays ?? daysInMonth(m))
       const f: Record<string, string> = {}
       for (const [date, day] of Object.entries(data.days)) {
