@@ -401,12 +401,12 @@
     "s0": {
       "title": "Willkommen bei AutoToDo",
       "subtitle": "Aus Meeting-Protokollen werden automatisch Aufgaben.",
-      "desc": "AutoToDo liest deine Meeting-Transkripte und extrahiert mit KI automatisch alle Aufgaben, Verantwortlichkeiten und Fristen – direkt als strukturierte Liste (LOP)."
+      "desc": "AutoToDo liest deine Meeting-Transkripte und extrahiert mit KI alle Aufgaben, Verantwortlichkeiten und Fristen. Notiere täglich deinen Plan – am Monatsende ist der Tätigkeitsnachweis fast von selbst befüllt."
     },
     "s1": {
       "title": "Schritt 1 – Projekt anlegen",
       "subtitle": "Ein Projekt pro Kunde oder Team.",
-      "desc": "Klicke auf dem Dashboard auf »Neues Projekt«. Gib einen Namen und eine optionale Beschreibung ein. Alle Transkripte und LOP-Punkte werden dem Projekt zugeordnet."
+      "desc": "Klicke auf dem Dashboard auf »Neues Projekt«. Gib einen Namen und eine optionale Beschreibung ein. Wähle optional ein Bundesland – dann werden Feiertage im Tätigkeitsnachweis automatisch ausgeblendet."
     },
     "s2": {
       "title": "Schritt 2 – Transkript hochladen",
@@ -420,23 +420,23 @@
     },
     "s4": {
       "title": "Schritt 4 – LOP-Tabelle bearbeiten",
-      "subtitle": "Filtern, editieren, Status setzen.",
-      "desc": "In der LOP-Tabelle kannst du nach Status, Priorität und Verantwortlichem filtern. Klicke auf einen Titel, um alle Details in einem Dialog zu bearbeiten. Statusänderungen sind direkt in der Zeile möglich."
+      "subtitle": "Filtern, editieren, Co-Verantwortliche & Links.",
+      "desc": "In der LOP-Tabelle kannst du nach Status, Priorität und Verantwortlichem filtern. Klicke auf einen Titel, um alle Details zu bearbeiten – inklusive Co-Verantwortlichen und externen Links. Neue Punkte kannst du jederzeit manuell hinzufügen."
     },
     "s5": {
-      "title": "Schritt 5 – Punkte manuell hinzufügen",
-      "subtitle": "Ergänze Aufgaben unabhängig vom Transkript.",
-      "desc": "Klicke oben auf der Projektseite auf »+ LOP-Punkt manuell hinzufügen«. Ein Formular öffnet sich, in dem du Titel, Verantwortlichen, Fälligkeitsdatum und Priorität angeben kannst."
+      "title": "Schritt 5 – Tagesplanung",
+      "subtitle": "Was machst du heute? – Direkt vor dem Meeting notieren.",
+      "desc": "Klicke auf »Tagesplanung« und halte fest, was du heute vorhast. Die KI nutzt diese Einträge für deinen Tätigkeitsnachweis. Wenn alle Teilnehmer kurz ihren Plan nennen, wird die Auswertung noch präziser."
     },
     "s6": {
-      "title": "Schritt 6 – Exportieren & teilen",
-      "subtitle": "XLSX-Export mit Workspace-Branding.",
-      "desc": "Mit »↓ XLSX« exportierst du die LOP als Excel-Datei mit Workspace-Farbe und Metadaten. Über »+ Mitglied einladen« kannst du Kolleginnen und Kollegen zum Projekt hinzufügen."
+      "title": "Schritt 6 – Tätigkeitsnachweis",
+      "subtitle": "Automatisch befüllter Monatsnachweis.",
+      "desc": "Unter »Tätigkeitsnachweis« findest du eine Tabelle aller Arbeitstage – automatisch befüllt aus deinen LOP-Punkten und Tagesplanungen. Die Einträge sind editierbar und lassen sich als PDF drucken."
     },
     "s7": {
-      "title": "Tipp: Direkt aus Notion importieren",
-      "subtitle": "Meeting-Notizen automatisch übertragen.",
-      "desc": "Verbinde dein Notion-Konto unter Einstellungen → Integrationen. Danach kannst du beim Transkript-Upload auf »Notion« wechseln, die Seiten-URL einfügen und mit einem Klick importieren – ohne Copy & Paste."
+      "title": "Schritt 7 – Exportieren & teilen",
+      "subtitle": "XLSX-Export und Team-Einladungen.",
+      "desc": "Mit »↓ XLSX« exportierst du die LOP als Excel-Datei mit Workspace-Branding. Über »+ Mitglied einladen« kannst du Kolleginnen und Kollegen hinzufügen – mit individuellen Rollen und Berechtigungen."
     }
   },
   "errors": {

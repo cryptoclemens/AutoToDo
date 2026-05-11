@@ -15,8 +15,9 @@ export default function HowToModal() {
     { title: t('s2.title'), subtitle: t('s2.subtitle'), visual: <UploadVisual />, description: t('s2.desc') },
     { title: t('s3.title'), subtitle: t('s3.subtitle'), visual: <ProcessVisual />, description: t('s3.desc') },
     { title: t('s4.title'), subtitle: t('s4.subtitle'), visual: <LopVisual />, description: t('s4.desc') },
-    { title: t('s5.title'), subtitle: t('s5.subtitle'), visual: <ManualAddVisual />, description: t('s5.desc') },
-    { title: t('s6.title'), subtitle: t('s6.subtitle'), visual: <ExportVisual />, description: t('s6.desc') },
+    { title: t('s5.title'), subtitle: t('s5.subtitle'), visual: <TagesplanungVisual />, description: t('s5.desc') },
+    { title: t('s6.title'), subtitle: t('s6.subtitle'), visual: <TaetigkeitsnachweisVisual />, description: t('s6.desc') },
+    { title: t('s7.title'), subtitle: t('s7.subtitle'), visual: <ExportVisual />, description: t('s7.desc') },
   ]
 
   function close() { setOpen(false); setStep(0) }
@@ -32,48 +33,50 @@ export default function HowToModal() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40" onClick={close} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <div className="flex gap-1">
-                {STEPS.map((_, i) => (
-                  <button key={i} onClick={() => setStep(i)}
-                    className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-blue-600' : 'w-1.5 bg-gray-200 hover:bg-gray-300'}`}
-                    style={i === step ? { backgroundColor: 'var(--brand, #2563EB)' } : {}}
-                  />
-                ))}
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40" onClick={close} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div className="pointer-events-auto relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div className="flex gap-1">
+                  {STEPS.map((_, i) => (
+                    <button key={i} onClick={() => setStep(i)}
+                      className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-blue-600' : 'w-1.5 bg-gray-200 hover:bg-gray-300'}`}
+                      style={i === step ? { backgroundColor: 'var(--brand, #2563EB)' } : {}}
+                    />
+                  ))}
+                </div>
+                <button onClick={close} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4">✕</button>
               </div>
-              <button onClick={close} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4">✕</button>
-            </div>
 
-            <div className="bg-gray-50 h-52 flex items-center justify-center px-6 overflow-hidden">
-              {current.visual}
-            </div>
+              <div className="bg-gray-50 h-52 flex items-center justify-center px-6 overflow-hidden">
+                {current.visual}
+              </div>
 
-            <div className="px-6 py-5 space-y-2">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{step + 1} / {STEPS.length}</p>
-              <h2 className="text-lg font-bold text-gray-900">{current.title}</h2>
-              <p className="text-sm font-medium text-gray-500">{current.subtitle}</p>
-              <p className="text-sm text-gray-600 leading-relaxed pt-1">{current.description}</p>
-            </div>
+              <div className="px-6 py-5 space-y-2">
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{step + 1} / {STEPS.length}</p>
+                <h2 className="text-lg font-bold text-gray-900">{current.title}</h2>
+                <p className="text-sm font-medium text-gray-500">{current.subtitle}</p>
+                <p className="text-sm text-gray-600 leading-relaxed pt-1">{current.description}</p>
+              </div>
 
-            <div className="flex items-center justify-between px-6 pb-5">
-              <Button variant="ghost" size="sm" onClick={() => setStep(s => s - 1)} disabled={step === 0} className="text-gray-500">
-                ← {t('back')}
-              </Button>
-              {step < STEPS.length - 1 ? (
-                <Button size="sm" onClick={() => setStep(s => s + 1)} style={{ backgroundColor: 'var(--brand, #2563EB)' }} className="text-white">
-                  {t('next')} →
+              <div className="flex items-center justify-between px-6 pb-5">
+                <Button variant="ghost" size="sm" onClick={() => setStep(s => s - 1)} disabled={step === 0} className="text-gray-500">
+                  ← {t('back')}
                 </Button>
-              ) : (
-                <Button size="sm" onClick={close} style={{ backgroundColor: 'var(--brand, #2563EB)' }} className="text-white">
-                  {t('done')} ✓
-                </Button>
-              )}
+                {step < STEPS.length - 1 ? (
+                  <Button size="sm" onClick={() => setStep(s => s + 1)} style={{ backgroundColor: 'var(--brand, #2563EB)' }} className="text-white">
+                    {t('next')} →
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={close} style={{ backgroundColor: 'var(--brand, #2563EB)' }} className="text-white">
+                    {t('done')} ✓
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   )
@@ -92,7 +95,7 @@ function WelcomeVisual() {
         </div>
       </div>
       <div className="flex gap-2 flex-wrap justify-center">
-        {['📄 Transcript', '🤖 AI', '✅ LOP'].map((s, i) => (
+        {['📄 Transcript', '🤖 AI', '✅ LOP', '📋 Tätigkeitsnachweis'].map((s, i) => (
           <span key={i} className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm">{s}</span>
         ))}
       </div>
@@ -115,6 +118,10 @@ function ProjectVisual() {
               <div className="text-xs text-gray-400 mt-0.5">3 open · 7 total</div>
             </div>
           ))}
+        </div>
+        <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded px-2 py-1">
+          <span>📍</span>
+          <span>Bundesland: Bayern</span>
         </div>
       </div>
     </div>
@@ -185,7 +192,7 @@ function LopVisual() {
           <tbody>
             {[
               { title: 'Create proposal', user: 'Smith', date: 'Apr 15', status: 'open', color: 'bg-orange-100 text-orange-700' },
-              { title: 'Presentation', user: 'Weber', date: 'Apr 20', status: 'in progress', color: 'bg-blue-100 text-blue-700' },
+              { title: 'Presentation', user: 'Weber + K.', date: 'Apr 20', status: 'in progress', color: 'bg-blue-100 text-blue-700' },
             ].map((r, i) => (
               <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-3 py-1.5 text-gray-800 underline cursor-pointer">{r.title}</td>
@@ -201,26 +208,60 @@ function LopVisual() {
   )
 }
 
-function ManualAddVisual() {
+function TagesplanungVisual() {
   return (
-    <div className="w-full space-y-2">
-      <div className="flex gap-2 mb-1">
-        <div className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600">+ Invite member</div>
-        <div className="text-xs text-white rounded px-2 py-1" style={{ backgroundColor: 'var(--brand,#2563EB)' }}>+ Add item manually</div>
+    <div className="w-full">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <button className="p-1 text-gray-400">‹</button>
+          <div className="text-sm font-semibold text-gray-800">Heute</div>
+          <button className="p-1 text-gray-300 cursor-not-allowed">›</button>
+        </div>
+        <div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Was machst du heute?</div>
+          <div className="bg-gray-50 border border-blue-300 rounded-xl px-3 py-2 text-xs text-gray-700 min-h-[56px]">
+            Reviews auswerten, Präsentation vorbereiten…
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <div className="text-xs text-white rounded-lg px-3 py-1.5" style={{ backgroundColor: 'var(--brand,#2563EB)' }}>
+            Speichern & schließen
+          </div>
+        </div>
       </div>
-      <div className="bg-white border border-blue-200 rounded-lg p-3 shadow-sm space-y-2 text-xs">
-        <div className="flex gap-2">
-          <div className="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Title *</div>
-          <div className="w-20 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Priority</div>
+    </div>
+  )
+}
+
+function TaetigkeitsnachweisVisual() {
+  return (
+    <div className="w-full">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden text-xs">
+        <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">
+          <span className="text-gray-400">‹</span>
+          <span className="text-xs font-semibold text-gray-700">Mai 2026</span>
+          <span className="text-gray-400">›</span>
         </div>
-        <div className="flex gap-2">
-          <div className="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Owner</div>
-          <div className="w-24 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-400">Due date</div>
-        </div>
-        <div className="flex gap-2 justify-end pt-1">
-          <div className="border border-gray-200 rounded px-2 py-1 text-gray-500">Cancel</div>
-          <div className="text-white rounded px-2 py-1" style={{ backgroundColor: 'var(--brand,#2563EB)' }}>Add</div>
-        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="text-left px-3 py-1.5 text-xs font-medium text-gray-500 w-20">Tag</th>
+              <th className="text-left px-3 py-1.5 text-xs font-medium text-gray-500">Tätigkeit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { day: 'Mo., 5.5.', text: 'LOP-Auswertung, Kundengespräch' },
+              { day: 'Di., 6.5.', text: 'Präsentation vorbereiten' },
+              { day: 'Mi., 7.5.', text: '–' },
+            ].map((r, i) => (
+              <tr key={i} className="border-b border-gray-50">
+                <td className="px-3 py-1.5 text-gray-400">{r.day}</td>
+                <td className="px-3 py-1.5 text-gray-600">{r.text}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
@@ -233,7 +274,7 @@ function ExportVisual() {
         <div className="flex items-center gap-2">
           <span className="text-lg">📊</span>
           <div>
-            <div className="text-xs font-medium text-gray-700">LOP_PMO_2026-04-01.xlsx</div>
+            <div className="text-xs font-medium text-gray-700">LOP_PMO_2026-05-01.xlsx</div>
             <div className="text-xs text-gray-400">With workspace branding & metadata</div>
           </div>
         </div>

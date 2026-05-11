@@ -400,12 +400,12 @@
     "s0": {
       "title": "Welcome to AutoToDo",
       "subtitle": "Meeting notes become action items automatically.",
-      "desc": "AutoToDo reads your meeting transcripts and uses AI to automatically extract all tasks, owners and deadlines — directly as a structured action list (LOP)."
+      "desc": "AutoToDo reads your meeting transcripts and uses AI to extract all tasks, owners and deadlines. Log your daily plan each morning — and by month-end your activity report fills itself."
     },
     "s1": {
       "title": "Step 1 – Create a project",
       "subtitle": "One project per client or team.",
-      "desc": "Click \"New project\" on the dashboard. Enter a name and an optional description. All transcripts and action items are assigned to the project."
+      "desc": "Click \"New project\" on the dashboard. Enter a name and an optional description. Optionally select a German state — public holidays will then be hidden automatically in the activity report."
     },
     "s2": {
       "title": "Step 2 – Upload transcript",
@@ -419,23 +419,23 @@
     },
     "s4": {
       "title": "Step 4 – Edit the action list",
-      "subtitle": "Filter, edit, set status.",
-      "desc": "In the action list you can filter by status, priority and owner. Click a title to edit all details in a dialog. Status changes can be made directly in the row."
+      "subtitle": "Filter, edit, co-owners & links.",
+      "desc": "Filter by status, priority and owner. Click a title to edit all details — including co-owners and external links. You can also add new items manually at any time."
     },
     "s5": {
-      "title": "Step 5 – Add items manually",
-      "subtitle": "Add tasks independently of a transcript.",
-      "desc": "Click \"+ Add item manually\" at the top of the project page. A form opens where you can enter title, owner, due date and priority."
+      "title": "Step 5 – Daily planning",
+      "subtitle": "What are you working on today?",
+      "desc": "Click »Daily plan« and note what you plan to do today. The AI uses these entries for your activity report. When everyone on the call shares their plan, the report becomes even more accurate."
     },
     "s6": {
-      "title": "Step 6 – Export & share",
-      "subtitle": "XLSX export with workspace branding.",
-      "desc": "Use \"↓ XLSX\" to export the action list as an Excel file with workspace colour and metadata. Use \"+ Invite member\" to add colleagues to the project."
+      "title": "Step 6 – Activity report",
+      "subtitle": "Auto-filled monthly log.",
+      "desc": "The activity report shows all working days — automatically filled from your LOP items and daily plans. Entries are editable and can be printed as a PDF."
     },
     "s7": {
-      "title": "Tip: Import directly from Notion",
-      "subtitle": "Automatically transfer meeting notes.",
-      "desc": "Connect your Notion account under Settings → Integrations. Then switch to the »Notion« tab when uploading a transcript, paste the page URL, and import with one click – no copy & paste needed."
+      "title": "Step 7 – Export & share",
+      "subtitle": "XLSX export and team invitations.",
+      "desc": "Use »↓ XLSX« to export the action list as an Excel file with workspace branding. Use »+ Invite member« to add colleagues — with individual roles and permissions."
     }
   },
   "errors": {
