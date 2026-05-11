@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 
@@ -32,10 +33,10 @@ export default function HowToModal() {
         <span>{t('trigger')}</span>
       </button>
 
-      {open && (
+      {open && createPortal(
         <>
-          <div className="fixed inset-0 z-50 bg-black/40" onClick={close} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-[9999] bg-black/40" onClick={close} />
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
             <div className="pointer-events-auto relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex gap-1">
@@ -76,7 +77,8 @@ export default function HowToModal() {
               </div>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   )
