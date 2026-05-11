@@ -162,10 +162,47 @@ z.B. Übersicht wie viel pro Person schon geschafft wurde und Burn-Rate
 **Lösung:** Zwei neue Karten im Dashboard: "Fortschritt pro Person" (Fortschrittsbalken erledigt/gesamt, Top 8) und "Burn-Rate" (Balkendiagramm abgeschlossener Tasks pro KW, letzte 8 Wochen).
 
 ---
-## F-013 | 2026-05-08 08:50:21 | ✨ Feature-Wunsch | Status: offen
+## F-013 | 2026-05-08 08:50:21 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Tätigkeitsnachsweise: bei meiner Firma muß ich tagesscharfe Tätigkeitsnachweise einreichen. Es wäre hilfreich, wenn jeder Nutzer bei AutoToDo einen Button hätte, bei dem via Pop-up in tabellarischer Ansicht monatsscharf die Tätigkeiten pro Tag auf maximal zwei Felder (je 100 Zeichen) dargestellt werden.
+**Lösung:** Button „Tätigkeitsnachweis" im Dashboard-Header (für alle Nutzer). Pop-up zeigt monatliche Tabelle: Tag | Tätigkeit 1 (LOP-Items, wo Nutzer verantwortlich) | Tätigkeit 2 (Meetings/Transkripte). Beide Felder editierbar, max. 100 Zeichen, vorausgefüllt aus API. Monat per Pfeil wechselbar, Drucken/PDF-Button.
+
+---
+## F-015 | 2026-05-08 14:33:31 | ✨ Feature-Wunsch | Status: offen
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Auch in der Webversion angemeldet bleiben, z.B. über Cookie
+
+---
+## B-007 | 2026-05-09 11:57:04 | 🐛 Fehler | Status: offen
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Katarina, Katharina und Katharina Lugunja wird mehrmals angezeigt; Clemens und Clemens Pompey wird mehrmals angezeigt → bitte mergen. Logik entwickeln, dass dieselbe Person nicht mehrmals eingegeben/erstellt wird.
+
+---
+## F-016 | 2026-05-09 11:54:22 | ✨ Feature-Wunsch | Status: offen
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Tätigkeitsnachweis: deutschlandweite gesetzliche Feiertage + Wochenenden ausschließen, lokale Feiertage je konfiguriertem Projekt-Bundesland berücksichtigen. Max. 2×100 Zeichen pro Tag. Logik: abgehakte Daily-Todos + Transkript + hinterlegte Deadlines + Tagesplanung. Wiederholende Aufgaben über mehrere Tage sollen korrekt abgebildet werden.
+
+---
+## F-017 | 2026-05-09 12:00:02 | ✨ Feature-Wunsch | Status: offen
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Rollenkonzept entwickeln (noch nicht umsetzen) – erst Konzept erstellen: Welche Rollen muss es geben (z.B. Admin, Team-Lead)? Welche Rechte haben unterschiedliche Rollen (z.B. Rechteauswahl, Bezahlfunktion, Auswertungsfunktion, Änderungsfunktion, neue Projekte erstellen, neue Teammitglieder einladen)?
+
+---
+## F-014 | 2026-05-08 13:10:45 | ✨ Feature-Wunsch | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Neuer Button „Tagesplanung" pro Nutzer: Pop-up zeigt, was der jeweilige Nutzer an dem Tag macht (auch historisch einsehbar), wird automatisch aus Transkripten befüllt. Im Stand-up-Modus erscheint nach Klick auf „Aufnahme starten" ein Hinweis, dass jeder einmal kurz berichtet, was er an dem Tag macht. Hintergrund: damit wird der Tätigkeitsbericht deutlich genauer ausgefüllt. Im Anschluss gleicht der Tätigkeitsbericht mit Tagesplan und LOP-Liste ab.
+**Lösung:** Migration 027 (daily_plans). Klemmbrett-Icon in WorkspaceNav öffnet TagesplanungModal: editierbares Feld mit Auto-Save, vorausgefüllt aus offenen LOP-Punkten, Verlauf der letzten 14 Tage. Stand-up-Banner erscheint 8 Sek. nach Klick auf „Aufnahme starten". Tätigkeitsnachweis bevorzugt gespeicherten Tagesplan vor LOP/Meeting-Fallback.
 
 ---
