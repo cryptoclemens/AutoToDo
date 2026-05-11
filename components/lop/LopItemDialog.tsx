@@ -52,6 +52,7 @@ interface Props {
   item: LopItem | null
   canEdit: boolean
   members: WorkspaceMember[]
+  existingNames?: string[]
   onClose: () => void
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
   onDelete?: (id: string) => void
@@ -65,7 +66,7 @@ function isValidUrl(s: string): boolean {
   try { new URL(s); return true } catch { return false }
 }
 
-export default function LopItemDialog({ item, canEdit, members, onClose, onUpdate, onDelete }: Props) {
+export default function LopItemDialog({ item, canEdit, members, existingNames = [], onClose, onUpdate, onDelete }: Props) {
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
@@ -212,6 +213,7 @@ export default function LopItemDialog({ item, canEdit, members, onClose, onUpdat
                     responsible={draft.responsible}
                     responsibleUserId={draft.responsible_user_id}
                     members={members}
+                    existingNames={existingNames}
                     onChange={(responsible, responsibleUserId) =>
                       setDraft(d => d ? { ...d, responsible, responsible_user_id: responsibleUserId } : d)
                     }

@@ -484,6 +484,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
         item={selectedItem}
         canEdit={canEdit}
         members={members}
+        existingNames={responsibleOptions}
         onClose={() => setSelectedItem(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}

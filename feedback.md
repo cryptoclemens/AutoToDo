@@ -170,18 +170,20 @@ Tätigkeitsnachsweise: bei meiner Firma muß ich tagesscharfe Tätigkeitsnachwei
 **Lösung:** Button „Tätigkeitsnachweis" im Dashboard-Header (für alle Nutzer). Pop-up zeigt monatliche Tabelle: Tag | Tätigkeit 1 (LOP-Items, wo Nutzer verantwortlich) | Tätigkeit 2 (Meetings/Transkripte). Beide Felder editierbar, max. 100 Zeichen, vorausgefüllt aus API. Monat per Pfeil wechselbar, Drucken/PDF-Button.
 
 ---
-## F-015 | 2026-05-08 14:33:31 | ✨ Feature-Wunsch | Status: offen
+## F-015 | 2026-05-08 14:33:31 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Auch in der Webversion angemeldet bleiben, z.B. über Cookie
+**Lösung:** `createBrowserClient` erhält `cookieOptions: { maxAge: 365 Tage }` – die Session bleibt nach Browser-Neustart erhalten.
 
 ---
-## B-007 | 2026-05-09 11:57:04 | 🐛 Fehler | Status: offen
+## B-007 | 2026-05-09 11:57:04 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Katarina, Katharina und Katharina Lugunja wird mehrmals angezeigt; Clemens und Clemens Pompey wird mehrmals angezeigt → bitte mergen. Logik entwickeln, dass dieselbe Person nicht mehrmals eingegeben/erstellt wird.
+**Lösung:** DB-Backfill: „Katharina" + „Katharina Lugonia" → „Katarina" (35 Punkte), „Clemens Pompeÿ" → „Clemens" (24 Punkte). Prävention: Freitext-Feld in `ResponsibleSelect` zeigt jetzt per `<datalist>` Autocomplete aller bekannten Namen aus der aktuellen LOP-Liste.
 
 ---
 ## F-016 | 2026-05-09 11:54:22 | ✨ Feature-Wunsch | Status: offen

@@ -17,6 +17,7 @@ interface Props {
   responsible: string | null
   responsibleUserId: string | null
   members: WorkspaceMember[]
+  existingNames?: string[]
   onChange: (responsible: string | null, responsibleUserId: string | null) => void
   className?: string
   placeholder?: string
@@ -30,6 +31,7 @@ export default function ResponsibleSelect({
   responsible,
   responsibleUserId,
   members,
+  existingNames = [],
   onChange,
   className = 'h-8 text-sm',
   placeholder = 'Verantwortlich',
@@ -79,6 +81,11 @@ export default function ResponsibleSelect({
 
   // Free-text input mode
   if (showInput) {
+    const listId = 'responsible-names-list'
+    const memberNames = members.map(m => m.display_name)
+    const suggestions = Array.from(new Set([...existingNames, ...memberNames]))
+      .filter(n => n && n !== responsible)
+      .sort()
     return (
       <div className="flex gap-1">
         <Input
@@ -88,7 +95,13 @@ export default function ResponsibleSelect({
           placeholder={placeholder}
           disabled={disabled}
           autoFocus
+          list={suggestions.length > 0 ? listId : undefined}
         />
+        {suggestions.length > 0 && (
+          <datalist id={listId}>
+            {suggestions.map(n => <option key={n} value={n} />)}
+          </datalist>
+        )}
         <button
           type="button"
           disabled={disabled}

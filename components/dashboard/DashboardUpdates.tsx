@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-015',
+    date: '11.05.2026',
+    title: 'Eingeloggt bleiben',
+    description: 'Du wirst nach dem Schließen des Browsers nicht mehr automatisch abgemeldet – die Sitzung bleibt ein Jahr lang aktiv.',
+  },
+  {
     id: 'F-014',
     date: '08.05.2026',
     title: 'Tagesplanung',
