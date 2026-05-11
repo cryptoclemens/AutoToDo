@@ -46,17 +46,12 @@ export default function TagesplanungModal({ onClose, projectId }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFuture = date > today
 
-  const loadDate = useCallback(async (d: string) => {
-    if (cache[d]) {
-      setText(cache[d].plan || cache[d].suggestion)
-      return
-    }
+  const fetchDate = useCallback(async (d: string) => {
     setLoading(true)
     try {
       const res = await fetch(`/api/daily-plan?date=${d}&days=${HISTORY_DAYS}&projectId=${projectId}`)
       if (!res.ok) return
       const json = await res.json()
-      // Populate cache for all returned history too
       const newCache: Record<string, DayPlan> = {}
       newCache[d] = { plan: json.plan, suggestion: json.suggestion }
       for (const h of json.history ?? []) {
@@ -68,7 +63,16 @@ export default function TagesplanungModal({ onClose, projectId }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [cache])
+  }, [projectId])
+
+  const loadDate = useCallback(async (d: string) => {
+    // Vergangene Tage aus Cache laden; heute immer frisch holen
+    if (d !== today && cache[d]) {
+      setText(cache[d].plan || cache[d].suggestion)
+      return
+    }
+    await fetchDate(d)
+  }, [cache, today, fetchDate])
 
   useEffect(() => { loadDate(date) }, [date]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -199,9 +203,19 @@ export default function TagesplanungModal({ onClose, projectId }: Props) {
                 </div>
 
                 {isSuggested && (
-                  <p className="text-xs text-blue-500 mt-2">
-                    ↑ Automatisch aus offenen LOP-Punkten vorausgefüllt – einfach anpassen.
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-blue-500">
+                      ↑ Automatisch aus offenen LOP-Punkten vorausgefüllt – einfach anpassen.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => fetchDate(date)}
+                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors ml-3 shrink-0"
+                      title="Vorschlag aktualisieren"
+                    >
+                      ↻ Aktualisieren
+                    </button>
+                  </div>
                 )}
               </>
             )}
