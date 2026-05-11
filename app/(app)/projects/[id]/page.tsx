@@ -9,6 +9,7 @@ import { getEffectiveBranding } from '@/lib/branding'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import ProjectPageClient from '@/components/projects/ProjectPageClient'
 import ContextNotes from '@/components/project/ContextNotes'
+import UsageTip from '@/components/project/UsageTip'
 import XlsxImportDialog from '@/components/projects/XlsxImportDialog'
 import { Button } from '@/components/ui/button'
 import TaetigkeitsnachweisButton from '@/components/dashboard/TaetigkeitsnachweisButton'
@@ -240,6 +241,8 @@ export default async function ProjectPage({ params }: Props) {
 
       {/* Context notes extracted from transcripts */}
       <ContextNotes projectId={project.id} />
+
+      <UsageTip />
 
       {/* Mitglied einladen + LOP-Punkt hinzufügen + LOP-Tabelle */}
       <ProjectPageClient
