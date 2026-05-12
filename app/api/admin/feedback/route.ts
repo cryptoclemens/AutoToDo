@@ -32,6 +32,7 @@ export async function GET() {
       id,
       message,
       category,
+      category_seq,
       status,
       created_at,
       workspace_id,
@@ -55,15 +56,21 @@ export async function GET() {
     }
   }
 
-  const rows = (data ?? []).map(f => ({
-    id: f.id,
-    message: f.message,
-    category: f.category ?? 'general',
-    status: f.status ?? 'new',
-    created_at: f.created_at,
-    workspace_name: (f.workspaces as { name?: string } | null)?.name ?? null,
-    user_email: f.user_id ? (emailMap[f.user_id] ?? f.user_id) : null,
-  }))
+  const rows = (data ?? []).map(f => {
+    const cat = f.category ?? 'general'
+    const prefix = cat === 'feature' ? 'F' : cat === 'bug' ? 'B' : 'G'
+    const feedbackId = f.category_seq ? `${prefix}-${String(f.category_seq).padStart(3, '0')}` : null
+    return {
+      id: f.id,
+      feedback_id: feedbackId,
+      message: f.message,
+      category: cat,
+      status: f.status ?? 'new',
+      created_at: f.created_at,
+      workspace_name: (f.workspaces as { name?: string } | null)?.name ?? null,
+      user_email: f.user_id ? (emailMap[f.user_id] ?? f.user_id) : null,
+    }
+  })
 
   return NextResponse.json(rows)
 }

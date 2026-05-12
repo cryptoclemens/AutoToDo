@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface FeedbackRow {
   id: string
+  feedback_id: string | null
   message: string
   category: string
   status: string
@@ -44,20 +45,41 @@ function fmtDate(s: string) {
   })
 }
 
+const POLL_INTERVAL = 60_000
+
 export default function AdminFeedbackClient() {
   const [rows, setRows] = useState<FeedbackRow[]>([])
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
   const [updating, setUpdating] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const knownIds = useRef<Set<string>>(new Set())
+
+  function loadFeedback(isBackground = false) {
+    return fetch('/api/admin/feedback')
+      .then(r => r.json())
+      .then((d: FeedbackRow[] | { error: string }) => {
+        if (!Array.isArray(d)) {
+          if (!isBackground) setError((d as { error: string }).error ?? 'Fehler beim Laden.')
+          return
+        }
+        setRows(prev => {
+          // Neue Einträge erkennen (für zukünftige Erweiterungen wie Benachrichtigungen)
+          d.forEach(r => knownIds.current.add(r.id))
+          // Merge: lokale Status-Änderungen beibehalten, neue Zeilen hinzufügen
+          const prevMap = new Map(prev.map(r => [r.id, r]))
+          return d.map(r => prevMap.has(r.id) && updating === r.id ? prevMap.get(r.id)! : r)
+        })
+        setLastUpdated(new Date())
+      })
+      .catch(() => { if (!isBackground) setError('Netzwerkfehler.') })
+  }
 
   useEffect(() => {
-    fetch('/api/admin/feedback')
-      .then(r => r.json())
-      .then(d => {
-        if (Array.isArray(d)) setRows(d)
-        else setError(d.error ?? 'Fehler beim Laden.')
-      })
-      .catch(() => setError('Netzwerkfehler.'))
+    loadFeedback()
+    const timer = setInterval(() => loadFeedback(true), POLL_INTERVAL)
+    return () => clearInterval(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function updateStatus(id: string, status: string) {
@@ -88,27 +110,34 @@ export default function AdminFeedbackClient() {
 
   return (
     <div>
-      {/* Filter-Tabs */}
-      <div className="flex items-center gap-2 mb-5 flex-wrap">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-            filter === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          Alle ({rows.length})
-        </button>
-        {STATUS_OPTIONS.map(o => (
+      {/* Filter-Tabs + Aktualisiert-Zeitstempel */}
+      <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            key={o.value}
-            onClick={() => setFilter(o.value)}
+            onClick={() => setFilter('all')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-              filter === o.value ? 'bg-gray-900 text-white' : `${o.style} hover:opacity-80`
+              filter === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            {o.label} ({counts[o.value] ?? 0})
+            Alle ({rows.length})
           </button>
-        ))}
+          {STATUS_OPTIONS.map(o => (
+            <button
+              key={o.value}
+              onClick={() => setFilter(o.value)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                filter === o.value ? 'bg-gray-900 text-white' : `${o.style} hover:opacity-80`
+              }`}
+            >
+              {o.label} ({counts[o.value] ?? 0})
+            </button>
+          ))}
+        </div>
+        {lastUpdated && (
+          <span className="text-xs text-gray-400">
+            Aktualisiert: {lastUpdated.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </span>
+        )}
       </div>
 
       {filtered.length === 0 ? (
@@ -120,6 +149,11 @@ export default function AdminFeedbackClient() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    {row.feedback_id && (
+                      <span className="text-xs font-mono font-semibold text-gray-500">
+                        {row.feedback_id}
+                      </span>
+                    )}
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_STYLES[row.category] ?? 'bg-gray-100 text-gray-600'}`}>
                       {CATEGORY_LABELS[row.category] ?? row.category}
                     </span>
