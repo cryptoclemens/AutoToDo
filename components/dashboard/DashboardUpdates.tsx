@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-016',
+    date: '12.05.2026',
+    title: 'Admin: Feedback-Verwaltung',
+    description: 'Im Super-Admin-Bereich gibt es jetzt eine Feedback-Sektion: alle Nutzer-Rückmeldungen auf einen Blick, filterbar nach Status (Neu, In Prüfung, Erledigt, Abgelehnt) – direkt im Browser änderbar.',
+  },
+  {
     id: 'F-015',
     date: '11.05.2026',
     title: 'Eingeloggt bleiben',
