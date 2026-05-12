@@ -37,10 +37,6 @@ function getStatusStyle(status: string) {
   return STATUS_OPTIONS.find(o => o.value === status)?.style ?? 'bg-gray-100 text-gray-500'
 }
 
-function getStatusLabel(status: string) {
-  return STATUS_OPTIONS.find(o => o.value === status)?.label ?? status
-}
-
 function fmtDate(s: string) {
   return new Date(s).toLocaleDateString('de-DE', {
     day: '2-digit', month: '2-digit', year: '2-digit',
