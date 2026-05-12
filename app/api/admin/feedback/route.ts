@@ -44,7 +44,7 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Nutzer-Emails via Auth Admin API laden
-  const userIds = [...new Set((data ?? []).map(f => f.user_id).filter(Boolean))]
+  const userIds = Array.from(new Set((data ?? []).map(f => f.user_id).filter(Boolean)))
   const emailMap: Record<string, string> = {}
   for (const uid of userIds) {
     try {
