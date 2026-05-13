@@ -119,24 +119,37 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       (allResponsibles ?? []).map(r => r.responsible).filter(Boolean) as string[]
     ))
 
-    // Load workspace members for name matching
-    const { data: memberRows } = await supabase
-      .from('workspace_members')
-      .select('user_id, role, profiles:user_id(display_name, email)')
-      .eq('workspace_id', transcript.workspace_id) as {
-        data: Array<{
-          user_id: string
-          role: string
-          profiles: { display_name: string | null; email: string | null } | null
-        }> | null
-      }
+    // Load workspace members for name matching (via RPC that reads auth.users)
+    const { data: memberRows } = await supabase.rpc('get_workspace_members_with_email', {
+      p_workspace_id: transcript.workspace_id,
+    }) as {
+      data: Array<{
+        user_id: string
+        role: string
+        display_name: string
+        email: string
+      }> | null
+    }
 
     const members = (memberRows ?? [])
-      .map(m => ({
-        display_name: m.profiles?.display_name ?? m.profiles?.email?.split('@')[0] ?? 'Unbekannt',
-        email: m.profiles?.email ?? '',
-      }))
-      .filter(m => m.display_name !== 'Unbekannt')
+      .filter(m => m.display_name && m.display_name !== m.email)
+      .map(m => ({ display_name: m.display_name, email: m.email }))
+
+    // Map for resolving responsible name → user_id after LLM processing
+    const memberEntries = (memberRows ?? []).map(m => ({
+      uid: m.user_id,
+      display_name: m.display_name,
+    }))
+    const resolveResponsibleUserId = (responsibleName: string | null | undefined): string | null => {
+      if (!responsibleName) return null
+      const nameLower = responsibleName.toLowerCase().trim()
+      for (const entry of memberEntries) {
+        const fullLower = entry.display_name.toLowerCase()
+        const firstName = fullLower.split(/\s+/)[0]
+        if (fullLower === nameLower || firstName === nameLower) return entry.uid
+      }
+      return null
+    }
 
     // Process with LLM (with retry on JSON parse error)
     let result
@@ -162,6 +175,7 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
           title: action.title ?? 'Unbekannter Punkt',
           description: action.description ?? null,
           responsible: action.responsible ?? null,
+          responsible_user_id: resolveResponsibleUserId(action.responsible),
           due_date: action.due_date ?? null,
           priority: action.priority ?? 'mittel',
           status: 'offen',
