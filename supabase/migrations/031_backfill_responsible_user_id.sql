@@ -3,7 +3,7 @@
 -- Hintergrund: processTranscript.ts hat responsible_user_id nie gesetzt,
 -- weil die profiles-Join-Abfrage kaputt war. Dieser Backfill löst den
 -- responsible-Text (Vor- oder Vollname, case-insensitiv) gegen die
--- Workspace-Mitglieder auf und trägt die UUID nach.
+-- Workspace- und Project-Mitglieder auf und trägt die UUID nach.
 --
 -- Matching-Reihenfolge:
 --   1. Vollname exakt (case-insensitiv)
@@ -12,20 +12,17 @@
 -- Bei Mehrdeutigkeit (zwei Mitglieder mit gleichem Vornamen) wird kein
 -- Eintrag gesetzt (DISTINCT ON bevorzugt den Vollname-Treffer).
 
+-- Durchlauf 1: workspace_members
 UPDATE lop_items li
 SET responsible_user_id = match.user_id
 FROM (
   SELECT DISTINCT ON (li2.id)
     li2.id AS lop_item_id,
     wm.user_id,
-    -- Vollname-Treffer = höhere Priorität (1), Vorname-Treffer = 2
     CASE
       WHEN lower(li2.responsible) = lower(
-        COALESCE(
-          NULLIF(u.raw_user_meta_data->>'full_name', ''),
-          NULLIF(u.raw_user_meta_data->>'name', ''),
-          u.email
-        )
+        COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''),
+                 NULLIF(u.raw_user_meta_data->>'name', ''), u.email)
       ) THEN 1
       ELSE 2
     END AS match_priority
@@ -35,23 +32,52 @@ FROM (
   WHERE li2.responsible_user_id IS NULL
     AND li2.responsible IS NOT NULL
     AND (
-      -- Vollname-Treffer
       lower(li2.responsible) = lower(
-        COALESCE(
-          NULLIF(u.raw_user_meta_data->>'full_name', ''),
-          NULLIF(u.raw_user_meta_data->>'name', ''),
-          u.email
-        )
+        COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''),
+                 NULLIF(u.raw_user_meta_data->>'name', ''), u.email)
       )
       OR
-      -- Vorname-Treffer (erstes Wort des display_name)
       lower(li2.responsible) = lower(
         SPLIT_PART(
-          COALESCE(
-            NULLIF(u.raw_user_meta_data->>'full_name', ''),
-            NULLIF(u.raw_user_meta_data->>'name', ''),
-            u.email
-          ),
+          COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''),
+                   NULLIF(u.raw_user_meta_data->>'name', ''), u.email),
+          ' ', 1
+        )
+      )
+    )
+  ORDER BY li2.id, match_priority
+) match
+WHERE li.id = match.lop_item_id;
+
+-- Durchlauf 2: project_members (z.B. externe Mitarbeiter ohne workspace_members-Eintrag)
+UPDATE lop_items li
+SET responsible_user_id = match.user_id
+FROM (
+  SELECT DISTINCT ON (li2.id)
+    li2.id AS lop_item_id,
+    pm.user_id,
+    CASE
+      WHEN lower(li2.responsible) = lower(
+        COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''),
+                 NULLIF(u.raw_user_meta_data->>'name', ''), u.email)
+      ) THEN 1
+      ELSE 2
+    END AS match_priority
+  FROM lop_items li2
+  JOIN project_members pm ON pm.project_id = li2.project_id
+  JOIN auth.users u ON u.id = pm.user_id
+  WHERE li2.responsible_user_id IS NULL
+    AND li2.responsible IS NOT NULL
+    AND (
+      lower(li2.responsible) = lower(
+        COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''),
+                 NULLIF(u.raw_user_meta_data->>'name', ''), u.email)
+      )
+      OR
+      lower(li2.responsible) = lower(
+        SPLIT_PART(
+          COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''),
+                   NULLIF(u.raw_user_meta_data->>'name', ''), u.email),
           ' ', 1
         )
       )

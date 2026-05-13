@@ -120,7 +120,7 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     ))
 
     // Load workspace members for name matching (via RPC that reads auth.users)
-    const { data: memberRows } = await supabase.rpc('get_workspace_members_with_email', {
+    const { data: wsMemberRows } = await supabase.rpc('get_workspace_members_with_email', {
       p_workspace_id: transcript.workspace_id,
     }) as {
       data: Array<{
@@ -131,12 +131,38 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       }> | null
     }
 
-    const members = (memberRows ?? [])
+    // Also load project-scoped members (e.g. external collaborators not in workspace_members)
+    const { data: pmRows } = await supabase
+      .from('project_members')
+      .select('user_id')
+      .eq('project_id', transcript.project_id) as { data: Array<{ user_id: string }> | null }
+
+    const wsMemberIds = new Set((wsMemberRows ?? []).map(m => m.user_id))
+    const extraUserIds = (pmRows ?? []).map(r => r.user_id).filter(id => !wsMemberIds.has(id))
+
+    let extraRows: Array<{ user_id: string; display_name: string; email: string }> = []
+    if (extraUserIds.length > 0) {
+      const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+      extraRows = users
+        .filter(u => extraUserIds.includes(u.id))
+        .map(u => ({
+          user_id: u.id,
+          display_name: (u.user_metadata?.full_name as string | undefined)
+            || (u.user_metadata?.name as string | undefined)
+            || u.email?.split('@')[0]
+            || u.id,
+          email: u.email ?? '',
+        }))
+    }
+
+    const allMemberRows = [...(wsMemberRows ?? []), ...extraRows]
+
+    const members = allMemberRows
       .filter(m => m.display_name && m.display_name !== m.email)
       .map(m => ({ display_name: m.display_name, email: m.email }))
 
     // Map for resolving responsible name → user_id after LLM processing
-    const memberEntries = (memberRows ?? []).map(m => ({
+    const memberEntries = allMemberRows.map(m => ({
       uid: m.user_id,
       display_name: m.display_name,
     }))
