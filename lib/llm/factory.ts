@@ -11,18 +11,19 @@ export async function processTranscriptWithLlm(
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
   knownNames: string[] = [],
+  submitterName?: string,
 ): Promise<ProcessTranscriptResult> {
   switch (config.provider) {
     case 'anthropic':
-      return processWithAnthropic(config, transcriptText, existingItems, members, knownNames)
+      return processWithAnthropic(config, transcriptText, existingItems, members, knownNames, submitterName)
     case 'openai':
-      return processWithOpenAI(config, transcriptText, existingItems, members, knownNames)
+      return processWithOpenAI(config, transcriptText, existingItems, members, knownNames, submitterName)
     case 'azure_openai':
-      return processWithAzureOpenAI(config, transcriptText, existingItems, members, knownNames)
+      return processWithAzureOpenAI(config, transcriptText, existingItems, members, knownNames, submitterName)
     case 'perplexity':
-      return processWithPerplexity(config, transcriptText, existingItems, members, knownNames)
+      return processWithPerplexity(config, transcriptText, existingItems, members, knownNames, submitterName)
     case 'deepseek':
-      return processWithDeepseek(config, transcriptText, existingItems, members, knownNames)
+      return processWithDeepseek(config, transcriptText, existingItems, members, knownNames, submitterName)
     default:
       throw new Error(`Unsupported LLM provider: ${(config as LlmConfig).provider}`)
   }

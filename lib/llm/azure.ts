@@ -8,6 +8,7 @@ export async function processWithAzureOpenAI(
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
   knownNames: string[] = [],
+  submitterName?: string,
 ): Promise<ProcessTranscriptResult> {
   if (!config.endpoint) throw new Error('Azure Endpoint-URL ist erforderlich.')
 
@@ -25,7 +26,7 @@ export async function processWithAzureOpenAI(
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames) },
+        { role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames, submitterName) },
       ],
     })
     const content = completion.choices[0]?.message?.content
@@ -52,6 +53,7 @@ export async function processWithAzureOpenAI(
       actions: Array.isArray(parsed.actions) ? parsed.actions : [],
       context_notes: Array.isArray(parsed.context_notes) ? parsed.context_notes : [],
       summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+      daily_plan_text: typeof parsed.daily_plan_text === 'string' ? parsed.daily_plan_text : null,
     }
   } catch {
     throw new Error(`LLM returned invalid JSON: ${raw.slice(0, 200)}`)

@@ -8,6 +8,7 @@ export async function processWithAnthropic(
   existingItems: ExistingLopItem[],
   members: WorkspaceMemberContext[] = [],
   knownNames: string[] = [],
+  submitterName?: string,
 ): Promise<ProcessTranscriptResult> {
   const client = new Anthropic({ apiKey: config.apiKey })
 
@@ -16,7 +17,7 @@ export async function processWithAnthropic(
       model: config.model,
       max_tokens: 8192,
       system: buildSystemPrompt(),
-      messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames) }],
+      messages: [{ role: 'user', content: buildUserPrompt(transcriptText, existingItems, members, knownNames, submitterName) }],
     })
     if (message.stop_reason === 'max_tokens') {
       throw new Error('LLM-Antwort wurde abgeschnitten (Transkript zu lang). Bitte kürzen und erneut versuchen.')
@@ -56,6 +57,7 @@ function parseResponse(raw: string): ProcessTranscriptResult {
       actions: Array.isArray(parsed.actions) ? parsed.actions : [],
       context_notes: Array.isArray(parsed.context_notes) ? parsed.context_notes : [],
       summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+      daily_plan_text: typeof parsed.daily_plan_text === 'string' ? parsed.daily_plan_text : null,
     }
   } catch {
     throw new Error(`LLM returned invalid JSON: ${cleaned.slice(0, 200)}`)

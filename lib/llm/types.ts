@@ -47,4 +47,5 @@ export interface ProcessTranscriptResult {
   actions: LopAction[]
   context_notes: ContextNote[]
   summary: string
+  daily_plan_text?: string | null
 }

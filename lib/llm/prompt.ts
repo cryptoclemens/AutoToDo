@@ -38,7 +38,8 @@ Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt im folgenden Format:
       "relevant_until": "YYYY-MM-DD oder null"
     }
   ],
-  "summary": "Kurze Zusammenfassung des Meetings (1-2 Sätze)"
+  "summary": "Kurze Zusammenfassung des Meetings (1-2 Sätze)",
+  "daily_plan_text": "Kommagetrennte Liste der eigenen Vorhaben des Transkript-Einreichers für heute, oder null wenn nicht erkennbar"
 }
 
 Regeln:
@@ -67,6 +68,12 @@ WICHTIG – Personennamen:
 - Steht "Katarina" in der Liste, dann verwende "Katarina" — nicht "Katharina" oder eine andere Variante
 - Für Personen die in keiner Liste stehen: übernehme den Namen so wie er im Transkript steht
 
+TAGESPLAN (daily_plan_text):
+- Wird nur befüllt wenn ein "Transkript-Einreicher" angegeben ist
+- Extrahiere was diese Person explizit als eigene Vorhaben für heute genannt hat (z.B. "Ich mache heute X", "Ich habe vor Y zu tun", "Mein Plan ist Z")
+- Formuliere als kommagetrennte Liste der Vorhaben, prägnant und ohne Pronomen (z.B. "Termin mit Franze vereinbaren, Interview Klauder vorbereiten")
+- Wenn die Person keine eigenen Pläne nennt oder kein Einreicher angegeben: null
+
 Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
 }
 
@@ -75,6 +82,7 @@ export function buildUserPrompt(
   existingItems: Array<{ id: string; title: string; description: string | null; status: string }>,
   members: Array<{ display_name: string; email: string }>,
   knownNames: string[] = [],
+  submitterName?: string,
 ): string {
   const itemsList = existingItems.length > 0
     ? `\n\nBestehende LOP-Punkte:\n${existingItems.map(i => {
@@ -94,5 +102,9 @@ export function buildUserPrompt(
     ? `\n\nBekannte Personennamen (aus früheren Transkripten – diese Schreibweise verwenden):\n${externalNames.map(n => `- ${n}`).join('\n')}`
     : ''
 
-  return `Analysiere das folgende Meeting-Transkript und extrahiere alle Aufgaben und Statusänderungen.${itemsList}${membersList}${knownNamesList}\n\nTranskript:\n${transcriptText}`
+  const submitterInfo = submitterName
+    ? `\n\nTranskript-Einreicher: ${submitterName} (daily_plan_text für diese Person extrahieren)`
+    : ''
+
+  return `Analysiere das folgende Meeting-Transkript und extrahiere alle Aufgaben und Statusänderungen.${itemsList}${membersList}${knownNamesList}${submitterInfo}\n\nTranskript:\n${transcriptText}`
 }

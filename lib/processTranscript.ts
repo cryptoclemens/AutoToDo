@@ -24,13 +24,13 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
   // Load transcript
   const { data: transcript } = await supabase
     .from('transcripts')
-    .select('id, project_id, workspace_id, storage_path, encrypted_content, processing_status')
+    .select('id, project_id, workspace_id, storage_path, encrypted_content, processing_status, uploaded_by')
     .eq('id', transcriptId)
     .single() as {
       data: {
         id: string; project_id: string; workspace_id: string
         storage_path: string | null; encrypted_content: string | null
-        processing_status: string
+        processing_status: string; uploaded_by: string | null
       } | null
     }
 
@@ -161,6 +161,24 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       .filter(m => m.display_name && m.display_name !== m.email)
       .map(m => ({ display_name: m.display_name, email: m.email }))
 
+    // Resolve display name of transcript submitter for daily_plan extraction
+    let submitterName: string | undefined
+    if (transcript.uploaded_by) {
+      const uploaderRow = allMemberRows.find(m => m.user_id === transcript.uploaded_by)
+      if (uploaderRow?.display_name && uploaderRow.display_name !== uploaderRow.email) {
+        submitterName = uploaderRow.display_name
+      } else {
+        // Fallback: fetch from auth.users directly
+        const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+        const uploaderUser = users.find(u => u.id === transcript.uploaded_by)
+        if (uploaderUser) {
+          submitterName = (uploaderUser.user_metadata?.full_name as string | undefined)
+            || (uploaderUser.user_metadata?.name as string | undefined)
+            || uploaderUser.email?.split('@')[0]
+        }
+      }
+    }
+
     // Map for resolving responsible name → user_id after LLM processing
     const memberEntries = allMemberRows.map(m => ({
       uid: m.user_id,
@@ -180,10 +198,10 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
     // Process with LLM (with retry on JSON parse error)
     let result
     try {
-      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [], members, knownNames)
+      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [], members, knownNames, submitterName)
     } catch {
       await new Promise(r => setTimeout(r, 1500))
-      result = await processTranscriptWithLlm(config, transcriptText, [], members, knownNames)
+      result = await processTranscriptWithLlm(config, transcriptText, [], members, knownNames, submitterName)
     }
 
     // Apply actions
@@ -238,6 +256,18 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
 
         if (!error) itemsUpdated++
       }
+    }
+
+    // Save daily plan for the transcript submitter
+    if (result.daily_plan_text && transcript.uploaded_by) {
+      const meetingDate = new Date().toISOString().split('T')[0]
+      await supabase.from('daily_plans').upsert({
+        user_id: transcript.uploaded_by,
+        workspace_id: transcript.workspace_id,
+        project_id: transcript.project_id,
+        date: meetingDate,
+        text: result.daily_plan_text,
+      }, { onConflict: 'user_id,project_id,date' })
     }
 
     // Save context notes (resilient — silently skips if migration not deployed)
