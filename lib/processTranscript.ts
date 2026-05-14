@@ -97,6 +97,14 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       endpoint: llmConfig.endpoint ?? undefined,
     }
 
+    // Load project settings (call_language for AI hint)
+    const { data: project } = await supabase
+      .from('projects')
+      .select('call_language')
+      .eq('id', transcript.project_id)
+      .maybeSingle() as { data: { call_language: string | null } | null }
+    const callLanguage = project?.call_language ?? 'de'
+
     // Load existing LOP items for context (include description for dedup)
     const { data: existingItems } = await supabase
       .from('lop_items')
@@ -195,13 +203,21 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       return null
     }
 
+    // Prepend language hint so the LLM knows what to expect
+    const LANG_LABELS: Record<string, string> = {
+      de: 'Deutsch', en: 'English', fr: 'Français', es: 'Español',
+      it: 'Italiano', pt: 'Português', nl: 'Nederlands', pl: 'Polski',
+    }
+    const langHint = `[Sprache der Aufnahme: ${LANG_LABELS[callLanguage] ?? callLanguage}]\n\n`
+    const annotatedText = langHint + transcriptText
+
     // Process with LLM (with retry on JSON parse error)
     let result
     try {
-      result = await processTranscriptWithLlm(config, transcriptText, existingItems ?? [], members, knownNames, submitterName)
+      result = await processTranscriptWithLlm(config, annotatedText, existingItems ?? [], members, knownNames, submitterName)
     } catch {
       await new Promise(r => setTimeout(r, 1500))
-      result = await processTranscriptWithLlm(config, transcriptText, [], members, knownNames, submitterName)
+      result = await processTranscriptWithLlm(config, annotatedText, [], members, knownNames, submitterName)
     }
 
     // Apply actions

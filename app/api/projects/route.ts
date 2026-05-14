@@ -8,11 +8,15 @@ import { checkProjectLimit } from '@/lib/plan-gate'
 
 const BUNDESLAENDER = ['BW','BY','BE','BB','HB','HH','HE','MV','NI','NW','RP','SL','SN','ST','SH','TH']
 
+const CALL_LANGUAGES = ['de','en','fr','es','it','pt','nl','pl'] as const
+
 const schema = z.object({
   workspaceId: z.string().uuid(),
   name: z.string().min(1).max(200),
   description: z.string().max(500).nullable().optional(),
   bundesland: z.string().refine(v => v === null || BUNDESLAENDER.includes(v)).nullable().optional(),
+  call_language: z.enum(CALL_LANGUAGES).default('de'),
+  needs_activity_report: z.boolean().default(false),
 })
 
 export async function GET() {
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
   }
 
-  const { workspaceId, name, description, bundesland } = parsed.data
+  const { workspaceId, name, description, bundesland, call_language, needs_activity_report } = parsed.data
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -82,7 +86,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('projects')
-    .insert({ workspace_id: workspaceId, name, description, bundesland: bundesland ?? null, created_by: user.id })
+    .insert({ workspace_id: workspaceId, name, description, bundesland: bundesland ?? null, call_language, needs_activity_report, created_by: user.id })
     .select('id')
     .single()
 
