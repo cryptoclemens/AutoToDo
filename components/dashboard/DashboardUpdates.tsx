@@ -12,6 +12,18 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-020',
+    date: '14.05.2026',
+    title: 'Projekteinstellungen: Sprache & Tätigkeitsnachweis',
+    description: 'Beim Anlegen eines Projekts kannst du jetzt die Sprache der Calls festlegen (Deutsch, Englisch u.a.) und angeben, ob ein Tätigkeitsnachweis benötigt wird.',
+  },
+  {
+    id: 'F-019',
+    date: '14.05.2026',
+    title: 'Ideenspeicher je LOP-Liste',
+    description: 'Unter jeder LOP-Liste gibt es jetzt einen ausklappbaren Ideenspeicher für lose Gedanken ohne Umsetzungsdruck. Im Standup-Modus erscheinen Ideen nach den offenen Punkten. Wer im Meeting sagt „das wäre für den Ideenspeicher", wird die Idee nach der Transkription automatisch dort finden.',
+  },
+  {
     id: 'F-016',
     date: '12.05.2026',
     title: 'Admin: Feedback-Verwaltung',
