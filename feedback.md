@@ -220,7 +220,7 @@ Neuer Button „Tagesplanung" pro Nutzer: Pop-up zeigt, was der jeweilige Nutzer
 ---
 ## F-018 | 2026-05-14 16:32:30 | ✨ Feature-Wunsch
 **Workspace:** Vencly
-**Nutzer:** clemens.pompey@vencly.com
+**Nutzer:** markus.wanzek@plenum.de
 
 An Feiertagen keine E-Mail Benachrichtigungen
 An Feiertagen, sowie Samstagen und Sonntagen (regulär, es gibt Ausnahmen) Tätigkeitsnachweise ausgrauen.
