@@ -1,8 +1,8 @@
 # AutoToDo
 
-**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.148
+**KI-gestütztes LOP-Management für Teams** | Multi-Tenant SaaS | BYOK-Edition | v0.1.198
 
-AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben & Statusänderungen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
+AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-Transkripten. Meeting hochladen → KI extrahiert Aufgaben, Statusänderungen & Ideen → KI-Vorschläge prüfen, bearbeiten, annehmen → LOP aktuell → Export als XLSX.
 
 ---
 
@@ -12,7 +12,7 @@ AutoToDo automatisiert die Pflege von Listen offener Punkte (LOPs) aus Meeting-T
 |---|---|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Next.js API Routes, Supabase (PostgreSQL + Auth + Storage) |
-| KI (Extraktion) | Anthropic Claude / OpenAI GPT / Azure OpenAI / Perplexity AI Sonar (BYOK) |
+| KI (Extraktion) | Anthropic Claude / OpenAI GPT / Azure OpenAI / Perplexity AI / DeepSeek (BYOK) |
 | KI (Transkription) | OpenAI Whisper / Groq Whisper (whisper-large-v3-turbo, 120 Min/Tag kostenlos) |
 | Deployment | Docker (Hetzner CX32, standalone) · Self-hosted Supabase |
 | E-Mail | Resend (optional, via `RESEND_API_KEY`) |
@@ -59,22 +59,12 @@ INTERNAL_API_SECRET=your-secret-string
 
 Migrations in Supabase SQL Editor ausführen (in dieser Reihenfolge):
 
+```bash
+supabase db push   # wendet alle ausstehenden Migrations an
 ```
-supabase/migrations/001_initial_schema.sql
-supabase/migrations/002_rls_policies.sql
-supabase/migrations/003_indexes.sql
-supabase/migrations/004_m5_columns.sql
-supabase/migrations/005_fix_rls_recursion.sql
-supabase/migrations/006_llm_endpoint.sql
-supabase/migrations/007_m7.sql
-supabase/migrations/008_m7e.sql
-supabase/migrations/009_legal_consent.sql
-supabase/migrations/010_storage_buckets.sql
-supabase/migrations/011_freemium.sql
-supabase/migrations/012_...sql     # (folgende Migrations wie deployed)
-supabase/migrations/...
-supabase/migrations/019_llm_multi_role.sql
-```
+
+Oder manuell via Supabase SQL Editor in numerischer Reihenfolge (001 → 033).
+Aktuelle Migrations: `001_initial_schema` bis `033_project_settings` (33 Dateien).
 
 ### 4. Entwicklungsserver starten
 
@@ -93,58 +83,70 @@ autotodo/
 ├── app/                    # Next.js App Router
 │   ├── page.tsx            # Landing Page (direkt in app/, kein Route-Group)
 │   ├── (auth)/             # Login, Register, Passwort-Reset, Invite-Accept
-│   ├── (onboarding)/       # Onboarding-Wizard
-│   ├── (app)/              # Workspace-App (auth-geschützt)
-│   │   ├── dashboard/      # Projekt-Übersicht
+│   ├── (onboarding)/       # Onboarding-Wizard (3 Schritte)
+│   ├── (app)/              # Workspace-App (auth-geschützt via Middleware)
+│   │   ├── dashboard/      # Projekt-Übersicht, KPIs, Burn-Rate, Updates
 │   │   ├── projects/[id]/  # Projektseite, Transkripte, XLSX-Import
-│   │   └── settings/       # Branding, LLM, API-Keys, Members, Billing
+│   │   ├── projects/new/   # Projekt anlegen (inkl. Sprache + Tätigkeitsnachweis)
+│   │   ├── settings/       # Branding, LLM, API-Keys, Members, Billing, Integrations
+│   │   └── admin/          # Super-Admin: Übersicht, Friends Codes, Steuerung
 │   ├── (guest)/            # Gast-Ansicht (öffentlich, kein Login)
-│   ├── desktop/            # Desktop-App Download-Seite (öffentlich, GitHub-Releases)
+│   ├── desktop/            # Desktop-App Download-Seite (GitHub-Releases)
 │   ├── auth/callback/      # Supabase E-Mail-Bestätigung
 │   └── api/                # API Routes
-│       ├── lop/            # LOP CRUD
-│       ├── transcripts/    # Upload + Inline-Verarbeitung + Retry
-│       ├── projects/[id]/  # Import (XLSX-Reimport), Guests
+│       ├── lop/            # LOP CRUD + Translate
+│       ├── transcripts/    # Upload + Inline-Verarbeitung + Retry + Audio
+│       ├── ideas/          # Ideenspeicher: GET/POST/DELETE/PATCH(promote)
+│       ├── projects/[id]/  # Import (XLSX-Reimport), Guests, Unarchive
+│       ├── taetigkeitsnachweise/ # Monatliche Tätigkeitsnachweise
 │       ├── v1/             # Öffentliche REST API (Bearer-Token)
 │       ├── api-keys/       # API-Key-Verwaltung
 │       ├── feedback/       # Feedback-Speicherung (DB + GitHub)
 │       ├── invitations/    # Einladungs-Generierung + Resend-E-Mail
+│       ├── members/        # Workspace- + Projektmitglieder
 │       ├── mollie/         # Checkout + Webhook (Billing)
-│       ├── cron/           # Täglicher E-Mail-Digest (Mo–Fr 17 Uhr)
-│       └── settings/       # Branding, Logo-Upload
+│       ├── cron/           # Täglicher E-Mail-Digest (Mo–Fr 17 Uhr, host crontab)
+│       └── settings/       # Branding, Logo-Upload, LLM, Members
 ├── components/
-│   ├── lop/                # LopTable, LopTableRow, LopItemDialog,
-│   │                       # ReviewBanner, AiReviewPanel, StatusBadge, PriorityBadge
+│   ├── lop/                # LopTable (inkl. Ideenspeicher + Standup-Modus),
+│   │                       # LopTableRow, LopItemDialog, ReviewBanner,
+│   │                       # AiReviewPanel, StatusBadge, PriorityBadge, ResponsibleSelect
 │   ├── transcripts/        # TranscriptUploadForm, RetryButton
 │   ├── projects/           # ProjectTitleEditor, ProjectInviteButton,
-│   │                       # ProjectPageClient, XlsxImportDialog
-│   ├── desktop/            # DesktopRecordButton (Record per LOP-Liste)
+│   │                       # ProjectPageClient, XlsxImportDialog, ProjectMembersDialog
+│   ├── dashboard/          # DashboardUpdates, TaetigkeitsnachweisModal
+│   ├── desktop/            # DesktopRecordButton
 │   ├── workspace/          # WorkspaceNav
-│   ├── settings/           # BillingTab, SettingsPageClient, …
+│   ├── settings/           # BillingTab, SettingsPageClient, AccountSettings, …
 │   ├── landing/            # LandingSecuritySection, LandingLegalFooter
 │   ├── legal/              # LegalModal (AGB + Datenschutzerklärung)
 │   ├── FeedbackButton.tsx  # Feedback-Popup (fixed bottom-left)
-│   ├── HowToModal.tsx      # How-to-Tour (6 Schritte)
-│   ├── SecurityModal.tsx   # Datensicherheits-Popup (9 TOMs)
+│   ├── HowToModal.tsx      # How-to-Tour
+│   ├── SecurityModal.tsx   # Datensicherheits-Popup (TOMs)
 │   └── ui/                 # shadcn/ui Komponenten
 ├── lib/
 │   ├── supabase/           # Client, Server, Middleware Helper
-│   ├── llm/                # LLM-Abstraktionsschicht (BYOK): Anthropic, OpenAI, Azure, Perplexity, Groq
-│   ├── workspace.ts        # resolveWorkspace() Helper
-│   ├── encryption.ts       # AES-256-GCM (mit Error-Handling)
+│   ├── llm/                # BYOK: Anthropic, OpenAI, Azure, Perplexity, Groq, DeepSeek
+│   │   ├── factory.ts      # processTranscriptWithLlm() Dispatcher
+│   │   ├── prompt.ts       # buildSystemPrompt() + buildUserPrompt()
+│   │   └── types.ts        # LlmConfig, ProcessTranscriptResult
+│   ├── workspace.ts        # resolveWorkspace() (Slug + Membership-Fallback)
+│   ├── encryption.ts       # AES-256-GCM
 │   ├── apiKeyAuth.ts       # SHA-256 API-Key-Validierung + Scope-Prüfung
-│   ├── processTranscript.ts # Shared LLM-Verarbeitungslogik (inline + retry)
+│   ├── processTranscript.ts # Shared LLM-Pipeline (Transkription → LOP + Ideen + Kontext)
 │   ├── export.ts           # XLSX-Export (SheetJS)
-│   ├── import.ts           # XLSX-Reimport: parseImportSheet + computeImportDiff
-│   ├── mollie.ts           # getMollieClient() + isMollieConfigured()
+│   ├── import.ts           # XLSX-Reimport
+│   ├── similarity.ts       # Jaccard-Similarity (Duplikat-Erkennung)
+│   ├── mollie.ts           # Billing
 │   ├── plan-gate.ts        # checkProjectLimit / checkTranscriptLimit / checkSeatLimit
 │   └── plans.ts            # Tier-Limits (Beta/Free/Solo/Team/Business)
-├── supabase/migrations/    # SQL Migrations (019 Dateien, alle deployed)
+├── supabase/migrations/    # SQL Migrations 001–033 (alle deployed)
 ├── docs/                   # hetzner-migration-plan.md
 ├── scripts/                # bump-version.sh, install-hooks.sh
 ├── middleware.ts            # Auth-Schutz + Workspace-Header
 ├── next.config.js          # output: standalone, Security Headers, withNextIntl
 ├── CLAUDE.md               # Entwicklungsregeln & Fallstricke
+├── architecture.md         # Systemarchitektur (Komponenten, Datenfluss, DB-Schema)
 ├── Tasks.md                # Meilenstein-Tracking
 └── Brief.md                # Vollständige Produktspezifikation
 ```
@@ -190,7 +192,7 @@ RESEND_API_KEY                  # aktiviert E-Mail-Versand (Einladungen + tägli
 RESEND_FROM                     # z.B. "AutoToDo <noreply@vencly.app>"
 MOLLIE_API_KEY                  # aktiviert Billing-Checkout
 GITHUB_FEEDBACK_TOKEN           # GitHub-Token mit repo-write-Zugriff → schreibt Feedback in feedback.md
-GITHUB_FEEDBACK_BRANCH          # Branch für Feedback-Commits (default: claude/github-automated-access-WVPL6)
+GITHUB_FEEDBACK_BRANCH          # Branch für Feedback-Commits (default: main)
 CRON_SECRET                     # Secret für den täglichen Digest-Cron (/api/cron/daily-digest)
 ```
 
@@ -214,23 +216,20 @@ Supabase Storage:
 
 | Meilenstein | Inhalt | Status |
 |---|---|---|
-| **9.2** | Custom Domain `autotodo.vencly.com` | ✅ DNS konfiguriert |
-| **9.4** | Slack/Teams-Integration via Webhook | ✅ Erledigt |
-| **M15** | AutoToDo Recorder PWA (Mic → Whisper → LOP) | ✅ Phase 1 fertig |
-| **M16** | Nutzer-Feedback: Status-Dropdown, Dedup, Namens-Matching, Unarchive | ✅ Erledigt |
+| **M18** | Nutzer-Feedback Mai 2026: Ideenspeicher, Tätigkeitsnachweis, Friends Codes Multi-Use, … | ✅ Erledigt |
+| **M17** | Tauri Desktop-App (macOS ARM/Intel + Windows MSI) | ✅ Erledigt |
 | **9.6** | SSO (SAML für Enterprise) | Offen (Business-Plan) |
 | **10.1** | Landing Page Hero-Illustration | Teilweise (Animationen live) |
-| **10.9** | Dark Mode | Offen |
+| **10.9** | Dark Mode | Teilweise (Grundstruktur vorhanden) |
 | **M15.7** | PWA Offline-Fallback-Seite | Offen |
-| **M15.8** | Phase 2: Tauri Desktop-App (System-Audio, separates Repo) | ✅ Erledigt (v0.1.x, macOS ARM/Intel + Windows) |
-| **Hetzner** | Migration auf CX32 + Self-hosted Supabase | ✅ Abgeschlossen |
+| **13.7** | WorkspaceNav: Projekt-Logo anzeigen wenn auf Projekt-Seite | Offen |
 
 ## Entwicklungsstand
 
 Siehe [Tasks.md](./Tasks.md) für den aktuellen Bearbeitungsstand nach Meilensteinen.
+Siehe [architecture.md](./architecture.md) für die Systemarchitektur (Komponenten, Datenfluss, DB-Schema).
 Siehe [Brief.md](./Brief.md) für die vollständige Produktspezifikation.
 Siehe [CLAUDE.md](./CLAUDE.md) für Entwicklungsregeln und bekannte Fallstricke.
-Siehe [Tasks.md](./Tasks.md) für den aktuellen Stand aller offenen Punkte.
 
 ---
 

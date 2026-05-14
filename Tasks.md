@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: April 2026 · Version 0.1.190 · M1–M17 erledigt
+Letzte Aktualisierung: Mai 2026 · Version 0.1.198 · M1–M17 erledigt
 
 ---
 
@@ -461,6 +461,27 @@ Letzte Aktualisierung: April 2026 · Version 0.1.190 · M1–M17 erledigt
 | I.5 | Datenmigration (Supabase Cloud → Self-hosted) | 🔲 Offen |
 | I.6 | AutoToDo in Coolify deployen + DNS umstellen | 🔲 Offen |
 | I.7 | Stündlichen pg_dump-Sync zu Supabase Cloud einrichten | 🔲 Offen |
+
+---
+
+### Meilenstein 18: Nutzer-Feedback Mai 2026 & neue Features
+
+| # | Aufgabe | Quelle | Status |
+|---|---|---|---|
+| 18.1 | Friends Codes: Multi-Use-Codes (max_uses, use_count, friends_code_redemptions), Admin-Steuerung erweitert | F-008 | ✅ Erledigt |
+| 18.2 | Co-Verantwortliche: Feld `co_responsibles` (JSONB) auf lop_items, Dropdown im LOP-Dialog | F-009 | ✅ Erledigt |
+| 18.3 | Kontext-Notizen: automatische Archivierung abgelaufener/alter Einträge beim GET | F-010 | ✅ Erledigt |
+| 18.4 | Anzeigename: `full_name` in user_metadata, Konto-Tab der Einstellungen | F-011 | ✅ Erledigt |
+| 18.5 | Dashboard: „Fortschritt pro Person" (Fortschrittsbalken Top 8) + „Burn-Rate" (Balken pro KW) | F-012 | ✅ Erledigt |
+| 18.6 | Tätigkeitsnachweis: monatliches Pop-up, tagesscharf, Daten aus LOP-Punkten + Fallback Transkripte | F-013 | ✅ Erledigt |
+| 18.7 | Verantwortliche zusammenführen: DB-Backfill + Admin-Tool für Alias-Normalisierung | B-006 | ✅ Erledigt |
+| 18.8 | Feedback-IDs: sequenziell (F-001, B-001, G-001) via `category_seq` DB-Spalte | intern | ✅ Erledigt |
+| 18.9 | Ideenspeicher je LOP-Liste: idea_items-Tabelle, API, Standup-Sektion, KI-Extraktion aus Transkript | intern | ✅ Erledigt |
+| 18.10 | Projekteinstellungen: Sprache der Calls (8 Sprachen) + Tätigkeitsnachweis-Flag beim Erstellen | intern | ✅ Erledigt |
+| 18.11 | DeepSeek als BYOK-LLM-Provider (deepseek-chat, deepseek-reasoner) | F-007 | ✅ Erledigt |
+| 18.12 | Einladungslink: wiederverwendbarer Link (7 Tage, wählbare Rolle), Widerruf möglich | F-008 | ✅ Erledigt |
+| 18.13 | Täglicher Digest: Projektspezifische Zuweisung, `daily_plans`-Tabelle (Tagesplan je Nutzer) | intern | ✅ Erledigt |
+| 18.14 | Backfill: `responsible_user_id` automatisch aus Anzeigenamen befüllen (Migration 031) | intern | ✅ Erledigt |
 
 ---
 
