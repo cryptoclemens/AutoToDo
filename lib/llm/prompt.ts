@@ -38,6 +38,12 @@ Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt im folgenden Format:
       "relevant_until": "YYYY-MM-DD oder null"
     }
   ],
+  "ideas": [
+    {
+      "title": "Kurzer Titel der Idee",
+      "note": "Kurze Erklärung in max. 3 Sätzen (oder null)"
+    }
+  ],
   "summary": "Kurze Zusammenfassung des Meetings (1-2 Sätze)",
   "daily_plan_text": "Kommagetrennte Liste der eigenen Vorhaben des Transkript-Einreichers für heute, oder null wenn nicht erkennbar"
 }
@@ -73,6 +79,12 @@ TAGESPLAN (daily_plan_text):
 - Extrahiere was diese Person explizit als eigene Vorhaben für heute genannt hat (z.B. "Ich mache heute X", "Ich habe vor Y zu tun", "Mein Plan ist Z")
 - Formuliere als kommagetrennte Liste der Vorhaben, prägnant und ohne Pronomen (z.B. "Termin mit Franze vereinbaren, Interview Klauder vorbereiten")
 - Wenn die Person keine eigenen Pläne nennt oder kein Einreicher angegeben: null
+
+IDEENSPEICHER (ideas):
+- Extrahiere Ideen wenn jemand Phrasen verwendet wie: "das wäre für den Ideenspeicher", "das wäre eine Idee", "das könnte man mal überlegen", "das wäre für später", "das merken wir uns", "vielleicht könnte man", "wäre schön wenn", oder ähnliche Formulierungen ohne konkreten Umsetzungsauftrag
+- Ideen sind keine Aufgaben: kein Verantwortlicher, kein Datum, kein Status
+- note: max. 3 Sätze zur Erläuterung, oder null wenn keine weiteren Details genannt wurden
+- Wenn keine Ideen erwähnt: leeres Array []
 
 Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
 }

@@ -288,6 +288,23 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       }
     } catch { /* migration 020 not yet deployed */ }
 
+    // Save ideas (resilient — silently skips if migration not deployed)
+    try {
+      const ideas = (result.ideas ?? []).filter((i: { title?: string }) => i.title?.trim())
+      if (ideas.length > 0) {
+        await supabase.from('idea_items').insert(
+          ideas.map((i: { title: string; note?: string | null }) => ({
+            project_id: transcript.project_id,
+            workspace_id: transcript.workspace_id,
+            title: i.title.trim(),
+            note: i.note?.trim() || null,
+            created_by: null,
+            created_by_name: 'KI (Transkript)',
+          }))
+        )
+      }
+    } catch { /* migration 027 not yet deployed */ }
+
     // Mark done
     await supabase.from('transcripts').update({
       processing_status: 'done',

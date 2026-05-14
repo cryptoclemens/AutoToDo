@@ -16,6 +16,14 @@ import { findSimilarPairs, type SimilarPair } from '@/lib/similarity'
 
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
+interface Idea {
+  id: string
+  title: string
+  note: string | null
+  created_by_name: string | null
+  created_at: string
+}
+
 interface TranslationMap {
   [id: string]: { title: string; description: string | null }
 }
@@ -49,6 +57,13 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
   const showTranslateButton = currentLocale === 'en'
   const isTranslated = Object.keys(translations).length > 0
 
+  const [ideas, setIdeas] = useState<Idea[]>([])
+  const [ideasOpen, setIdeasOpen] = useState(false)
+  const [ideaFormOpen, setIdeaFormOpen] = useState(false)
+  const [ideaTitle, setIdeaTitle] = useState('')
+  const [ideaNote, setIdeaNote] = useState('')
+  const [ideaSubmitting, setIdeaSubmitting] = useState(false)
+
   const showAddForm = externalShowAddForm ?? internalShowAddForm
   const setShowAddForm = onShowAddFormChange ?? setInternalShowAddForm
 
@@ -58,6 +73,13 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
     fetch(`/api/members?projectId=${encodeURIComponent(projectId)}`)
       .then(r => r.ok ? r.json() : [])
       .then((data: WorkspaceMember[]) => setMembers(data))
+      .catch(() => {})
+  }, [projectId])
+
+  useEffect(() => {
+    fetch(`/api/ideas?projectId=${encodeURIComponent(projectId)}`)
+      .then(r => r.ok ? r.json() : [])
+      .then((data: Idea[]) => setIdeas(data))
       .catch(() => {})
   }, [projectId])
 
@@ -230,6 +252,38 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
       }
       return updated
     })
+  }
+
+  async function handleIdeaAdd(e: React.FormEvent) {
+    e.preventDefault()
+    if (!ideaTitle.trim()) return
+    setIdeaSubmitting(true)
+    const res = await fetch('/api/ideas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, title: ideaTitle, note: ideaNote || undefined }),
+    })
+    if (res.ok) {
+      const idea: Idea = await res.json()
+      setIdeas(prev => [idea, ...prev])
+      setIdeaTitle('')
+      setIdeaNote('')
+      setIdeaFormOpen(false)
+    }
+    setIdeaSubmitting(false)
+  }
+
+  async function handleIdeaDelete(id: string) {
+    const res = await fetch(`/api/ideas/${id}`, { method: 'DELETE' })
+    if (res.ok) setIdeas(prev => prev.filter(i => i.id !== id))
+  }
+
+  async function handleIdeaPromote(id: string) {
+    const res = await fetch(`/api/ideas/${id}`, { method: 'PATCH' })
+    if (res.ok) {
+      setIdeas(prev => prev.filter(i => i.id !== id))
+      router.refresh()
+    }
   }
 
   async function handleMerge(keepId: string, deleteId: string) {
@@ -498,6 +552,138 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
           onMerge={handleMerge}
           onDismiss={() => { setShowMergeDialog(false); setMergePairs([]) }}
         />
+      )}
+
+      {/* Ideenspeicher */}
+      {standupMode ? (
+        /* Standup: immer sichtbar, gedimmt unter den offenen Punkten */
+        <div className="mt-2">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-t-xl bg-gray-50 border border-b-0 border-gray-100 dark:bg-gray-800/50 dark:border-gray-700">
+            <span className="text-lg leading-none">💡</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Ideenspeicher</span>
+            <span className="text-xs text-gray-300 ml-1">({ideas.length})</span>
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-b-xl border border-gray-100 dark:border-gray-700 px-4 py-3">
+            {ideas.length === 0 ? (
+              <p className="text-xs text-gray-300 py-1">Noch keine Ideen hinterlegt.</p>
+            ) : (
+              <ul className="space-y-2">
+                {ideas.map(idea => (
+                  <li key={idea.id} className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-400 font-medium truncate">{idea.title}</p>
+                      {idea.note && <p className="text-xs text-gray-300 mt-0.5 line-clamp-2">{idea.note}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Normalansicht: ausklappbarer Abschnitt unterhalb der Tabelle */
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setIdeasOpen(v => !v)}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+          >
+            <span className="text-base leading-none">💡</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Ideenspeicher</span>
+            {ideas.length > 0 && (
+              <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">{ideas.length}</span>
+            )}
+            <svg
+              className={`ml-auto w-3.5 h-3.5 text-gray-400 transition-transform ${ideasOpen ? 'rotate-180' : ''}`}
+              viewBox="0 0 14 14" fill="none"
+            >
+              <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          {ideasOpen && (
+            <div className="mt-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3 space-y-3">
+              {ideas.length === 0 && !ideaFormOpen && (
+                <p className="text-xs text-gray-400">Noch keine Ideen. Halte lose Gedanken ohne Umsetzungsdruck fest.</p>
+              )}
+
+              {ideas.map(idea => (
+                <div key={idea.id} className="flex items-start gap-3 group py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 dark:text-gray-200 font-medium">{idea.title}</p>
+                    {idea.note && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 whitespace-pre-wrap">{idea.note}</p>}
+                    <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                      {idea.created_by_name ?? 'Unbekannt'} · {new Date(idea.created_at).toLocaleDateString('de-DE')}
+                    </p>
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    {canEdit && (
+                      <button
+                        type="button"
+                        title="Zu LOP-Punkt umwandeln"
+                        onClick={() => handleIdeaPromote(idea.id)}
+                        className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium"
+                      >
+                        → Aufgabe
+                      </button>
+                    )}
+                    {canEdit && (
+                      <button
+                        type="button"
+                        title="Idee löschen"
+                        onClick={() => handleIdeaDelete(idea.id)}
+                        className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {canEdit && !ideaFormOpen && (
+                <button
+                  type="button"
+                  onClick={() => setIdeaFormOpen(true)}
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex items-center gap-1 transition-colors"
+                >
+                  <span className="text-base leading-none">+</span> Idee hinzufügen
+                </button>
+              )}
+
+              {ideaFormOpen && (
+                <form onSubmit={handleIdeaAdd} className="space-y-2 pt-1 border-t border-gray-100 dark:border-gray-700">
+                  <Input
+                    placeholder="Idee (Titel) *"
+                    value={ideaTitle}
+                    onChange={e => setIdeaTitle(e.target.value)}
+                    required
+                    autoFocus
+                    className="text-sm"
+                  />
+                  <textarea
+                    placeholder="Kurze Erklärung (optional, max. 3 Sätze)"
+                    value={ideaNote}
+                    onChange={e => setIdeaNote(e.target.value)}
+                    rows={2}
+                    maxLength={500}
+                    className="w-full text-sm border border-input rounded-md px-3 py-2 bg-background text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => { setIdeaFormOpen(false); setIdeaTitle(''); setIdeaNote('') }}>
+                      Abbrechen
+                    </Button>
+                    <Button type="submit" size="sm" disabled={ideaSubmitting} style={{ backgroundColor: 'var(--brand)' }} className="text-white">
+                      {ideaSubmitting ? 'Wird gespeichert…' : 'Speichern'}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
