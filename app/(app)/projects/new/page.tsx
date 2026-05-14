@@ -102,7 +102,7 @@ export default function NewProjectPage() {
             <div className="space-y-2">
               <Label htmlFor="call_language">Sprache der Teilnehmer-Calls</Label>
               <p className="text-xs text-gray-500">Wird für die automatische Transkription verwendet.</p>
-              <Select value={callLanguage} onValueChange={setCallLanguage}>
+              <Select value={callLanguage} onValueChange={(v) => v && setCallLanguage(v)}>
                 <SelectTrigger id="call_language" className="w-56">
                   <SelectValue />
                 </SelectTrigger>

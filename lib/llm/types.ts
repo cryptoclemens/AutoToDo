@@ -48,4 +48,5 @@ export interface ProcessTranscriptResult {
   context_notes: ContextNote[]
   summary: string
   daily_plan_text?: string | null
+  ideas?: { title: string; note?: string | null }[]
 }
