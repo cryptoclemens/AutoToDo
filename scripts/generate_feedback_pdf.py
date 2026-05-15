@@ -156,11 +156,12 @@ class FlowDiagram(Flowable):
             ('💬', 'Nutzer', 'Feedback-Button', BRAND),
             ('⚙️', 'API', 'POST /api/feedback', TEAL),
             ('📄', 'GitHub', 'feedback.md\ncommit', PURPLE),
+            ('📲', 'Telegram', 'Watchtower\nReminder', HexColor('#229ED9')),
             ('🤖', 'Claude', 'Session-Start\nliest + priorisiert', AMBER),
             ('🚀', 'Features', 'Implementierung\n+ Release', GREEN),
         ]
         n = len(steps)
-        box_w = 28*mm
+        box_w = 24*mm
         gap   = (W - n * box_w) / (n + 1)
         box_h = 28*mm
         y_box = H - box_h - 2*mm
@@ -261,30 +262,36 @@ def build_pdf(out_path):
     story.append(Paragraph('Schritt für Schritt', S['h2']))
 
     steps = [
-        (BRAND,  '1',  '💬  Schritt 1 – Nutzer sendet Feedback',
+        (BRAND,  '1',  '💬  Schritt 1 - Nutzer sendet Feedback',
          'Der eingeloggte Nutzer klickt den <b>Feedback-Button</b> (fixed, '
          'unten links in der App) und wählt eine Kategorie: '
          '<i>Fehler · Feature-Wunsch · Allgemein · Sonstiges</i>. '
          'Die Eingabe ist auf 2.000 Zeichen begrenzt.'),
-        (TEAL,   '2',  '⚙️  Schritt 2 – API speichert & versioniert',
+        (TEAL,   '2',  '⚙️  Schritt 2 - API speichert & versioniert',
          'Der POST-Request landet bei <b>/api/feedback</b>. Die API speichert den '
          'Eintrag parallel in zwei Wegen: (a) in die Supabase-Datenbank '
          '(Tabelle <i>feedback</i>, mit workspace_id + user_id) und (b) als '
          '<b>Git-Commit</b> direkt in die Datei <i>feedback.md</i> im Repository – '
          'via GitHub Contents API. Jeder Eintrag bekommt eine fortlaufende ID '
          '(F-001, B-002 …).'),
-        (PURPLE, '3',  '📄  Schritt 3 – feedback.md im Repository',
+        (PURPLE, '3',  '📄  Schritt 3 - feedback.md im Repository',
          'Die Datei ist eine strukturierte Markdown-Datei mit einem '
          'Eintrag pro Feedback. Format: <b>ID | Timestamp | Kategorie</b>, '
          'Workspace, Nutzer-E-Mail, Nachricht. Gelöste Einträge bekommen den '
          'Marker <i>Status: bearbeitet</i>. So ist der komplette '
          'Feedback-Verlauf versioniert und nachvollziehbar.'),
-        (AMBER,  '4',  '🤖  Schritt 4 – Claude liest & priorisiert',
+        (HexColor('#229ED9'), '4', '📲  Schritt 4 – Telegram-Reminder via Watchtower',
+         'Watchtower überwacht das Repository auf neue Commits in <i>feedback.md</i>. '
+         'Sobald ein neuer Feedback-Commit landet, schickt Watchtower automatisch '
+         'eine <b>Telegram-Nachricht</b> an den Entwickler – mit Kategorie, Workspace '
+         'und Nachricht. Kein manuelles Polling nötig, der Push-Kanal sorgt für '
+         'sofortige Benachrichtigung.'),
+        (AMBER,  '5',  '🤖  Schritt 5 – Claude liest & priorisiert',
          'Beim nächsten Session-Start liest Claude die feedback.md automatisch '
          'aus (über den Kontext-Inject oder manuell per "Gibt es neues Feedback?"). '
          'Claude priorisiert nach Häufigkeit, Workspace-Relevanz und technischer '
          'Machbarkeit – und schlägt vor, welche Punkte er als nächstes umsetzt.'),
-        (GREEN,  '5',  '🚀  Schritt 5 – Implementierung & Release',
+        (GREEN,  '6',  '🚀  Schritt 6 – Implementierung & Release',
          'Claude implementiert das Feature direkt im Repo, erstellt einen '
          'Commit und pusht auf den Development-Branch. Der GitHub Actions '
          'Workflow deployed automatisch auf den Produktiv-Server. '
