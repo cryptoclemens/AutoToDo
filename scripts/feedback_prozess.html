@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>AI-gestützter Feedback-Prozess</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.6;
+    color: #334155;
+    background: white;
+    padding: 14mm 16mm;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+
+  /* ── Header ─────────────────────────────────────── */
+  h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 9.5pt;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 10px 0 14px; }
+
+  /* ── Section headers ─────────────────────────────── */
+  h2 {
+    font-size: 11.5pt;
+    font-weight: 700;
+    color: #1e40af;
+    margin: 16px 0 8px;
+  }
+
+  /* ── Flow diagram ────────────────────────────────── */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 8px 0 4px;
+    justify-content: space-between;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+  .flow-box {
+    width: 100%;
+    max-width: 84px;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.12);
+  }
+  .flow-box .num {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 17px;
+    height: 17px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    font-size: 7.5pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flow-box .icon {
+    font-size: 22pt;
+    line-height: 1;
+    margin-bottom: 0;
+  }
+  .flow-label {
+    margin-top: 7px;
+    text-align: center;
+  }
+  .flow-label strong {
+    display: block;
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .flow-label span {
+    font-size: 6.5pt;
+    color: #94a3b8;
+    line-height: 1.3;
+    display: block;
+  }
+  .flow-arrow {
+    flex: 0 0 auto;
+    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 30px;
+    color: #cbd5e1;
+    font-size: 14pt;
+  }
+  .flow-caption {
+    text-align: center;
+    font-size: 7.5pt;
+    color: #94a3b8;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+
+  /* step colors */
+  .s1 { background: #2563eb; }  .s1 .num { color: #2563eb; }
+  .s2 { background: #0d9488; }  .s2 .num { color: #0d9488; }
+  .s3 { background: #7c3aed; }  .s3 .num { color: #7c3aed; }
+  .s4 { background: #229ED9; }  .s4 .num { color: #229ED9; }
+  .s5 { background: #d97706; }  .s5 .num { color: #d97706; }
+  .s6 { background: #16a34a; }  .s6 .num { color: #16a34a; }
+
+  /* ── Step cards ──────────────────────────────────── */
+  .step-card {
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+  .step-title {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .step-body {
+    font-size: 8.8pt;
+    line-height: 1.6;
+    color: #475569;
+    text-align: justify;
+  }
+  .step-body strong { color: #1e293b; }
+  .step-body em { font-style: italic; }
+
+  /* ── Table ───────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    margin-top: 4px;
+  }
+  thead tr { background: #2563eb; color: white; }
+  thead th { padding: 6px 8px; text-align: left; font-weight: 600; }
+  tbody tr:nth-child(odd)  { background: white; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody td { padding: 6px 8px; color: #475569; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tbody td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 7.5pt; color: #1e293b; white-space: nowrap; }
+
+  /* ── Code block ──────────────────────────────────── */
+  .code-block {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 7.8pt;
+    line-height: 1.65;
+    color: #1e293b;
+    white-space: pre;
+    margin-top: 6px;
+  }
+
+  /* ── Tip boxes ───────────────────────────────────── */
+  .tips { margin-top: 4px; }
+  .tip {
+    display: flex;
+    gap: 0;
+    margin-bottom: 6px;
+    page-break-inside: avoid;
+  }
+  .tip-bar {
+    width: 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+  .tip-text {
+    font-size: 8.5pt;
+    line-height: 1.55;
+    color: #475569;
+    background: #f8fafc;
+    padding: 6px 10px;
+    border-radius: 0 5px 5px 0;
+    flex: 1;
+  }
+  .tip-text strong { color: #1e293b; }
+
+  /* ── Footer ──────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    font-size: 7pt;
+    color: #94a3b8;
+    margin-top: 14px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  /* ── Page break helpers ──────────────────────────── */
+  .page-break { page-break-after: always; }
+  .no-break { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<h1>AI-gestützter Feedback-Prozess</h1>
+<p class="subtitle">Wie Nutzer-Feedback direkt in Features wird – ohne Ticket-System, ohne Meetings.</p>
+<hr>
+
+<!-- ── FLOW DIAGRAM ── -->
+<h2>Der Prozess auf einen Blick</h2>
+<div class="flow">
+  <div class="flow-step">
+    <div class="flow-box s1">
+      <div class="num">1</div>
+      <div class="icon">💬</div>
+    </div>
+    <div class="flow-label">
+      <strong>Nutzer</strong>
+      <span>Feedback-Button</span>
+    </div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="flow-box s2">
+      <div class="num">2</div>
+      <div class="icon">⚙️</div>
+    </div>
+    <div class="flow-label">
+      <strong>API</strong>
+      <span>POST /api/feedback</span>
+    </div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="flow-box s3">
+      <div class="num">3</div>
+      <div class="icon">📄</div>
+    </div>
+    <div class="flow-label">
+      <strong>GitHub</strong>
+      <span>feedback.md commit</span>
+    </div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="flow-box s4">
+      <div class="num">4</div>
+      <div class="icon">📲</div>
+    </div>
+    <div class="flow-label">
+      <strong>Telegram</strong>
+      <span>Watchtower Reminder</span>
+    </div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="flow-box s5">
+      <div class="num">5</div>
+      <div class="icon">🤖</div>
+    </div>
+    <div class="flow-label">
+      <strong>Claude</strong>
+      <span>liest &amp; priorisiert</span>
+    </div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="flow-box s6">
+      <div class="num">6</div>
+      <div class="icon">🚀</div>
+    </div>
+    <div class="flow-label">
+      <strong>Features</strong>
+      <span>Implementierung + Release</span>
+    </div>
+  </div>
+</div>
+<p class="flow-caption">Von der Eingabe bis zum Feature dauert es typischerweise eine Session (&lt; 2 h).</p>
+<hr>
+
+<!-- ── STEPS ── -->
+<h2>Schritt für Schritt</h2>
+
+<div class="step-card">
+  <div class="step-title" style="background:#2563eb;">💬 &nbsp;Schritt 1 – Nutzer sendet Feedback</div>
+  <p class="step-body">Der eingeloggte Nutzer klickt den <strong>Feedback-Button</strong> (fixed, unten links in der App) und wählt eine Kategorie: <em>Fehler · Feature-Wunsch · Allgemein · Sonstiges</em>. Die Eingabe ist auf 2.000 Zeichen begrenzt.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-title" style="background:#0d9488;">⚙️ &nbsp;Schritt 2 – API speichert &amp; versioniert</div>
+  <p class="step-body">Der POST-Request landet bei <strong>/api/feedback</strong>. Die API speichert parallel in zwei Wegen: (a) in die Supabase-Datenbank (Tabelle <em>feedback</em>, mit workspace_id + user_id) und (b) als <strong>Git-Commit</strong> direkt in die Datei <em>feedback.md</em> im Repository – via GitHub Contents API. Jeder Eintrag bekommt eine fortlaufende ID (F-001, B-002 …).</p>
+</div>
+
+<div class="step-card">
+  <div class="step-title" style="background:#7c3aed;">📄 &nbsp;Schritt 3 – feedback.md im Repository</div>
+  <p class="step-body">Die Datei ist eine strukturierte Markdown-Datei mit einem Eintrag pro Feedback. Format: <strong>ID | Timestamp | Kategorie</strong>, Workspace, Nutzer-E-Mail, Nachricht. Gelöste Einträge bekommen den Marker <em>Status: bearbeitet</em>. So ist der komplette Feedback-Verlauf versioniert und nachvollziehbar.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-title" style="background:#229ED9;">📲 &nbsp;Schritt 4 – Telegram-Reminder via Watchtower</div>
+  <p class="step-body">Watchtower überwacht das Repository auf neue Commits in <em>feedback.md</em>. Sobald ein neuer Feedback-Commit landet, schickt Watchtower automatisch eine <strong>Telegram-Nachricht</strong> an den Entwickler – mit Kategorie, Workspace und Nachricht. Kein manuelles Polling nötig, der Push-Kanal sorgt für sofortige Benachrichtigung.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-title" style="background:#d97706;">🤖 &nbsp;Schritt 5 – Claude liest &amp; priorisiert</div>
+  <p class="step-body">Beim nächsten Session-Start liest Claude die <em>feedback.md</em> automatisch aus (über den Kontext-Inject oder manuell per „Gibt es neues Feedback?"). Claude priorisiert nach Häufigkeit, Workspace-Relevanz und technischer Machbarkeit – und schlägt vor, welche Punkte er als nächstes umsetzt.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-title" style="background:#16a34a;">🚀 &nbsp;Schritt 6 – Implementierung &amp; Release</div>
+  <p class="step-body">Claude implementiert das Feature direkt im Repo, erstellt einen Commit und pusht auf den Development-Branch. Der GitHub Actions Workflow deployed automatisch auf den Produktiv-Server. Abschließend wird der Feedback-Eintrag auf <em>Status: bearbeitet</em> gesetzt und ein Update-Eintrag in <strong>DashboardUpdates.tsx</strong> veröffentlicht – sichtbar für alle Nutzer im Dashboard.</p>
+</div>
+
+<hr>
+
+<!-- ── REQUIREMENTS ── -->
+<h2>Was du brauchst</h2>
+<table>
+  <thead>
+    <tr><th>Komponente</th><th>Beschreibung</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GitHub-Repo</td>
+      <td>Ein Repository, in dem Claude Commits machen darf (Schreib-Zugriff).</td>
+    </tr>
+    <tr>
+      <td>GITHUB_FEEDBACK_TOKEN</td>
+      <td>Personal Access Token mit Scope <em>repo</em> (read + write contents). Als Env-Variable hinterlegen: <strong>GITHUB_FEEDBACK_TOKEN</strong>.</td>
+    </tr>
+    <tr>
+      <td>GITHUB_FEEDBACK_BRANCH</td>
+      <td>Der Branch, auf den Feedback-Commits landen (z.B. <em>main</em> oder <em>feedback</em>). Default: main.</td>
+    </tr>
+    <tr>
+      <td>feedback.md</td>
+      <td>Die Zieldatei im Repo-Root. Leer anlegen – die API erstellt den Header automatisch beim ersten Commit.</td>
+    </tr>
+    <tr>
+      <td>Watchtower + Telegram</td>
+      <td>Watchtower überwacht neue Commits auf dem Branch und schickt eine Telegram-Nachricht via Bot-Token + Chat-ID.</td>
+    </tr>
+    <tr>
+      <td>Claude Code Zugang</td>
+      <td>Claude muss das Repo lesen können. Am einfachsten: Claude Code CLI oder Claude Code Web mit Repo-Zugriff.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ── PROMPT ── -->
+<h2>Muster-Prompt: Session-Start mit Feedback-Check</h2>
+<p class="step-body">Diesen Prompt in <strong>CLAUDE.md</strong> eintragen – Claude liest ihn bei jedem Session-Start und weiß automatisch, was zu tun ist:</p>
+<div class="code-block">## Feedback-Prozess
+
+Beim Session-Start immer zuerst feedback.md lesen und prüfen, ob es neue
+Einträge gibt (kein "Status: bearbeitet"-Marker).
+
+Neue Einträge priorisieren:
+  - 🐛 Fehler (B-xxx)         → sofort ansprechen
+  - ✨ Feature-Wunsch (F-xxx)  → nach Häufigkeit / Aufwand abwägen
+  - 💬 Allgemein (G-xxx)       → ggf. nur bestätigen
+
+Nach der Implementierung:
+  1. Feedback-Eintrag in feedback.md mit "Status: bearbeitet" markieren
+     und eine **Lösung:** Zeile ergänzen (1 Satz, was umgesetzt wurde)
+  2. Neuen Eintrag in DashboardUpdates.tsx (UPDATES-Array) ergänzen
+     mit ID, Datum, kurzem Titel und nutzerorientierter Beschreibung
+  3. Commit + Push auf den Development-Branch
+
+Format neuer Feedback-Einträge in feedback.md:
+  ## F-XXX | YYYY-MM-DD HH:MM:SS | ✨ Feature-Wunsch
+  **Workspace:** MeinProjekt
+  **Nutzer:** user@example.com
+
+  [Nachricht des Nutzers]
+
+  ---</div>
+
+<hr>
+
+<!-- ── TIPS ── -->
+<h2>Tipps aus der Praxis</h2>
+<div class="tips">
+  <div class="tip">
+    <div class="tip-bar" style="background:#2563eb;"></div>
+    <div class="tip-text"><strong>Kleiner Button, große Wirkung.</strong> Der Feedback-Button ist fixed unten links platziert – immer erreichbar, nie im Weg. Nutzer senden Feedback genau dann, wenn etwas auffällt.</div>
+  </div>
+  <div class="tip">
+    <div class="tip-bar" style="background:#0d9488;"></div>
+    <div class="tip-text"><strong>Git als Single Source of Truth.</strong> feedback.md liegt im Repo – Claude sieht es ohne extra Tooling. Kein Jira, kein Trello, kein Webhook nötig.</div>
+  </div>
+  <div class="tip">
+    <div class="tip-bar" style="background:#229ED9;"></div>
+    <div class="tip-text"><strong>Push statt Poll.</strong> Watchtower + Telegram sorgt dafür, dass der Entwickler sofort benachrichtigt wird – kein manuelles Nachschauen in der feedback.md.</div>
+  </div>
+  <div class="tip">
+    <div class="tip-bar" style="background:#7c3aed;"></div>
+    <div class="tip-text"><strong>Denormalisierter Kontext.</strong> Workspace-Name und E-Mail direkt im Eintrag speichern (nicht nur IDs). Claude muss keine Joins machen, sieht den vollen Kontext sofort.</div>
+  </div>
+  <div class="tip">
+    <div class="tip-bar" style="background:#d97706;"></div>
+    <div class="tip-text"><strong>Resilient by design.</strong> API speichert immer in beide Wege (DB + GitHub). Wenn einer fehlschlägt, landet das Feedback trotzdem irgendwo.</div>
+  </div>
+  <div class="tip">
+    <div class="tip-bar" style="background:#16a34a;"></div>
+    <div class="tip-text"><strong>Transparenz für Nutzer.</strong> Die Dashboard-Updates-Sektion zeigt Titel, Datum und Beschreibung jedes neuen Features – Nutzer sehen, dass ihr Feedback ankommt.</div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+  Erstellt mit AutoToDo &nbsp;·&nbsp; vencly.com &nbsp;|&nbsp; Der vollständige Quellcode ist auf GitHub verfügbar.
+</div>
+
+</body>
+</html>
