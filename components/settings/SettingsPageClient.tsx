@@ -97,8 +97,6 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
     const valid = TAB_IDS.map(x => x.id)
     if (t && valid.includes(t)) setTab(t)
   }, [])
-  const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
-  const [digestSaving, setDigestSaving] = useState(false)
   const [digestTestSending, setDigestTestSending] = useState(false)
   const [digestFrequency, setDigestFrequency] = useState<string>(workspace.digest_frequency ?? 'daily')
   const [digestFrequencySaving, setDigestFrequencySaving] = useState(false)
@@ -112,26 +110,6 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
   const [removingMember, setRemovingMember] = useState<string | null>(null)
   const [invitations, setInvitations] = useState(pendingInvitations)
   const [revokingInvite, setRevokingInvite] = useState<string | null>(null)
-
-  async function handleDigestToggle() {
-    const next = !digestEnabled
-    setDigestEnabled(next)
-    setDigestSaving(true)
-    try {
-      const res = await fetch('/api/settings/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ digest_enabled: next }),
-      })
-      if (!res.ok) throw new Error()
-      toast.success(ts('digestSaved', { status: next ? ts('digestStatusActive') : ts('digestStatusDisabled') }))
-    } catch {
-      setDigestEnabled(!next)
-      toast.error(ts('digestError'))
-    } finally {
-      setDigestSaving(false)
-    }
-  }
 
   async function handleDigestTestSend() {
     setDigestTestSending(true)
