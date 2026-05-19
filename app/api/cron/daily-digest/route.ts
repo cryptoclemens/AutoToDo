@@ -177,15 +177,30 @@ export async function GET(request: NextRequest) {
   // 1. Workspaces mit aktiviertem Digest
   const { data: workspaces } = await supabase
     .from('workspaces')
-    .select('id, name, bundesland')
-    .eq('digest_enabled', true) as { data: Array<{ id: string; name: string; bundesland: string | null }> | null }
+    .select('id, name, bundesland, digest_frequency')
+    .neq('digest_frequency', 'disabled') as {
+      data: Array<{ id: string; name: string; bundesland: string | null; digest_frequency: string }> | null
+    }
 
   if (!workspaces?.length) {
-    return NextResponse.json({ sent: 0, dry_run: dryRun, reason: 'No workspaces with digest_enabled = true. Check Settings → Workspace → Digest toggle.' })
+    return NextResponse.json({ sent: 0, dry_run: dryRun, reason: 'No workspaces with digest enabled. Check Settings → Workspace → Digest frequency.' })
   }
 
+  // 2. Filter by frequency (frequency-based daily digest scheduling)
+  const today = new Date().getDay() // 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+  const frequencyFilteredWorkspaces = (workspaces ?? []).filter(ws => {
+    if (ws.digest_frequency === 'weekly') return today === 1       // Monday only
+    if (ws.digest_frequency === 'twice_weekly') return today === 1 || today === 4  // Monday + Thursday
+    return true // 'daily': no additional filter (crontab runs Mon–Fri)
+  })
+
+  if (!frequencyFilteredWorkspaces.length) {
+    return NextResponse.json({ sent: 0, dry_run: dryRun, reason: 'No workspaces scheduled for today based on frequency.' })
+  }
+
+  // 3. Filter by holidays
   const todayStr = new Date().toISOString().slice(0, 10)
-  const activeWorkspaces = (workspaces ?? []).filter(ws => {
+  const activeWorkspaces = frequencyFilteredWorkspaces.filter(ws => {
     const holidays = getGermanHolidays(new Date().getFullYear(), ws.bundesland)
     return !holidays.has(todayStr)
   })
@@ -196,7 +211,7 @@ export async function GET(request: NextRequest) {
   const workspaceIds = activeWorkspaces.map(w => w.id)
   const workspaceNameMap: Record<string, string> = Object.fromEntries(activeWorkspaces.map(w => [w.id, w.name]))
 
-  // 2. Nicht-archivierte Projekte
+  // 4. Nicht-archivierte Projekte
   const { data: projects } = await supabase
     .from('projects')
     .select('id, name, workspace_id')
@@ -211,7 +226,7 @@ export async function GET(request: NextRequest) {
   const projectMap: Record<string, { id: string; name: string; workspace_id: string }> =
     Object.fromEntries(projects.map(p => [p.id, p]))
 
-  // 3. Offene LOP-Punkte mit responsible_user_id
+  // 5. Offene LOP-Punkte mit responsible_user_id
   const { data: items } = await supabase
     .from('lop_items')
     .select('id, title, status, due_date, responsible_user_id, project_id')
@@ -234,7 +249,7 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // 4. Gruppieren nach Nutzer
+  // 6. Gruppieren nach Nutzer
   const itemsByUser: Record<string, typeof items> = {}
   for (const item of items) {
     const uid = item.responsible_user_id
@@ -242,7 +257,7 @@ export async function GET(request: NextRequest) {
     itemsByUser[uid].push(item)
   }
 
-  // 5. Pro Nutzer E-Mail versenden
+  // 7. Pro Nutzer E-Mail versenden
   let sent = 0
   const errors: string[] = []
   const dryRunRecipients: Array<{ email: string; itemCount: number }> = []
