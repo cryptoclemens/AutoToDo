@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: Mai 2026 · Version 0.1.198 · M1–M17 erledigt
+Letzte Aktualisierung: 19.05.2026 · Version 0.1.198 · M1–M18 erledigt
 
 ---
 
@@ -482,6 +482,20 @@ Letzte Aktualisierung: Mai 2026 · Version 0.1.198 · M1–M17 erledigt
 | 18.12 | Einladungslink: wiederverwendbarer Link (7 Tage, wählbare Rolle), Widerruf möglich | F-008 | ✅ Erledigt |
 | 18.13 | Täglicher Digest: Projektspezifische Zuweisung, `daily_plans`-Tabelle (Tagesplan je Nutzer) | intern | ✅ Erledigt |
 | 18.14 | Backfill: `responsible_user_id` automatisch aus Anzeigenamen befüllen (Migration 031) | intern | ✅ Erledigt |
+
+---
+
+### Meilenstein 19: Nutzer-Feedback Mai 2026 — Sprint 2
+
+| # | Aufgabe | Quelle | Status |
+|---|---|---|---|
+| 19.1 | LOP ↔ Ideenspeicher: bidirektionaler Transfer (parken & reaktivieren), Migration 034, `geparkt`-Status, Hover-Menü in LopTableRow | F-021 | ✅ Erledigt |
+| 19.2 | Feiertage im Tätigkeitsnachweis: alle Monatstage sichtbar, Wochenenden + Feiertage ausgegraut mit Feiertagsname (amber), `getHolidayLabels()`, Migration 035 `bundesland` auf `workspaces` | F-022 / F-018 | ✅ Erledigt |
+| 19.3 | E-Mail-Digest: Feiertags-Check pro Workspace — Digest überspringt Feiertage gemäß konfiguriertem Bundesland | F-022 / F-018 | ✅ Erledigt |
+| 19.4 | Workspace-Einstellungen: Bundesland-Selector (Bundesland für Feiertage) unter E-Mail-Digest | F-022 / F-018 | ✅ Erledigt |
+| 19.5 | Digest-Häufigkeit: Toggle ersetzt durch Select (Täglich / 2× pro Woche Mo+Do / Wöchentlich Mo / Aus), Migration 036 `digest_frequency` auf `workspaces` | F-023 / F-019 | ✅ Erledigt |
+| 19.6 | Cron respektiert `digest_frequency`: Frequenz-Filter (wöchentlich = nur Mo, 2×/Woche = Mo+Do) vor Feiertags-Filter | F-023 / F-019 | ✅ Erledigt |
+| 19.7 | Account-Hinweis-Link unter Digest-Select: Verweis auf Konto-Tab für Name/E-Mail-Änderung | F-023 / F-019 | ✅ Erledigt |
 
 ---
 
