@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-022',
+    date: '19.05.2026',
+    title: 'Feiertage im Tätigkeitsnachweis',
+    description: 'Wochenenden und Feiertage werden im Tätigkeitsnachweis ausgegraut – und der E-Mail-Digest pausiert automatisch an Feiertagen.',
+  },
+  {
     id: 'F-021',
     date: '19.05.2026',
     title: 'LOP ↔ Ideenspeicher',
