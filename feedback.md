@@ -218,3 +218,20 @@ Neuer Button „Tagesplanung" pro Nutzer: Pop-up zeigt, was der jeweilige Nutzer
 **Lösung:** Migration 027 (daily_plans). Klemmbrett-Icon in WorkspaceNav öffnet TagesplanungModal: editierbares Feld mit Auto-Save, vorausgefüllt aus offenen LOP-Punkten, Verlauf der letzten 14 Tage. Stand-up-Banner erscheint 8 Sek. nach Klick auf „Aufnahme starten". Tätigkeitsnachweis bevorzugt gespeicherten Tagesplan vor LOP/Meeting-Fallback.
 
 ---
+## F-018 | 2026-05-14 16:32:30 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+An Feiertagen keine E-Mail Benachrichtigungen
+An Feiertagen, sowie Samstagen und Sonntagen (regulär, es gibt Ausnahmen) Tätigkeitsnachweise ausgrauen.
+
+Hinweis: Feiertage sind abhängig vom Bundesland
+
+---
+## F-019 | 2026-05-19 07:34:26 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Möglichkeit meine Accountinfos (insbesondere meinen Namen zu ändern, E-Mail und Häufigkeit der E-Mail Push Benachrichtigungen)
+
+---
