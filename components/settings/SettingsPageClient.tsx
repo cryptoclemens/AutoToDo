@@ -53,7 +53,7 @@ interface PendingInvitation {
 interface Props {
   userEmail: string
   isAdmin: boolean
-  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; bundesland: string | null; plan?: string; plan_expires_at?: string | null }
+  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; digest_frequency: string; bundesland: string | null; plan?: string; plan_expires_at?: string | null }
   members: Member[]
   pendingInvitations: PendingInvitation[]
   llmInitial: {
@@ -100,6 +100,8 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
   const [digestSaving, setDigestSaving] = useState(false)
   const [digestTestSending, setDigestTestSending] = useState(false)
+  const [digestFrequency, setDigestFrequency] = useState<string>(workspace.digest_frequency ?? 'daily')
+  const [digestFrequencySaving, setDigestFrequencySaving] = useState(false)
   const [bundesland, setBundesland] = useState<string | null>(workspace.bundesland)
   const [bundeslandSaving, setBundeslandSaving] = useState(false)
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>(
@@ -142,6 +144,26 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
       toast.error(err instanceof Error ? err.message : 'Fehler beim Senden.')
     } finally {
       setDigestTestSending(false)
+    }
+  }
+
+  async function handleDigestFrequencyChange(value: string) {
+    setDigestFrequency(value)
+    setDigestFrequencySaving(true)
+    try {
+      const res = await fetch('/api/settings/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ digest_frequency: value }),
+      })
+      if (res.ok) {
+        toast.success(ts('digestSaved', { status: ts(value === 'disabled' ? 'digestStatusDisabled' : 'digestStatusActive') }))
+      } else {
+        setDigestFrequency(workspace.digest_frequency ?? 'daily')
+        toast.error(ts('digestError'))
+      }
+    } finally {
+      setDigestFrequencySaving(false)
     }
   }
 
@@ -240,37 +262,34 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
           {/* E-Mail-Digest */}
           <div className="border-t pt-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-1">{ts('digestTitle')}</h3>
-            <p className="text-xs text-gray-500 mb-4">{ts('digestDesc')}</p>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={digestEnabled}
-                disabled={digestSaving}
-                onClick={handleDigestToggle}
-                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
-                  digestEnabled ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-                style={digestEnabled ? { backgroundColor: 'var(--brand, #2563EB)' } : {}}
+            <p className="text-xs text-gray-500 mb-4">{ts('digestFrequencyDesc')}</p>
+            <div className="flex items-center gap-4 flex-wrap">
+              <select
+                value={digestFrequency}
+                onChange={e => handleDigestFrequencyChange(e.target.value)}
+                disabled={digestFrequencySaving}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform ${
-                    digestEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-              <span className="text-sm text-gray-700">
-                {ts('digestLabel')} {digestEnabled ? ts('digestActive') : ts('digestDisabled')}
-              </span>
+                <option value="daily">{ts('digestFrequencyDaily')}</option>
+                <option value="twice_weekly">{ts('digestFrequencyTwiceWeekly')}</option>
+                <option value="weekly">{ts('digestFrequencyWeekly')}</option>
+                <option value="disabled">{ts('digestFrequencyDisabled')}</option>
+              </select>
               <button
                 type="button"
                 onClick={handleDigestTestSend}
-                disabled={digestTestSending}
-                className="ml-4 text-xs text-blue-600 hover:underline disabled:opacity-50"
+                disabled={digestTestSending || digestFrequency === 'disabled'}
+                className="text-xs text-blue-600 hover:underline disabled:opacity-50"
               >
                 {digestTestSending ? 'Sende…' : 'Test-E-Mail senden'}
               </button>
             </div>
+            <p className="text-xs text-gray-400 mt-3">
+              {ts('accountHint')}{' '}
+              <a href="/settings?tab=konto" className="text-blue-600 hover:underline">
+                {ts('accountHintLink')}
+              </a>
+            </p>
           </div>
 
           {/* Bundesland für Feiertage */}
