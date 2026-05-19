@@ -2,12 +2,13 @@
 
 import { useTranslations } from 'next-intl'
 
-type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
+export type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
 
 const styleMap: Record<Status, { pill: string; dot: string }> = {
   offen:          { pill: 'bg-slate-100 text-slate-600',       dot: 'bg-slate-400' },
   in_bearbeitung: { pill: 'bg-blue-50 text-blue-700',          dot: 'bg-blue-500' },
   abgeschlossen:  { pill: 'bg-emerald-50 text-emerald-700',    dot: 'bg-emerald-500' },
+  geparkt:        { pill: 'bg-amber-50 text-amber-700',        dot: 'bg-amber-400' },
 }
 
 export default function StatusBadge({ status }: { status: Status }) {
