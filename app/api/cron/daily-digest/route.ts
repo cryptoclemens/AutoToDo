@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { getGermanHolidays } from '@/lib/holidays'
 
 // Cron runs at 16:00 UTC (= 17:00 CET / 18:00 CEST, Mo-Fr) via host crontab
 
@@ -176,15 +177,24 @@ export async function GET(request: NextRequest) {
   // 1. Workspaces mit aktiviertem Digest
   const { data: workspaces } = await supabase
     .from('workspaces')
-    .select('id, name')
-    .eq('digest_enabled', true) as { data: Array<{ id: string; name: string }> | null }
+    .select('id, name, bundesland')
+    .eq('digest_enabled', true) as { data: Array<{ id: string; name: string; bundesland: string | null }> | null }
 
   if (!workspaces?.length) {
     return NextResponse.json({ sent: 0, dry_run: dryRun, reason: 'No workspaces with digest_enabled = true. Check Settings → Workspace → Digest toggle.' })
   }
 
-  const workspaceIds = workspaces.map(w => w.id)
-  const workspaceNameMap: Record<string, string> = Object.fromEntries(workspaces.map(w => [w.id, w.name]))
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const activeWorkspaces = (workspaces ?? []).filter(ws => {
+    const holidays = getGermanHolidays(new Date().getFullYear(), ws.bundesland)
+    return !holidays.has(todayStr)
+  })
+  if (!activeWorkspaces.length) {
+    return NextResponse.json({ sent: 0, dry_run: dryRun, reason: 'All workspaces are on holiday today.' })
+  }
+
+  const workspaceIds = activeWorkspaces.map(w => w.id)
+  const workspaceNameMap: Record<string, string> = Object.fromEntries(activeWorkspaces.map(w => [w.id, w.name]))
 
   // 2. Nicht-archivierte Projekte
   const { data: projects } = await supabase
