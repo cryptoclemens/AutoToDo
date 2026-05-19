@@ -25,14 +25,33 @@ export async function GET(request: NextRequest) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
-  const { data: ideas } = await supabase
-    .from('idea_items')
-    .select('id, title, note, created_by_name, created_at')
-    .eq('project_id', projectId)
-    .eq('workspace_id', workspace.id)
-    .order('created_at', { ascending: false })
+  const [{ data: ideas }, { data: parked }] = await Promise.all([
+    supabase
+      .from('idea_items')
+      .select('id, title, note, created_by_name, created_at')
+      .eq('project_id', projectId)
+      .eq('workspace_id', workspace.id),
+    supabase
+      .from('lop_items')
+      .select('id, title, description, created_at')
+      .eq('project_id', projectId)
+      .eq('workspace_id', workspace.id)
+      .eq('status', 'geparkt'),
+  ])
 
-  return NextResponse.json(ideas ?? [])
+  const result = [
+    ...(ideas ?? []).map(i => ({ ...i, note: i.note, source: 'idea' as const })),
+    ...(parked ?? []).map(i => ({
+      id: i.id,
+      title: i.title,
+      note: i.description,
+      created_by_name: null,
+      created_at: i.created_at,
+      source: 'parked_lop' as const,
+    })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+  return NextResponse.json(result)
 }
 
 export async function POST(request: NextRequest) {
