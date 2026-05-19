@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-021',
+    date: '19.05.2026',
+    title: 'LOP ↔ Ideenspeicher',
+    description: 'LOP-Punkte können in den Ideenspeicher geparkt und von dort wieder als Aufgaben reaktiviert werden – über das Hover-Menü, den Detail-Dialog oder den Inline-Edit-Modus.',
+  },
+  {
     id: 'F-020',
     date: '14.05.2026',
     title: 'Projekteinstellungen: Sprache & Tätigkeitsnachweis',
