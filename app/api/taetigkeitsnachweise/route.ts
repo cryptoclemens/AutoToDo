@@ -3,7 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
-import { getWorkingDays } from '@/lib/holidays'
+import { getWorkingDays, getGermanHolidays, getHolidayLabels } from '@/lib/holidays'
 
 export async function GET(request: NextRequest) {
   const authClient = createClient()
@@ -26,6 +26,10 @@ export async function GET(request: NextRequest) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
+  const { data: wsRow } = await supabase
+    .from('workspaces').select('bundesland').eq('id', workspace.id).single()
+  const wsBundesland: string | null = (wsRow as { bundesland: string | null } | null)?.bundesland ?? null
+
   const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
   const displayName: string | null =
     authUser?.user?.user_metadata?.full_name ?? authUser?.user?.user_metadata?.name ?? null
@@ -43,6 +47,19 @@ export async function GET(request: NextRequest) {
   }
 
   const workingDays = getWorkingDays(y, m, bundesland)
+
+  const daysCount = new Date(y, m, 0).getDate()
+  const allDays: string[] = Array.from({ length: daysCount }, (_, i) => {
+    const d = String(i + 1).padStart(2, '0')
+    return `${month}-${d}`
+  })
+
+  const holidays = getGermanHolidays(y, wsBundesland)
+  const holidayLabels = getHolidayLabels(y, wsBundesland)
+  const nonWorkingDays: string[] = allDays.filter(date => {
+    const dow = new Date(date + 'T00:00:00').getDay()
+    return dow === 0 || dow === 6 || holidays.has(date)
+  })
 
   // LOP-Items: fällig ODER abgeschlossen im Monat
   const buildLopQuery = (matchCol: string, matchVal: string) => {
@@ -124,5 +141,5 @@ export async function GET(request: NextRequest) {
     getOrCreate(t.meeting_date).meetings.push(name)
   }
 
-  return NextResponse.json({ days, workingDays })
+  return NextResponse.json({ days, workingDays, allDays, nonWorkingDays, holidayLabels })
 }
