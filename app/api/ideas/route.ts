@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   ])
 
   const result = [
-    ...(ideas ?? []).map(i => ({ ...i, note: i.note, source: 'idea' as const })),
+    ...(ideas ?? []).map(i => ({ ...i, source: 'idea' as const })),
     ...(parked ?? []).map(i => ({
       id: i.id,
       title: i.title,
