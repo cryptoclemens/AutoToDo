@@ -235,3 +235,10 @@ Hinweis: Feiertage sind abhängig vom Bundesland
 Möglichkeit meine Accountinfos (insbesondere meinen Namen zu ändern, E-Mail und Häufigkeit der E-Mail Push Benachrichtigungen)
 
 ---
+## F-020 | 2026-05-19 15:11:24 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Ist Ideen Speicher und "Geparkt" nicht das selbe?
+
+---
