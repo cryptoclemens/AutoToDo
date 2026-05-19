@@ -12,7 +12,7 @@ const updateSchema = z.object({
   responsible_user_id: z.string().uuid().nullable().optional(),
   due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   priority: z.enum(['hoch', 'mittel', 'niedrig']).optional(),
-  status: z.enum(['offen', 'in_bearbeitung', 'abgeschlossen']).optional(),
+  status: z.enum(['offen', 'in_bearbeitung', 'abgeschlossen', 'geparkt']).optional(),
   result: z.string().max(2000).nullable().optional(),
   requires_review: z.boolean().optional(),
   links: z.array(z.object({
