@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
-  const [{ data: ideas }, { data: parked }] = await Promise.all([
+  const [{ data: ideas, error: ideasErr }, { data: parked, error: parkedErr }] = await Promise.all([
     supabase
       .from('idea_items')
       .select('id, title, note, created_by_name, created_at')
@@ -38,6 +38,10 @@ export async function GET(request: NextRequest) {
       .eq('workspace_id', workspace.id)
       .eq('status', 'geparkt'),
   ])
+
+  if (ideasErr || parkedErr) {
+    return NextResponse.json({ error: 'Fehler beim Laden der Ideen.' }, { status: 500 })
+  }
 
   const result = [
     ...(ideas ?? []).map(i => ({ ...i, source: 'idea' as const })),
