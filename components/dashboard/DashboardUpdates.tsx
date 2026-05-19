@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-023',
+    date: '19.05.2026',
+    title: 'Digest-Häufigkeit wählbar',
+    description: 'Der E-Mail-Digest lässt sich nun auf täglich, 2× pro Woche, wöchentlich oder aus einstellen.',
+  },
+  {
     id: 'F-022',
     date: '19.05.2026',
     title: 'Feiertage im Tätigkeitsnachweis',
