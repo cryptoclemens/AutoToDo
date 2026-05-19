@@ -102,3 +102,43 @@ export function getWorkingDays(year: number, month: number, bundesland?: string 
   }
   return result
 }
+
+export function getHolidayLabels(year: number, bundesland?: string | null): Record<string, string> {
+  const e = easter(year)
+  const labels: Record<string, string> = {}
+  const add = (date: Date, name: string) => { labels[fmt(date)] = name }
+  const addStr = (str: string, name: string) => { labels[str] = name }
+
+  addStr(`${year}-01-01`, 'Neujahr')
+  add(shift(e, -2), 'Karfreitag')
+  add(shift(e, 1), 'Ostermontag')
+  addStr(`${year}-05-01`, 'Tag der Arbeit')
+  add(shift(e, 39), 'Christi Himmelfahrt')
+  add(shift(e, 50), 'Pfingstmontag')
+  addStr(`${year}-10-03`, 'Tag der Deutschen Einheit')
+  addStr(`${year}-12-25`, '1. Weihnachtstag')
+  addStr(`${year}-12-26`, '2. Weihnachtstag')
+
+  if (!bundesland) return labels
+
+  if (['BW', 'BY', 'ST'].includes(bundesland))
+    addStr(`${year}-01-06`, 'Heilige Drei Könige')
+  if (['BE', 'MV'].includes(bundesland))
+    addStr(`${year}-03-08`, 'Internationaler Frauentag')
+  if (['BW', 'BY', 'HE', 'NW', 'RP', 'SL'].includes(bundesland))
+    add(shift(e, 60), 'Fronleichnam')
+  if (['BY', 'SL'].includes(bundesland))
+    addStr(`${year}-08-15`, 'Mariä Himmelfahrt')
+  if (bundesland === 'TH')
+    addStr(`${year}-09-20`, 'Weltkindertag')
+  if (['BB', 'HB', 'HH', 'MV', 'NI', 'SN', 'ST', 'SH', 'TH'].includes(bundesland))
+    addStr(`${year}-10-31`, 'Reformationstag')
+  if (['BW', 'BY', 'NW', 'RP', 'SL'].includes(bundesland))
+    addStr(`${year}-11-01`, 'Allerheiligen')
+  if (bundesland === 'SN') {
+    const nov23 = new Date(year, 10, 23)
+    add(shift(nov23, -((nov23.getDay() + 4) % 7)), 'Buß- und Bettag')
+  }
+
+  return labels
+}
