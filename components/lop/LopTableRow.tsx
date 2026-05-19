@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import type { LopItem } from './LopItemDialog'
 import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 
-type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
+type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
 interface Props {
@@ -20,6 +20,7 @@ interface Props {
   members: WorkspaceMember[]
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
   onDelete: (id: string) => void
+  onPark: (id: string) => void
   onOpenDetail: () => void
 }
 
@@ -29,7 +30,7 @@ const STATUS_OPTIONS: { value: Status; label: string }[] = [
   { value: 'abgeschlossen', label: 'Abgeschlossen' },
 ]
 
-export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onOpenDetail }: Props) {
+export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onPark, onOpenDetail }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<LopItem>(item)
   const [saving, setSaving] = useState(false)
@@ -93,8 +94,9 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
   }
 
   const isDone = item.status === 'abgeschlossen'
+  const isParked = item.status === 'geparkt'
   const rowBg = item.requires_review ? 'bg-amber-50/60' : isDone ? 'bg-gray-50/80' : ''
-  const rowOpacity = isDone ? 'opacity-50' : ''
+  const rowOpacity = (isDone || isParked) ? 'opacity-50' : ''
 
   if (editing) {
     return (
@@ -166,6 +168,17 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
             <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 text-xs px-2">
               ✕
             </Button>
+            {item.status !== 'geparkt' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => { onPark(item.id); setEditing(false) }}
+                className="h-7 text-xs px-2 text-amber-600 border-amber-200 hover:bg-amber-50"
+                title="In Ideenspeicher parken"
+              >
+                💡
+              </Button>
+            )}
           </div>
         </td>
       </tr>
@@ -287,6 +300,21 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
                 <path d="M9 2l2 2-7 7H2v-2l7-7Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
               </svg>
             </Button>
+            {canEdit && item.status !== 'geparkt' && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg"
+                onClick={() => onPark(item.id)}
+                title="In Ideenspeicher parken"
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="6.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.3"/>
+                  <path d="M3.5 11c.5-1.5 1.5-2.5 3-2.5s2.5 1 3 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  <path d="M6.5 1v1.5M6.5 8.5V10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              </Button>
+            )}
             <Button
               size="sm"
               variant="ghost"

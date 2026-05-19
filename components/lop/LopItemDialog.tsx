@@ -18,7 +18,7 @@ interface ActivityInfo {
   lastEdited: { name: string; date: string; byAi: boolean } | null
 }
 
-type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen'
+type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
 export interface LopLink {
