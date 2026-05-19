@@ -8,6 +8,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 const patchSchema = z.object({
   digest_enabled: z.boolean().optional(),
   slack_webhook_url: z.string().url().nullable().optional(),
+  bundesland: z.string().nullable().optional(),
 })
 
 async function getAdminWorkspace(user: { id: string }) {
@@ -39,7 +40,7 @@ export async function GET(_request: NextRequest) {
 
   const { data } = await ctx.supabase
     .from('workspaces')
-    .select('digest_enabled, slack_webhook_url')
+    .select('digest_enabled, slack_webhook_url, bundesland')
     .eq('id', ctx.workspace.id)
     .single()
 
@@ -61,6 +62,7 @@ export async function PATCH(request: NextRequest) {
   const updates: Record<string, unknown> = {}
   if (parsed.data.digest_enabled !== undefined) updates.digest_enabled = parsed.data.digest_enabled
   if ('slack_webhook_url' in parsed.data) updates.slack_webhook_url = parsed.data.slack_webhook_url
+  if ('bundesland' in parsed.data) updates.bundesland = parsed.data.bundesland
 
   const { error } = await ctx.supabase
     .from('workspaces')

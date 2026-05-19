@@ -33,9 +33,9 @@ export default async function SettingsPage() {
 
   // Load workspace branding + digest setting
   const { data: ws } = await supabase
-    .from('workspaces').select('id, name, brand_color, logo_url, digest_enabled, plan, plan_expires_at')
+    .from('workspaces').select('id, name, brand_color, logo_url, digest_enabled, bundesland, plan, plan_expires_at')
     .eq('id', workspace.id).single() as {
-      data: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; plan: string; plan_expires_at: string | null } | null
+      data: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; bundesland: string | null; plan: string; plan_expires_at: string | null } | null
     }
 
   // Load members with email via RPC (SECURITY DEFINER, joins auth.users)
@@ -118,7 +118,7 @@ export default async function SettingsPage() {
     <SettingsPageClient
       userEmail={user.email ?? ''}
       isAdmin={isAdmin}
-      workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null, digest_enabled: true, plan: 'beta', plan_expires_at: null }}
+      workspace={ws ?? { id: workspace.id, name: workspace.name, brand_color: '#2563EB', logo_url: null, digest_enabled: true, bundesland: null, plan: 'beta', plan_expires_at: null }}
       members={members ?? []}
       pendingInvitations={pendingInvitations ?? []}
       llmInitial={llmInitial}

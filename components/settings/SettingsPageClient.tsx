@@ -16,6 +16,7 @@ import BillingTab from './BillingTab'
 import NotionIntegrationForm from './NotionIntegrationForm'
 import { AudioSettingsTab } from './AudioSettingsTab'
 import { Plan } from '@/lib/plans'
+import { BUNDESLAENDER } from '@/lib/holidays'
 
 type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing' | 'integrations' | 'audio'
 
@@ -52,7 +53,7 @@ interface PendingInvitation {
 interface Props {
   userEmail: string
   isAdmin: boolean
-  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; plan?: string; plan_expires_at?: string | null }
+  workspace: { id: string; name: string; brand_color: string; logo_url: string | null; digest_enabled: boolean; bundesland: string | null; plan?: string; plan_expires_at?: string | null }
   members: Member[]
   pendingInvitations: PendingInvitation[]
   llmInitial: {
@@ -99,6 +100,8 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
   const [digestEnabled, setDigestEnabled] = useState(workspace.digest_enabled)
   const [digestSaving, setDigestSaving] = useState(false)
   const [digestTestSending, setDigestTestSending] = useState(false)
+  const [bundesland, setBundesland] = useState<string | null>(workspace.bundesland)
+  const [bundeslandSaving, setBundeslandSaving] = useState(false)
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>(
     Object.fromEntries(members.map(m => [m.user_id, m.role]))
   )
@@ -139,6 +142,20 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
       toast.error(err instanceof Error ? err.message : 'Fehler beim Senden.')
     } finally {
       setDigestTestSending(false)
+    }
+  }
+
+  async function handleBundeslandChange(value: string | null) {
+    setBundesland(value)
+    setBundeslandSaving(true)
+    try {
+      await fetch('/api/settings/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bundesland: value }),
+      })
+    } finally {
+      setBundeslandSaving(false)
     }
   }
 
@@ -254,6 +271,23 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
                 {digestTestSending ? 'Sende…' : 'Test-E-Mail senden'}
               </button>
             </div>
+          </div>
+
+          {/* Bundesland für Feiertage */}
+          <div className="border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">{ts('bundeslandTitle')}</h3>
+            <p className="text-xs text-gray-500 mb-3">{ts('bundeslandDesc')}</p>
+            <select
+              value={bundesland ?? ''}
+              onChange={e => handleBundeslandChange(e.target.value || null)}
+              disabled={bundeslandSaving}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+              <option value="">{ts('bundeslandNone')}</option>
+              {BUNDESLAENDER.map(bl => (
+                <option key={bl.code} value={bl.code}>{bl.name}</option>
+              ))}
+            </select>
           </div>
         </div>
       )}
