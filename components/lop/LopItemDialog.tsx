@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -68,6 +69,7 @@ function isValidUrl(s: string): boolean {
 }
 
 export default function LopItemDialog({ item, canEdit, members, existingNames = [], onClose, onUpdate, onDelete, onPark }: Props) {
+  const t = useTranslations('lop')
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
@@ -453,7 +455,7 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
               className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
               onClick={() => { onPark(draft.id); onClose() }}
             >
-              💡 In Ideenspeicher parken
+              <>💡 {t('parkItem')}</>
             </Button>
           )}
           {canEdit && draft && draft.status === 'geparkt' && (
@@ -463,7 +465,7 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
               className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               onClick={() => { onPark(draft.id); onClose() }}
             >
-              ↩ Reaktivieren
+              <>↩ {t('unparkItem')}</>
             </Button>
           )}
           {canEdit && onDelete && draft && (

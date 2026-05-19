@@ -292,7 +292,9 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
   }
 
   async function handleIdeaDelete(id: string) {
-    const res = await fetch(`/api/ideas/${id}`, { method: 'DELETE' })
+    const idea = ideas.find(i => i.id === id)
+    const url = idea?.source === 'parked_lop' ? `/api/lop/${id}` : `/api/ideas/${id}`
+    const res = await fetch(url, { method: 'DELETE' })
     if (res.ok) setIdeas(prev => prev.filter(i => i.id !== id))
   }
 
