@@ -218,7 +218,7 @@ Neuer Button „Tagesplanung" pro Nutzer: Pop-up zeigt, was der jeweilige Nutzer
 **Lösung:** Migration 027 (daily_plans). Klemmbrett-Icon in WorkspaceNav öffnet TagesplanungModal: editierbares Feld mit Auto-Save, vorausgefüllt aus offenen LOP-Punkten, Verlauf der letzten 14 Tage. Stand-up-Banner erscheint 8 Sek. nach Klick auf „Aufnahme starten". Tätigkeitsnachweis bevorzugt gespeicherten Tagesplan vor LOP/Meeting-Fallback.
 
 ---
-## F-018 | 2026-05-14 16:32:30 | ✨ Feature-Wunsch
+## F-018 | 2026-05-14 16:32:30 | ✨ Feature-Wunsch | ✅ bearbeitet als F-022 (2026-05-19)
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
@@ -228,7 +228,7 @@ An Feiertagen, sowie Samstagen und Sonntagen (regulär, es gibt Ausnahmen) Täti
 Hinweis: Feiertage sind abhängig vom Bundesland
 
 ---
-## F-019 | 2026-05-19 07:34:26 | ✨ Feature-Wunsch
+## F-019 | 2026-05-19 07:34:26 | ✨ Feature-Wunsch | ✅ bearbeitet als F-023 (2026-05-19)
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
