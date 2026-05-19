@@ -3,6 +3,8 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { isSuperAdmin } from '@/lib/superAdmin'
 import { z } from 'zod'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 function serviceClient() {
   return createServiceClient(
@@ -19,12 +21,40 @@ async function assertAdmin() {
   return user
 }
 
+async function syncFeedbackMd(supabase: ReturnType<typeof serviceClient>) {
+  try {
+    const md = readFileSync(join(process.cwd(), 'feedback.md'), 'utf-8')
+    // Matches: ## F-018 | ... | ✅ bearbeitet
+    const pattern = /^## ([FBG])-(\d+)\s+\|[^|\n]*\|[^|\n]*\|[^|\n]*✅\s+bearbeitet/gm
+    type Row = { category: string; category_seq: number }
+    const toUpdate: Row[] = []
+    let match = pattern.exec(md)
+    while (match !== null) {
+      const prefix = match[1]
+      const seq = parseInt(match[2], 10)
+      const category = prefix === 'F' ? 'feature' : prefix === 'B' ? 'bug' : 'general'
+      toUpdate.push({ category, category_seq: seq })
+      match = pattern.exec(md)
+    }
+    for (const row of toUpdate) {
+      await supabase.from('feedback')
+        .update({ status: 'done' })
+        .eq('category', row.category)
+        .eq('category_seq', row.category_seq)
+        .in('status', ['new', 'in_review'])
+    }
+  } catch {
+    // feedback.md nicht verfügbar — kein Fehler
+  }
+}
+
 export async function GET() {
   if (!await assertAdmin()) {
     return NextResponse.json({ error: 'Nicht autorisiert.' }, { status: 403 })
   }
 
   const supabase = serviceClient()
+  await syncFeedbackMd(supabase)
 
   const { data, error } = await supabase
     .from('feedback')
