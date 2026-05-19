@@ -145,8 +145,12 @@
     "status": {
       "offen": "Offen",
       "in_bearbeitung": "In Bearbeitung",
-      "abgeschlossen": "Abgeschlossen"
+      "abgeschlossen": "Abgeschlossen",
+      "geparkt": "Geparkt"
     },
+    "parkItem": "In Ideenspeicher parken",
+    "unparkItem": "Reaktivieren",
+    "parkedBadge": "Aus LOP",
     "result": "Ergebnis",
     "description": "Beschreibung",
     "sourceQuote": "Zitat aus Transkript",

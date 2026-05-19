@@ -145,8 +145,12 @@
     "status": {
       "offen": "Open",
       "in_bearbeitung": "In Progress",
-      "abgeschlossen": "Done"
+      "abgeschlossen": "Done",
+      "geparkt": "Parked"
     },
+    "parkItem": "Park in idea storage",
+    "unparkItem": "Reactivate",
+    "parkedBadge": "From LOP",
     "result": "Result",
     "description": "Description",
     "sourceQuote": "Quote from transcript",
