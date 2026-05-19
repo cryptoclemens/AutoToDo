@@ -22,6 +22,7 @@ interface Idea {
   note: string | null
   created_by_name: string | null
   created_at: string
+  source: 'idea' | 'parked_lop'
 }
 
 interface TranslationMap {
@@ -76,12 +77,14 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
       .catch(() => {})
   }, [projectId])
 
-  useEffect(() => {
+  function fetchIdeas() {
     fetch(`/api/ideas?projectId=${encodeURIComponent(projectId)}`)
       .then(r => r.ok ? r.json() : [])
       .then((data: Idea[]) => setIdeas(data))
       .catch(() => {})
-  }, [projectId])
+  }
+
+  useEffect(() => { fetchIdeas() }, [projectId])
 
   // Sync local items when server refreshes data (triggered by router.refresh())
   useEffect(() => {
@@ -241,6 +244,21 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
     if (!res.ok) setItems(initialItems)
   }
 
+  async function handleParkItem(id: string) {
+    const item = items.find(i => i.id === id)
+    const targetStatus = (item?.status as string) === 'geparkt' ? 'offen' : 'geparkt'
+    const res = await fetch(`/api/lop/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: targetStatus }),
+    })
+    if (res.ok) {
+      setItems(prev => prev.map(i => i.id === id ? { ...i, status: targetStatus as LopItem['status'] } : i))
+      setSelectedItem(prev => prev?.id === id ? { ...prev, status: targetStatus as LopItem['status'] } : prev)
+      fetchIdeas()
+    }
+  }
+
   function handleNewItem(item: LopItem) {
     setItems(prev => {
       const updated = [item, ...prev]
@@ -278,11 +296,23 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
     if (res.ok) setIdeas(prev => prev.filter(i => i.id !== id))
   }
 
-  async function handleIdeaPromote(id: string) {
-    const res = await fetch(`/api/ideas/${id}`, { method: 'PATCH' })
-    if (res.ok) {
-      setIdeas(prev => prev.filter(i => i.id !== id))
-      router.refresh()
+  async function handleIdeaPromote(idea: Idea) {
+    if (idea.source === 'parked_lop') {
+      const res = await fetch(`/api/lop/${idea.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'offen' }),
+      })
+      if (res.ok) {
+        setIdeas(prev => prev.filter(i => i.id !== idea.id))
+        setItems(prev => prev.map(i => i.id === idea.id ? { ...i, status: 'offen' as LopItem['status'] } : i))
+      }
+    } else {
+      const res = await fetch(`/api/ideas/${idea.id}`, { method: 'PATCH' })
+      if (res.ok) {
+        setIdeas(prev => prev.filter(i => i.id !== idea.id))
+        router.refresh()
+      }
     }
   }
 
@@ -468,6 +498,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                           members={members}
                           onUpdate={handleUpdate}
                           onDelete={handleDelete}
+                          onPark={handleParkItem}
                           onOpenDetail={() => setSelectedItem(item)}
                         />
                       ))}
@@ -513,6 +544,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                     members={members}
                     onUpdate={handleUpdate}
                     onDelete={handleDelete}
+                    onPark={handleParkItem}
                     onOpenDetail={() => setSelectedItem(items.find(i => i.id === item.id) ?? item)}
                   />
                 ))
@@ -542,6 +574,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
         onClose={() => setSelectedItem(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
+        onPark={handleParkItem}
       />
 
       {/* Merge-Vorschlag-Dialog */}
@@ -610,7 +643,14 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
               {ideas.map(idea => (
                 <div key={idea.id} className="flex items-start gap-3 group py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 dark:text-gray-200 font-medium">{idea.title}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
+                      {idea.title}
+                      {idea.source === 'parked_lop' && (
+                        <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                          {t('parkedBadge')}
+                        </span>
+                      )}
+                    </p>
                     {idea.note && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 whitespace-pre-wrap">{idea.note}</p>}
                     <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
                       {idea.created_by_name ?? 'Unbekannt'} · {new Date(idea.created_at).toLocaleDateString('de-DE')}
@@ -621,7 +661,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                       <button
                         type="button"
                         title="Zu LOP-Punkt umwandeln"
-                        onClick={() => handleIdeaPromote(idea.id)}
+                        onClick={() => handleIdeaPromote(idea)}
                         className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium"
                       >
                         → Aufgabe
