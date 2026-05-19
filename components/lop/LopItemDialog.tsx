@@ -56,6 +56,7 @@ interface Props {
   onClose: () => void
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
   onDelete?: (id: string) => void
+  onPark: (id: string) => void
 }
 
 function fmtDate(iso: string) {
@@ -66,7 +67,7 @@ function isValidUrl(s: string): boolean {
   try { new URL(s); return true } catch { return false }
 }
 
-export default function LopItemDialog({ item, canEdit, members, existingNames = [], onClose, onUpdate, onDelete }: Props) {
+export default function LopItemDialog({ item, canEdit, members, existingNames = [], onClose, onUpdate, onDelete, onPark }: Props) {
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
@@ -175,6 +176,7 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
                       <SelectItem value="offen">Offen</SelectItem>
                       <SelectItem value="in_bearbeitung">In Bearbeitung</SelectItem>
                       <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
+                      <SelectItem value="geparkt">Geparkt</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -444,6 +446,26 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
         )}
 
         <DialogFooter className="flex-row items-center gap-2">
+          {canEdit && draft && draft.status !== 'geparkt' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+              onClick={() => { onPark(draft.id); onClose() }}
+            >
+              💡 In Ideenspeicher parken
+            </Button>
+          )}
+          {canEdit && draft && draft.status === 'geparkt' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              onClick={() => { onPark(draft.id); onClose() }}
+            >
+              ↩ Reaktivieren
+            </Button>
+          )}
           {canEdit && onDelete && draft && (
             <Button
               variant="outline"
