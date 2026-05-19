@@ -54,7 +54,9 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
   const [month, setMonth] = useState(initMonth)
   const [loading, setLoading] = useState(false)
   const [fields, setFields] = useState<Record<string, string>>({})
-  const [workingDays, setWorkingDays] = useState<string[]>([])
+  const [allDays, setAllDays] = useState<string[]>([])
+  const [nonWorkingDays, setNonWorkingDays] = useState<Set<string>>(new Set())
+  const [holidayLabels, setHolidayLabels] = useState<Record<string, string>>({})
   const [editingDate, setEditingDate] = useState<string | null>(null)
 
   const load = useCallback(async (m: string) => {
@@ -65,8 +67,16 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
         : `/api/taetigkeitsnachweise?month=${m}`
       const res = await fetch(url)
       if (!res.ok) return
-      const data: { days: Record<string, DayData>; workingDays: string[] } = await res.json()
-      setWorkingDays(data.workingDays ?? daysInMonth(m))
+      const data: {
+        days: Record<string, DayData>
+        workingDays: string[]
+        allDays: string[]
+        nonWorkingDays: string[]
+        holidayLabels: Record<string, string>
+      } = await res.json()
+      setAllDays(data.allDays ?? daysInMonth(m))
+      setNonWorkingDays(new Set(data.nonWorkingDays ?? []))
+      setHolidayLabels(data.holidayLabels ?? {})
       const f: Record<string, string> = {}
       for (const [date, day] of Object.entries(data.days)) {
         f[date] = combine(day)
@@ -91,7 +101,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
   }
 
   // Alle Arbeitstage anzeigen (nicht nur Tage mit Daten)
-  const activeDays = workingDays.length > 0 ? workingDays : daysInMonth(month)
+  const activeDays = allDays.length > 0 ? allDays : daysInMonth(month)
 
   return (
     <>
@@ -177,50 +187,61 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                   {activeDays.map(date => {
                     const val = fields[date] ?? ''
                     const remaining = MAX_LEN - val.length
+                    const isNonWorking = nonWorkingDays.has(date)
+                    const holidayName = holidayLabels[date]
                     return (
-                      <tr key={date} className="border-b border-gray-50 hover:bg-gray-50/50 group">
+                      <tr
+                        key={date}
+                        className={`border-b border-gray-50 group ${isNonWorking ? 'opacity-50 bg-slate-50' : 'hover:bg-gray-50/50'}`}
+                      >
                         <td className="py-2 pr-4 text-xs text-gray-500 whitespace-nowrap align-top pt-2.5">
                           {dayLabel(date)}
+                          {holidayName && (
+                            <div className="text-[10px] text-amber-600 leading-tight mt-0.5">{holidayName}</div>
+                          )}
                         </td>
                         <td className="py-1.5 align-top">
-                          <div className="relative" onClick={() => setEditingDate(date)}>
-                            {editingDate === date ? (
-                              <textarea
-                                ref={el => {
-                                  if (el) {
-                                    // readOnly trick: prevents Chrome clipboard paste suggestion
-                                    el.readOnly = true
-                                    setTimeout(() => {
-                                      el.readOnly = false
-                                      el.focus()
-                                      el.setSelectionRange(el.value.length, el.value.length)
-                                    }, 50)
-                                  }
-                                }}
-                                maxLength={MAX_LEN}
-                                autoComplete="off"
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                spellCheck={false}
-                                data-lpignore="true"
-                                data-1p-ignore="true"
-                                rows={val.length > 80 ? 2 : 1}
-                                value={val}
-                                onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
-                                onBlur={() => setEditingDate(null)}
-                                className="w-full text-xs bg-white border border-blue-300 rounded px-1.5 py-1 focus:outline-none text-gray-800 resize-none"
-                              />
-                            ) : (
-                              <div className="w-full text-xs px-1.5 py-1 rounded border border-transparent group-hover:border-gray-200 text-gray-700 cursor-text min-h-[24px] whitespace-pre-wrap break-words">
-                                {val || <span className="text-gray-300">–</span>}
-                              </div>
-                            )}
-                            {editingDate === date && remaining <= 40 && (
-                              <span className={`absolute right-1.5 bottom-1.5 text-xs tabular-nums ${remaining <= 10 ? 'text-red-400' : 'text-amber-400'}`}>
-                                {remaining}
-                              </span>
-                            )}
-                          </div>
+                          {isNonWorking ? (
+                            <div className="w-full text-xs px-1.5 py-1 text-gray-300 min-h-[24px]">–</div>
+                          ) : (
+                            <div className="relative" onClick={() => setEditingDate(date)}>
+                              {editingDate === date ? (
+                                <textarea
+                                  ref={el => {
+                                    if (el) {
+                                      el.readOnly = true
+                                      setTimeout(() => {
+                                        el.readOnly = false
+                                        el.focus()
+                                        el.setSelectionRange(el.value.length, el.value.length)
+                                      }, 50)
+                                    }
+                                  }}
+                                  maxLength={MAX_LEN}
+                                  autoComplete="off"
+                                  autoCorrect="off"
+                                  autoCapitalize="off"
+                                  spellCheck={false}
+                                  data-lpignore="true"
+                                  data-1p-ignore="true"
+                                  rows={val.length > 80 ? 2 : 1}
+                                  value={val}
+                                  onChange={e => setFields(prev => ({ ...prev, [date]: e.target.value }))}
+                                  onBlur={() => setEditingDate(null)}
+                                  className="w-full text-xs bg-white border border-blue-300 rounded px-1.5 py-1 focus:outline-none text-gray-800 resize-none"
+                                />
+                              ) : (
+                                <div className="w-full text-xs px-1.5 py-1 rounded border border-transparent group-hover:border-gray-200 text-gray-700 cursor-text min-h-[24px] whitespace-pre-wrap break-words">
+                                  {val || <span className="text-gray-300">–</span>}
+                                </div>
+                              )}
+                              {editingDate === date && remaining <= 40 && (
+                                <span className={`absolute right-1.5 bottom-1.5 text-xs tabular-nums ${remaining <= 10 ? 'text-red-400' : 'text-amber-400'}`}>
+                                  {remaining}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )
