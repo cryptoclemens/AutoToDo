@@ -14,7 +14,7 @@ const schema = z.object({
   workspaceId: z.string().uuid(),
   name: z.string().min(1).max(200),
   description: z.string().max(500).nullable().optional(),
-  bundesland: z.string().refine(v => v === null || BUNDESLAENDER.includes(v)).nullable().optional(),
+  bundesland: z.string().refine(v => BUNDESLAENDER.includes(v)).nullable().optional(),
   call_language: z.enum(CALL_LANGUAGES).default('de'),
   needs_activity_report: z.boolean().default(false),
 })
