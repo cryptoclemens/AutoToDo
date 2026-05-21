@@ -64,6 +64,10 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
   const [ideaTitle, setIdeaTitle] = useState('')
   const [ideaNote, setIdeaNote] = useState('')
   const [ideaSubmitting, setIdeaSubmitting] = useState(false)
+  const [editingIdeaId, setEditingIdeaId] = useState<string | null>(null)
+  const [editIdeaTitle, setEditIdeaTitle] = useState('')
+  const [editIdeaNote, setEditIdeaNote] = useState('')
+  const [editIdeaSaving, setEditIdeaSaving] = useState(false)
 
   const showAddForm = externalShowAddForm ?? internalShowAddForm
   const setShowAddForm = onShowAddFormChange ?? setInternalShowAddForm
@@ -316,6 +320,29 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
         router.refresh()
       }
     }
+  }
+
+  function startEditIdea(idea: Idea) {
+    setEditingIdeaId(idea.id)
+    setEditIdeaTitle(idea.title)
+    setEditIdeaNote(idea.note ?? '')
+  }
+
+  async function handleIdeaUpdate(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingIdeaId || !editIdeaTitle.trim()) return
+    setEditIdeaSaving(true)
+    const res = await fetch(`/api/ideas/${editingIdeaId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: editIdeaTitle, note: editIdeaNote || undefined }),
+    })
+    if (res.ok) {
+      const updated: Idea = await res.json()
+      setIdeas(prev => prev.map(i => i.id === editingIdeaId ? { ...i, ...updated } : i))
+      setEditingIdeaId(null)
+    }
+    setEditIdeaSaving(false)
   }
 
   async function handleMerge(keepId: string, deleteId: string) {
@@ -604,11 +631,82 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
             ) : (
               <ul className="space-y-2">
                 {ideas.map(idea => (
-                  <li key={idea.id} className="flex items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400 font-medium truncate">{idea.title}</p>
-                      {idea.note && <p className="text-xs text-gray-300 mt-0.5 line-clamp-2">{idea.note}</p>}
-                    </div>
+                  <li key={idea.id} className="group">
+                    {editingIdeaId === idea.id && idea.source === 'idea' ? (
+                      <form onSubmit={handleIdeaUpdate} className="space-y-1.5 py-1">
+                        <input
+                          className="w-full text-xs border border-input rounded px-2 py-1 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                          value={editIdeaTitle}
+                          onChange={e => setEditIdeaTitle(e.target.value)}
+                          required
+                          autoFocus
+                        />
+                        <textarea
+                          className="w-full text-xs border border-input rounded px-2 py-1 bg-background text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                          value={editIdeaNote}
+                          onChange={e => setEditIdeaNote(e.target.value)}
+                          rows={2}
+                          maxLength={500}
+                        />
+                        <div className="flex gap-1.5">
+                          <button type="submit" disabled={editIdeaSaving} className="text-xs px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+                            {editIdeaSaving ? '…' : 'Speichern'}
+                          </button>
+                          <button type="button" onClick={() => setEditingIdeaId(null)} className="text-xs px-2 py-0.5 rounded border text-gray-500 hover:bg-gray-50">
+                            Abbrechen
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex items-start gap-2 py-0.5">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500 dark:text-gray-300 font-medium">
+                            {idea.title}
+                            {idea.source === 'parked_lop' && (
+                              <span className="ml-1.5 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                                {t('parkedBadge')}
+                              </span>
+                            )}
+                          </p>
+                          {idea.note && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{idea.note}</p>}
+                        </div>
+                        {canEdit && (
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            {idea.source === 'parked_lop' ? (
+                              <button
+                                type="button"
+                                title="LOP-Punkt bearbeiten"
+                                onClick={() => setSelectedItem(items.find(i => i.id === idea.id) ?? null)}
+                                className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs"
+                              >✎</button>
+                            ) : (
+                              <button
+                                type="button"
+                                title="Idee bearbeiten"
+                                onClick={() => startEditIdea(idea)}
+                                className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs"
+                              >✎</button>
+                            )}
+                            <button
+                              type="button"
+                              title="Zu LOP-Punkt umwandeln"
+                              onClick={() => handleIdeaPromote(idea)}
+                              className="p-1 rounded text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors text-xs font-medium"
+                            >→ Aufgabe</button>
+                            <button
+                              type="button"
+                              title="Idee löschen"
+                              onClick={() => handleIdeaDelete(idea.id)}
+                              className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -643,28 +741,73 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
               )}
 
               {ideas.map(idea => (
-                <div key={idea.id} className="flex items-start gap-3 group py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
-                      {idea.title}
-                      {idea.source === 'parked_lop' && (
-                        <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
-                          {t('parkedBadge')}
-                        </span>
-                      )}
-                    </p>
-                    {idea.note && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 whitespace-pre-wrap">{idea.note}</p>}
-                    <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
-                      {idea.created_by_name ?? 'Unbekannt'} · {new Date(idea.created_at).toLocaleDateString('de-DE')}
-                    </p>
-                  </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <div key={idea.id} className="group py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  {editingIdeaId === idea.id && idea.source === 'idea' ? (
+                    <form onSubmit={handleIdeaUpdate} className="space-y-2">
+                      <input
+                        className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={editIdeaTitle}
+                        onChange={e => setEditIdeaTitle(e.target.value)}
+                        required
+                        autoFocus
+                      />
+                      <textarea
+                        className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={editIdeaNote}
+                        onChange={e => setEditIdeaNote(e.target.value)}
+                        rows={2}
+                        maxLength={500}
+                        placeholder="Kurze Erklärung (optional)"
+                      />
+                      <div className="flex gap-2">
+                        <button type="submit" disabled={editIdeaSaving} className="text-xs px-2.5 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 font-medium">
+                          {editIdeaSaving ? 'Speichert…' : 'Speichern'}
+                        </button>
+                        <button type="button" onClick={() => setEditingIdeaId(null)} className="text-xs px-2.5 py-1 rounded-md border text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          Abbrechen
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
+                        {idea.title}
+                        {idea.source === 'parked_lop' && (
+                          <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                            {t('parkedBadge')}
+                          </span>
+                        )}
+                      </p>
+                      {idea.note && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 whitespace-pre-wrap">{idea.note}</p>}
+                      <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                        {idea.created_by_name ?? 'Unbekannt'} · {new Date(idea.created_at).toLocaleDateString('de-DE')}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    {canEdit && (
+                      idea.source === 'parked_lop' ? (
+                        <button
+                          type="button"
+                          title="LOP-Punkt bearbeiten"
+                          onClick={() => setSelectedItem(items.find(i => i.id === idea.id) ?? null)}
+                          className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium"
+                        >✎</button>
+                      ) : (
+                        <button
+                          type="button"
+                          title="Idee bearbeiten"
+                          onClick={() => startEditIdea(idea)}
+                          className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium"
+                        >✎</button>
+                      )
+                    )}
                     {canEdit && (
                       <button
                         type="button"
                         title="Zu LOP-Punkt umwandeln"
                         onClick={() => handleIdeaPromote(idea)}
-                        className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium"
+                        className="p-1 rounded text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors text-xs font-medium"
                       >
                         → Aufgabe
                       </button>
@@ -682,6 +825,8 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                       </button>
                     )}
                   </div>
+                  </div>
+                  )}
                 </div>
               ))}
 

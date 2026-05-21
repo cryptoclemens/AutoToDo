@@ -5,6 +5,22 @@
 
 ---
 
+## B-neu | 2026-05-21 13:16:42 | 🐛 Fehler | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Im Standup-Modus können Punkte aus dem Ideenspeicher nicht geöffnet und bearbeitet werden. Auch in der normalen Übersicht fehlt die Möglichkeit, Ideenspeicher-Punkte zu bearbeiten.
+**Lösung:** Standup-Modus: Ideenspeicher-Liste erhält Hover-Aktionen (✎ Edit, → Aufgabe, ✕ Löschen). Normalansicht: Edit-Button ergänzt, öffnet Inline-Formular. Geparkte LOP-Items öffnen den vollen LopItemDialog (haben alle Felder). Neuer `PUT /api/ideas/[id]` Endpoint für title/note-Update.
+
+## F-neu | 2026-05-19 15:11:24 | ✨ Feature-Wunsch | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Ist Ideenspeicher und „Geparkt" nicht dasselbe?
+**Lösung:** Kein separates Feature nötig — Unterschied ist konzeptuell: Ideen (💡) sind neue lose Gedanken ohne Umsetzungsdruck (eigene `idea_items`-Tabelle), Geparkt (🟡) sind frühere LOP-Punkte die temporär pausiert wurden (LOP-Status `geparkt`, behalten alle Felder). Beide erscheinen im Ideenspeicher, Geparkte Items zeigen ein „Geparkt"-Badge und öffnen beim Bearbeiten den vollständigen LOP-Dialog.
+
+---
+
 ## F-001 | 2026-03-27 12:05:14 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Plenum
 **Nutzer:** clemens.pompey@vencly.com
