@@ -242,3 +242,10 @@ Möglichkeit meine Accountinfos (insbesondere meinen Namen zu ändern, E-Mail un
 Ist Ideen Speicher und "Geparkt" nicht das selbe?
 
 ---
+## B-008 | 2026-05-21 13:16:42 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbeitet werden
+
+---
