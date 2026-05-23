@@ -447,6 +447,21 @@ Letzte Aktualisierung: 19.05.2026 · Version 0.1.198 · M1–M18 erledigt
 | 17.20 | Einstellungen: „Audio"-Tab mit Whisper-Modell-Verwaltung (Download, Modell-Wechsel, Fortschrittsbalken) | ✅ Erledigt |
 | 17.21 | Einstellungen: Versionsnummer `vX.Y.Z` neben Überschrift; `lib/version.ts` zentral, von `bump-version.sh` gepflegt | ✅ Erledigt |
 | BF.28 | Desktop-App: `NSMicrophoneUsageDescription` fehlte → macOS verwehrte Mikrofonzugriff ohne Dialog (Stille → Halluzination) | ✅ Erledigt |
+| BF.29 | Security: `translate.ts` — System-Prompt-Isolation gegen Prompt-Injection in LLM-Übersetzung | ✅ Erledigt |
+
+---
+
+### Meilenstein 20: Security Hardening — Vibe-Coding-Audit (Mai 2026)
+
+*Grundlage: Golem-Artikel + Tenzai-Studie (69 Schwachstellen in 15 vibe-codierten Apps); alle Findings live auf `autotodo.vencly.com`*
+
+| # | Aufgabe | Status |
+|---|---|---|
+| 20.1 | `Content-Security-Policy` Header in `next.config.js` ergänzt (default-src, script-src, connect-src, frame-ancestors, object-src) | ✅ Erledigt |
+| 20.2 | `CRON_SECRET` fail-closed: Endpoint blockiert wenn Env-Var nicht gesetzt (vorher: offen wenn nicht konfiguriert) | ✅ Erledigt |
+| 20.3 | `INTERNAL_API_SECRET` fail-closed: leere Env-Var öffnete Endpoint bei leerem Header-Wert — behoben | ✅ Erledigt |
+
+**DoD M20:** Alle drei Lücken behoben; CSP deployed; fail-closed-Pattern für beide Secret-gated Endpoints bestätigt.
 
 ---
 
