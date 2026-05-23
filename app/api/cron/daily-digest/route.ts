@@ -137,9 +137,10 @@ function buildDigestEmail(
 
 export async function GET(request: NextRequest) {
   // Auth: CRON_SECRET (gesetzt in .env, aufgerufen via host crontab)
+  // Fail-closed: wenn CRON_SECRET nicht gesetzt, Endpoint blockiert
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

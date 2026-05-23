@@ -6,8 +6,10 @@ export const maxDuration = 60
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   // Internal-only endpoint (called for retries)
-  const secret = req.headers.get('x-internal-secret') ?? ''
-  if (secret !== (process.env.INTERNAL_API_SECRET ?? '')) {
+  // Fail-closed: wenn INTERNAL_API_SECRET nicht gesetzt, Endpoint blockiert
+  const internalSecret = process.env.INTERNAL_API_SECRET
+  const provided = req.headers.get('x-internal-secret')
+  if (!internalSecret || provided !== internalSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
