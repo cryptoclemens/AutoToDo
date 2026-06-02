@@ -279,3 +279,12 @@ Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Auf
 Der Daily Report per Mail hackt noch. Dieser aktualisiert sich nicht täglich an die Aufgaben, die anstehen. Es müssten ja immer die Tages ToDos im Daily Digest drinnen stehen.
 
 ---
+## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Möglichkeit im Admin Bereich Accounts zusammenzu legen:
+Problem besteht wenn:
+Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann entstehen zwei "Personen", die dann zu einer zusammengeführt werden müssen.
+
+---
