@@ -295,3 +295,10 @@ Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann
 Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überprüft werden und dann nur noch die aktuellen Informationen gezeigt werden.
 
 ---
+## B-010 | 2026-06-02 08:41:35 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Die Person "Markus" und die Person "Markus Wanzek I Plenum" kann zu einer Person zusammengefügt werden
+
+---
