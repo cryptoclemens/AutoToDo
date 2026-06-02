@@ -288,3 +288,10 @@ Problem besteht wenn:
 Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann entstehen zwei "Personen", die dann zu einer zusammengeführt werden müssen.
 
 ---
+## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überprüft werden und dann nur noch die aktuellen Informationen gezeigt werden.
+
+---
