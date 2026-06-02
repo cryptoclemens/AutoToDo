@@ -321,3 +321,12 @@ Informationen sollen aus Daily Stand Up + aus den ToDos extrahiert werden.
 In der Funktion/Button Tagesplanung kann dann direkt ein Vorschlag für alle Aufgaben für den Tag gemacht werden
 
 ---
+## B-011 | 2026-06-02 08:48:53 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Wenn man auf Datensicherheit geht öffnet sich kein Infofenster in der Mitte des Bildschirms, sondern oben ein Fenstern, dass sich nicht so gut schließen lässt.
+
+Bitte so umsetzen, dass es vom Layout her responsive ist und es sich in der Mitte öffnet.
+
+---
