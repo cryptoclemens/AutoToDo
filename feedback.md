@@ -310,3 +310,14 @@ Verbesserung:
 - Matche Stimmen in den Daily Aufzeichnungen zu den Personen in AutotoDo um Rückschlüsse darauf zu haben wer welche Aufgaben erledigt hat und was abgeschlossen hat für den Tätigkeitsnachweis.
 
 ---
+## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Tätigkeitsnachweis-Funktion muss noch schlauere Intelligenz haben wer welche Aufgabe wann gemacht hat.
+
+Informationen sollen aus Daily Stand Up + aus den ToDos extrahiert werden.
+
+In der Funktion/Button Tagesplanung kann dann direkt ein Vorschlag für alle Aufgaben für den Tag gemacht werden
+
+---
