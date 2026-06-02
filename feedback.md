@@ -337,3 +337,10 @@ Bitte so umsetzen, dass es vom Layout her responsive ist und es sich in der Mitt
 Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
 
 ---
+## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigter Name, hinterlegte E-Mail Adresse, Häufigkeit für E-Mail Digest) haben -> Aktuell hat Admin alle Rechte
+
+---
