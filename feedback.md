@@ -272,3 +272,10 @@ Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbe
 Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Aufgaben gibt, bzw. Aufgaben voneinander trennen zu können um große Arbeitspakete in kleinere aufzuteilen.
 
 ---
+## B-009 | 2026-06-02 08:36:59 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Der Daily Report per Mail hackt noch. Dieser aktualisiert sich nicht täglich an die Aufgaben, die anstehen. Es müssten ja immer die Tages ToDos im Daily Digest drinnen stehen.
+
+---
