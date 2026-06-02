@@ -330,3 +330,10 @@ Wenn man auf Datensicherheit geht öffnet sich kein Infofenster in der Mitte des
 Bitte so umsetzen, dass es vom Layout her responsive ist und es sich in der Mitte öffnet.
 
 ---
+## B-012 | 2026-06-02 08:49:22 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
+
+---
