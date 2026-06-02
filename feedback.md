@@ -302,3 +302,11 @@ Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überpr�
 Die Person "Markus" und die Person "Markus Wanzek I Plenum" kann zu einer Person zusammengefügt werden
 
 ---
+## F-024 | 2026-06-02 08:44:42 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Verbesserung:
+- Matche Stimmen in den Daily Aufzeichnungen zu den Personen in AutotoDo um Rückschlüsse darauf zu haben wer welche Aufgaben erledigt hat und was abgeschlossen hat für den Tätigkeitsnachweis.
+
+---
