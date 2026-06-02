@@ -265,3 +265,10 @@ Ist Ideen Speicher und "Geparkt" nicht das selbe?
 Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbeitet werden
 
 ---
+## F-021 | 2026-06-02 08:35:05 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Aufgaben gibt, bzw. Aufgaben voneinander trennen zu können um große Arbeitspakete in kleinere aufzuteilen.
+
+---
