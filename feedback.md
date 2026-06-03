@@ -344,3 +344,10 @@ Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
 Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigter Name, hinterlegte E-Mail Adresse, Häufigkeit für E-Mail Digest) haben -> Aktuell hat Admin alle Rechte
 
 ---
+## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgesetzt werden müssen oder mußten
+
+---
