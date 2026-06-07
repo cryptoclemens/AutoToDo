@@ -265,3 +265,89 @@ Ist Ideen Speicher und "Geparkt" nicht das selbe?
 Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbeitet werden
 
 ---
+## F-021 | 2026-06-02 08:35:05 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Aufgaben gibt, bzw. Aufgaben voneinander trennen zu können um große Arbeitspakete in kleinere aufzuteilen.
+
+---
+## B-009 | 2026-06-02 08:36:59 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Der Daily Report per Mail hackt noch. Dieser aktualisiert sich nicht täglich an die Aufgaben, die anstehen. Es müssten ja immer die Tages ToDos im Daily Digest drinnen stehen.
+
+---
+## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Möglichkeit im Admin Bereich Accounts zusammenzu legen:
+Problem besteht wenn:
+Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann entstehen zwei "Personen", die dann zu einer zusammengeführt werden müssen.
+
+---
+## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überprüft werden und dann nur noch die aktuellen Informationen gezeigt werden.
+
+---
+## B-010 | 2026-06-02 08:41:35 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Die Person "Markus" und die Person "Markus Wanzek I Plenum" kann zu einer Person zusammengefügt werden
+
+---
+## F-024 | 2026-06-02 08:44:42 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Verbesserung:
+- Matche Stimmen in den Daily Aufzeichnungen zu den Personen in AutotoDo um Rückschlüsse darauf zu haben wer welche Aufgaben erledigt hat und was abgeschlossen hat für den Tätigkeitsnachweis.
+
+---
+## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Tätigkeitsnachweis-Funktion muss noch schlauere Intelligenz haben wer welche Aufgabe wann gemacht hat.
+
+Informationen sollen aus Daily Stand Up + aus den ToDos extrahiert werden.
+
+In der Funktion/Button Tagesplanung kann dann direkt ein Vorschlag für alle Aufgaben für den Tag gemacht werden
+
+---
+## B-011 | 2026-06-02 08:48:53 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Wenn man auf Datensicherheit geht öffnet sich kein Infofenster in der Mitte des Bildschirms, sondern oben ein Fenstern, dass sich nicht so gut schließen lässt.
+
+Bitte so umsetzen, dass es vom Layout her responsive ist und es sich in der Mitte öffnet.
+
+---
+## B-012 | 2026-06-02 08:49:22 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
+
+---
+## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigter Name, hinterlegte E-Mail Adresse, Häufigkeit für E-Mail Digest) haben -> Aktuell hat Admin alle Rechte
+
+---
+## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgesetzt werden müssen oder mußten
+
+---

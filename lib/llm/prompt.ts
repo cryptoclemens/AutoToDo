@@ -68,6 +68,12 @@ KONTEXT-NOTIZEN (context_notes):
 - category: "availability" für Abwesenheiten, "decision" für Entscheidungen, "risk" für Risiken, "info" für alles andere
 - Wenn keine Kontext-Infos vorhanden: leeres Array []
 
+QUELLEN-PRIORITÄT – Transkript hat immer Vorrang:
+- Alle Inhalte (title, description, result, responsible außer Mitgliederlisten) MÜSSEN aus dem Transkript stammen
+- Bestehende LOP-Punkte dienen NUR zur Identifikation (lop_item_id) und Duplikat-Erkennung — übernimm ihre alten Formulierungen nicht in neue Felder
+- Wenn ein Punkt im Transkript mit einer anderen Bezeichnung referenziert wird als der bestehende Titel: verwende die Transkript-Formulierung im title-Feld des update-Eintrags
+- Im Zweifelsfall zwischen bestehender Formulierung und Transkript-Text: das Transkript gewinnt immer
+
 WICHTIG – Personennamen:
 - Die Namen in "Workspace-Mitglieder" und "Bekannte Personennamen" sind die verbindlichen Schreibweisen — verwende sie EXAKT so wie angegeben, ohne Korrekturen
 - Gleiche Namen aus dem Transkript mit diesen Listen ab: z.B. wenn nur der Nachname genannt wird ("Müller"), eine Abkürzung ("Hr. M.") oder eine leicht andere Schreibweise — dann wähle den passenden Eintrag aus der Liste
