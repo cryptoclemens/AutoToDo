@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-024',
+    date: '08.06.2026',
+    title: 'Desktop 0.3.0: System-Audio ohne BlackHole',
+    description: 'Auf macOS Sonoma (14.4+) wird die Gegenseite des Calls jetzt automatisch mitaufgenommen – ohne BlackHole-Installation, ohne Setup-Schritt. Funktioniert auch wenn Parrot, Zoom oder Teams aktiv sind.',
+  },
+  {
     id: 'F-023',
     date: '19.05.2026',
     title: 'Digest-Häufigkeit wählbar',
