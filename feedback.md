@@ -351,3 +351,11 @@ Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigt
 Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgesetzt werden müssen oder mußten
 
 ---
+## F-028 | 2026-06-10 13:15:51 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Reminder Funktion für regelmäßige Aufgaben:
+Für z.B. Statusberichtupdates im Intervall wöchentlich jede Woche Mittwoch
+
+---
