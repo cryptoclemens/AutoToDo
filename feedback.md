@@ -359,3 +359,10 @@ Reminder Funktion für regelmäßige Aufgaben:
 Für z.B. Statusberichtupdates im Intervall wöchentlich jede Woche Mittwoch
 
 ---
+## F-029 | 2026-06-15 07:54:19 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Verschmelzen von Lop-Punkten möglich machen
+
+---
