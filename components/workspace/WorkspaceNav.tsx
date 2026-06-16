@@ -17,6 +17,7 @@ import {
 import HowToModal from '@/components/HowToModal'
 import SecurityModal from '@/components/SecurityModal'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import GlobalSearch from '@/components/GlobalSearch'
 
 
 interface Props {
@@ -182,6 +183,7 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
 
         {/* Right section */}
         <div className="flex items-center gap-1.5">
+          <GlobalSearch />
           <LanguageSwitcher currentLocale={locale} />
           <SecurityModal />
           <HowToModal />

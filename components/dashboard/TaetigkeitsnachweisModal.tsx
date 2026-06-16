@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import * as XLSX from 'xlsx'
 
 interface DayData {
   lop: string[]
@@ -89,6 +90,30 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
 
   useEffect(() => { load(month) }, [month, load])
 
+  function xlsxExport() {
+    const hdrs = ['Datum', 'Wochentag', 'Tätigkeit']
+    const days = allDays.length > 0 ? allDays : daysInMonth(month)
+    const rows = days.map(date => {
+      const d = new Date(date + 'T00:00:00')
+      const isNonWorking = nonWorkingDays.has(date)
+      return [
+        d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        d.toLocaleDateString('de-DE', { weekday: 'long' }),
+        isNonWorking ? '–' : (fields[date] ?? ''),
+      ]
+    })
+    const wb = XLSX.utils.book_new()
+    const ws = XLSX.utils.aoa_to_sheet([hdrs, ...rows])
+    ws['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 80 }]
+    for (let c = 0; c < hdrs.length; c++) {
+      const ref = XLSX.utils.encode_cell({ r: 0, c })
+      if (ws[ref]) ws[ref].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '2563EB' } } }
+    }
+    XLSX.utils.book_append_sheet(wb, ws, 'Tätigkeitsnachweis')
+    const suffix = projectName ? `_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}` : ''
+    XLSX.writeFile(wb, `Tätigkeitsnachweis_${month}${suffix}.xlsx`)
+  }
+
   function prevMonth() {
     const [y, m] = month.split('-').map(Number)
     const d = new Date(y, m - 2, 1)
@@ -146,7 +171,16 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
                 <path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={xlsxExport}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M6 1v7M3 5l3 3 3-3M1 10h10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                XLSX
+              </button>
               <button
                 onClick={() => window.print()}
                 className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"

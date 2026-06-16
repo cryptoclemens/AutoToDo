@@ -21,6 +21,15 @@ export function AccountSettings({ currentEmail }: Props) {
   const [savingPw, setSavingPw] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [savingName, setSavingName] = useState(false)
+  const [userDigestFreq, setUserDigestFreq] = useState('workspace_default')
+  const [savingDigest, setSavingDigest] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/settings/digest-preferences')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { frequency: string } | null) => { if (d) setUserDigestFreq(d.frequency) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => {
@@ -159,6 +168,41 @@ export function AccountSettings({ currentEmail }: Props) {
             {savingPw ? ts('account.passwordChanging') : ts('account.passwordChange')}
           </Button>
         </form>
+      </div>
+
+      {/* Persönliche Digest-Häufigkeit */}
+      <div className="border-t pt-6">
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">Mein Digest</h3>
+        <p className="text-xs text-gray-500 mb-3">
+          Überschreibe die Workspace-Einstellung für deinen persönlichen E-Mail-Digest.
+        </p>
+        <select
+          value={userDigestFreq}
+          onChange={async e => {
+            const val = e.target.value
+            setUserDigestFreq(val)
+            setSavingDigest(true)
+            try {
+              const res = await fetch('/api/settings/digest-preferences', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ frequency: val }),
+              })
+              if (res.ok) toast.success('Digest-Einstellung gespeichert.')
+              else toast.error('Fehler beim Speichern.')
+            } finally {
+              setSavingDigest(false)
+            }
+          }}
+          disabled={savingDigest}
+          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        >
+          <option value="workspace_default">Workspace-Standard übernehmen</option>
+          <option value="daily">Täglich</option>
+          <option value="twice_weekly">2× pro Woche (Mo + Do)</option>
+          <option value="weekly">Wöchentlich (Montag)</option>
+          <option value="disabled">Deaktiviert</option>
+        </select>
       </div>
     </div>
   )

@@ -259,12 +259,35 @@ export async function GET(request: NextRequest) {
     itemsByUser[uid].push(item)
   }
 
+  // 6b. User-Präferenzen für Digest-Häufigkeit laden
+  const userIds = Object.keys(itemsByUser)
+  const { data: userPrefs } = await supabase
+    .from('user_digest_preferences')
+    .select('user_id, frequency')
+    .in('user_id', userIds)
+    .in('workspace_id', workspaces.map(ws => ws.id)) as {
+      data: Array<{ user_id: string; frequency: string }> | null
+    }
+  const userPrefMap: Record<string, string> = Object.fromEntries(
+    (userPrefs ?? []).map(p => [p.user_id, p.frequency])
+  )
+
   // 7. Pro Nutzer E-Mail versenden
   let sent = 0
   const errors: string[] = []
   const dryRunRecipients: Array<{ email: string; itemCount: number }> = []
 
   for (const [userId, userItems] of Object.entries(itemsByUser)) {
+    // Persönliche Digest-Präferenz prüfen
+    const userFreq = userPrefMap[userId] ?? 'workspace_default'
+    if (userFreq !== 'workspace_default') {
+      // User hat eigene Einstellung — direkt prüfen ob heute passend
+      if (userFreq === 'disabled') continue
+      if (userFreq === 'weekly' && today !== 1) continue
+      if (userFreq === 'twice_weekly' && today !== 1 && today !== 4) continue
+      // 'daily' → immer senden
+    }
+
     try {
       const { data: { user } } = await supabase.auth.admin.getUserById(userId)
       if (!user?.email) continue

@@ -14,6 +14,8 @@ import XlsxImportDialog from '@/components/projects/XlsxImportDialog'
 import { Button } from '@/components/ui/button'
 import TaetigkeitsnachweisButton from '@/components/dashboard/TaetigkeitsnachweisButton'
 import TagesplanungButton from '@/components/workspace/TagesplanungButton'
+import ArchiveExportButton from '@/components/lop/ArchiveExportButton'
+import LopSummaryButton from '@/components/lop/LopSummaryButton'
 
 interface Props {
   params: { id: string }
@@ -216,6 +218,8 @@ export default async function ProjectPage({ params }: Props) {
           >
             ↓ XLSX exportieren
           </a>
+          <ArchiveExportButton projectId={project.id} />
+          <LopSummaryButton projectId={project.id} />
           {canEdit && !project.archived_at && (
             <XlsxImportDialog projectId={project.id} />
           )}
