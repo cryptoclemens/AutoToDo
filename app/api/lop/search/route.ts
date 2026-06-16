@@ -20,8 +20,12 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
-  const q = request.nextUrl.searchParams.get('q')?.trim()
-  if (!q || q.length < 2) return NextResponse.json({ results: [] })
+  const raw = request.nextUrl.searchParams.get('q')?.trim()
+  if (!raw || raw.length < 2) return NextResponse.json({ results: [] })
+  // PostgREST metacharacters in .or()-strings können den Filter-AST kapern.
+  // Alle PostgREST-Sonderzeichen entfernen bevor der Wert interpoliert wird.
+  const q = raw.replace(/[,()*:\\]/g, '').slice(0, 100)
+  if (q.length < 2) return NextResponse.json({ results: [] })
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
