@@ -25,6 +25,7 @@ export default function InviteAcceptForm({ token, workspaceName, email: emailPro
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isLoginMode, setIsLoginMode] = useState(false)
+  const [confirmationPending, setConfirmationPending] = useState(false)
 
   async function handleAccept(e: React.FormEvent) {
     e.preventDefault()
@@ -42,10 +43,11 @@ export default function InviteAcceptForm({ token, workspaceName, email: emailPro
     }
 
     if (!isLoginMode) {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: name } },
+        options: { data: { full_name: name }, emailRedirectTo: redirectTo },
       })
 
       if (signUpError) {
@@ -60,6 +62,13 @@ export default function InviteAcceptForm({ token, workspaceName, email: emailPro
           return
         }
         setError(signUpError.message)
+        setLoading(false)
+        return
+      }
+
+      // E-Mail-Bestätigung erforderlich — noch keine Session
+      if (!signUpData.session) {
+        setConfirmationPending(true)
         setLoading(false)
         return
       }
@@ -87,6 +96,20 @@ export default function InviteAcceptForm({ token, workspaceName, email: emailPro
 
     router.push('/dashboard')
     router.refresh()
+  }
+
+  if (confirmationPending) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>E-Mail bestätigen</CardTitle>
+          <CardDescription>
+            Wir haben dir eine Bestätigungs-E-Mail geschickt. Klicke auf den Link darin –
+            danach wirst du automatisch dem Workspace <strong>{workspaceName}</strong> hinzugefügt.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
   }
 
   if (alreadyAccepted) {
