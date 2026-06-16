@@ -133,7 +133,7 @@ export default function GlobalSearch() {
         )}
 
         {q.length >= 2 && !loading && results.length === 0 && (
-          <p className="px-4 py-6 text-sm text-gray-400 text-center">Keine Ergebnisse für „{q}"</p>
+          <p className="px-4 py-6 text-sm text-gray-400 text-center">Keine Ergebnisse für &bdquo;{q}&ldquo;</p>
         )}
 
         {q.length < 2 && (

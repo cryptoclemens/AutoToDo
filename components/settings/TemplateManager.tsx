@@ -166,7 +166,7 @@ export default function TemplateManager() {
               Abbrechen
             </Button>
           </div>
-          <p className="text-xs text-gray-400">„Tage" = Fälligkeit in X Tagen ab Anwendung der Vorlage</p>
+          <p className="text-xs text-gray-400">&bdquo;Tage&ldquo; = Fälligkeit in X Tagen ab Anwendung der Vorlage</p>
         </div>
       )}
     </div>
