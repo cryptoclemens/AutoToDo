@@ -227,13 +227,14 @@ export async function GET(request: NextRequest) {
   const projectMap: Record<string, { id: string; name: string; workspace_id: string }> =
     Object.fromEntries(projects.map(p => [p.id, p]))
 
-  // 5. Offene LOP-Punkte mit responsible_user_id
+  // 5. Offene LOP-Punkte mit responsible_user_id — nur heute fällige oder überfällige (+ kein Datum)
   const { data: items } = await supabase
     .from('lop_items')
     .select('id, title, status, due_date, responsible_user_id, project_id')
     .in('project_id', projectIds)
     .in('status', ['offen', 'in_bearbeitung'])
     .not('responsible_user_id', 'is', null)
+    .or(`due_date.is.null,due_date.lte.${todayStr}`)
     .order('due_date', { ascending: true, nullsFirst: false }) as {
       data: Array<{
         id: string; title: string; status: string; due_date: string | null

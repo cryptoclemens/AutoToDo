@@ -17,7 +17,6 @@ import {
 import HowToModal from '@/components/HowToModal'
 import SecurityModal from '@/components/SecurityModal'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
-import ThemeToggle from '@/components/ThemeToggle'
 
 
 interface Props {
@@ -186,7 +185,6 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
           <LanguageSwitcher currentLocale={locale} />
           <SecurityModal />
           <HowToModal />
-          <ThemeToggle />
 
           <DropdownMenu>
             <DropdownMenuTrigger className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 transition-colors font-medium">
