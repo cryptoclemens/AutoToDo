@@ -536,26 +536,26 @@ Kategorisiert aus Nutzer-Feedback. Reihenfolge nach geschätztem Wert.
 | # | Feature | ID | Status |
 |---|---|---|---|
 | 22.1 | Feiertage im Digest: Digest überspringt Feiertage (bundesland-spezifisch) | F-22 | ✅ Erledigt via M19 |
-| 22.2 | Tätigkeitsnachweis-Export: PDF/XLSX-Download des monatlichen Nachweises | F-27 | 🔲 Offen |
-| 22.3 | Archiv-Export: alle abgeschlossenen LOP-Punkte als XLSX mit Zeitraum-Filter | F-29 | 🔲 Offen |
+| 22.2 | Tätigkeitsnachweis-Export: XLSX-Button im Modal (client-seitig, neben Drucken) | F-27 | ✅ Erledigt |
+| 22.3 | Archiv-Export: abgeschlossene LOP-Punkte als XLSX mit Zeitraum-Dropdown (1M/3M/6M/Gesamt) | F-29 | ✅ Erledigt |
 
 #### Kategorie B — Nutzer-Autonomie
 | # | Feature | ID | Status |
 |---|---|---|---|
-| 22.4 | Digest-Häufigkeit pro Nutzer einstellbar (override Workspace-Standard) | F-26 | 🔲 Offen |
+| 22.4 | Digest-Häufigkeit pro Nutzer: user_digest_preferences Tabelle, API, Konto-Tab Settings | F-26 | ✅ Erledigt |
 | 22.5 | E-Mail-Präferenzen: Nutzer kann Digest-Zeiten selbst konfigurieren | F-23 | ✅ Erledigt via M19 |
 
 #### Kategorie C — KI-Intelligenz
 | # | Feature | ID | Status |
 |---|---|---|---|
 | 22.6 | Desktop v0.3.0: System-Audio ohne BlackHole (CoreAudio Process Tap, macOS 14.4+) | F-24 | ✅ Erledigt |
-| 22.7 | KI-Zusammenfassung je LOP: Button „Zusammenfassung generieren" auf Projektebene | F-25 | 🔲 Offen |
+| 22.7 | KI-Zusammenfassung je LOP: Button auf Projektseite, /api/projects/[id]/summarize, alle Provider | F-25 | ✅ Erledigt |
 
 #### Kategorie D — Struktur & Klarheit
 | # | Feature | ID | Status |
 |---|---|---|---|
 | 22.8 | LOP-Vorlage: Standardpunkte vordefinieren (kopierbare Template-Listen) | F-20 | 🔲 Offen |
-| 22.9 | Filter & Suche: globale Suche über alle LOP-Punkte eines Workspaces | F-21 | 🔲 Offen |
+| 22.9 | Globale Suche: ⌘K Modal, /api/lop/search (workspace-weit, ilike), GlobalSearch in WorkspaceNav | F-21 | ✅ Erledigt |
 | 22.10 | Status-Workflow: benutzerdefinierte Status-Bezeichnungen je Workspace | F-28 | 🔲 Offen |
 
 ---
