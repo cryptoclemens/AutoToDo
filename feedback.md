@@ -366,3 +366,12 @@ Für z.B. Statusberichtupdates im Intervall wöchentlich jede Woche Mittwoch
 Verschmelzen von Lop-Punkten möglich machen
 
 ---
+## B-013 | 2026-06-16 08:15:08 | 🐛 Fehler
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Fehler beim Download - sowohl auf MacOS als auch Windows.
+
+Bitte verbessern!
+
+---
