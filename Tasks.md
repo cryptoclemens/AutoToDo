@@ -514,6 +514,52 @@ Letzte Aktualisierung: 19.05.2026 · Version 0.1.198 · M1–M18 erledigt
 
 ---
 
+### Meilenstein 21: Nutzer-Feedback Juni 2026 — Bugs & Polish
+
+| # | Aufgabe | Quelle | Status |
+|---|---|---|---|
+| 21.1 | Einladungslink: `emailRedirectTo` in signUp, `confirmationPending`-State bei E-Mail-Verifikation | B-7 | ✅ Erledigt |
+| 21.2 | Standup Ideenspeicher-Buttons immer sichtbar (nicht nur on hover) | B-8 | ✅ Erledigt |
+| 21.3 | SecurityModal per `createPortal(document.body)` aus Stacking-Context befreit | B-11 | ✅ Erledigt |
+| 21.4 | Download-Route: `redirect: 'manual'` → Browser direkt zu CDN-URL weiterleiten (kein Proxy-Timeout) | B-13 | ✅ Erledigt |
+| 21.5 | Dark Mode deaktiviert (tailwind darkMode entfernt, `.dark{}`-CSS entfernt, ThemeToggle entfernt) | B-12 | ✅ Erledigt |
+| 21.6 | Daily Digest: filtert nur Items mit `due_date ≤ heute` oder kein Datum (war: alle offenen) | B-9 | ✅ Erledigt |
+| 21.7 | Doppelperson „Markus Wanzek I Plenum" → „Markus" normalisiert (SQL UPDATE, 12 Zeilen) | B-10 | ✅ Erledigt |
+
+---
+
+### Meilenstein 22: Feature-Backlog Juni 2026
+
+Kategorisiert aus Nutzer-Feedback. Reihenfolge nach geschätztem Wert.
+
+#### Kategorie A — Daten-Management
+| # | Feature | ID | Status |
+|---|---|---|---|
+| 22.1 | Feiertage im Digest: Digest überspringt Feiertage (bundesland-spezifisch) | F-22 | ✅ Erledigt via M19 |
+| 22.2 | Tätigkeitsnachweis-Export: PDF/XLSX-Download des monatlichen Nachweises | F-27 | 🔲 Offen |
+| 22.3 | Archiv-Export: alle abgeschlossenen LOP-Punkte als XLSX mit Zeitraum-Filter | F-29 | 🔲 Offen |
+
+#### Kategorie B — Nutzer-Autonomie
+| # | Feature | ID | Status |
+|---|---|---|---|
+| 22.4 | Digest-Häufigkeit pro Nutzer einstellbar (override Workspace-Standard) | F-26 | 🔲 Offen |
+| 22.5 | E-Mail-Präferenzen: Nutzer kann Digest-Zeiten selbst konfigurieren | F-23 | ✅ Erledigt via M19 |
+
+#### Kategorie C — KI-Intelligenz
+| # | Feature | ID | Status |
+|---|---|---|---|
+| 22.6 | Desktop v0.3.0: System-Audio ohne BlackHole (CoreAudio Process Tap, macOS 14.4+) | F-24 | ✅ Erledigt |
+| 22.7 | KI-Zusammenfassung je LOP: Button „Zusammenfassung generieren" auf Projektebene | F-25 | 🔲 Offen |
+
+#### Kategorie D — Struktur & Klarheit
+| # | Feature | ID | Status |
+|---|---|---|---|
+| 22.8 | LOP-Vorlage: Standardpunkte vordefinieren (kopierbare Template-Listen) | F-20 | 🔲 Offen |
+| 22.9 | Filter & Suche: globale Suche über alle LOP-Punkte eines Workspaces | F-21 | 🔲 Offen |
+| 22.10 | Status-Workflow: benutzerdefinierte Status-Bezeichnungen je Workspace | F-28 | 🔲 Offen |
+
+---
+
 ## Legende
 
 | Symbol | Bedeutung |
