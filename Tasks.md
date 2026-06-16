@@ -554,9 +554,9 @@ Kategorisiert aus Nutzer-Feedback. Reihenfolge nach geschätztem Wert.
 #### Kategorie D — Struktur & Klarheit
 | # | Feature | ID | Status |
 |---|---|---|---|
-| 22.8 | LOP-Vorlage: Standardpunkte vordefinieren (kopierbare Template-Listen) | F-20 | 🔲 Offen |
+| 22.8 | LOP-Vorlage: Standardpunkte vordefinieren (kopierbare Template-Listen) | F-20 | ✅ Erledigt |
 | 22.9 | Globale Suche: ⌘K Modal, /api/lop/search (workspace-weit, ilike), GlobalSearch in WorkspaceNav | F-21 | ✅ Erledigt |
-| 22.10 | Status-Workflow: benutzerdefinierte Status-Bezeichnungen je Workspace | F-28 | 🔲 Offen |
+| 22.10 | Status-Workflow: benutzerdefinierte Status-Bezeichnungen je Workspace | F-28 | ✅ Erledigt |
 
 ---
 

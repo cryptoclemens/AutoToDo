@@ -1,6 +1,6 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useStatusLabel } from '@/lib/statusLabels'
 
 export type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
 
@@ -12,12 +12,12 @@ const styleMap: Record<Status, { pill: string; dot: string }> = {
 }
 
 export default function StatusBadge({ status }: { status: Status }) {
-  const t = useTranslations('lop.status')
+  const label = useStatusLabel(status)
   const s = styleMap[status] ?? styleMap.offen
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${s.pill}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-      {t(status)}
+      {label}
     </span>
   )
 }

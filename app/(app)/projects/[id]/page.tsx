@@ -16,6 +16,7 @@ import TaetigkeitsnachweisButton from '@/components/dashboard/Taetigkeitsnachwei
 import TagesplanungButton from '@/components/workspace/TagesplanungButton'
 import ArchiveExportButton from '@/components/lop/ArchiveExportButton'
 import LopSummaryButton from '@/components/lop/LopSummaryButton'
+import ApplyTemplateButton from '@/components/lop/ApplyTemplateButton'
 
 interface Props {
   params: { id: string }
@@ -220,6 +221,7 @@ export default async function ProjectPage({ params }: Props) {
           </a>
           <ArchiveExportButton projectId={project.id} />
           <LopSummaryButton projectId={project.id} />
+          {canEdit && !project.archived_at && <ApplyTemplateButton projectId={project.id} />}
           {canEdit && !project.archived_at && (
             <XlsxImportDialog projectId={project.id} />
           )}

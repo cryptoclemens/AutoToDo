@@ -17,6 +17,8 @@ import NotionIntegrationForm from './NotionIntegrationForm'
 import { AudioSettingsTab } from './AudioSettingsTab'
 import { Plan } from '@/lib/plans'
 import { BUNDESLAENDER } from '@/lib/holidays'
+import TemplateManager from './TemplateManager'
+import StatusLabelEditor from './StatusLabelEditor'
 
 type Tab = 'konto' | 'workspace' | 'team' | 'ki' | 'api' | 'webhooks' | 'audit' | 'billing' | 'integrations' | 'audio'
 
@@ -285,6 +287,24 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
                 <option key={bl.code} value={bl.code}>{bl.name}</option>
               ))}
             </select>
+          </div>
+
+          {/* Status-Labels (F-28) */}
+          <div className="border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Status-Bezeichnungen</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Passe die Anzeigenamen der vier Status-Werte für diesen Workspace an. Die internen Werte bleiben unverändert.
+            </p>
+            <StatusLabelEditor />
+          </div>
+
+          {/* LOP-Vorlagen (F-20) */}
+          <div className="border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">LOP-Vorlagen</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Definiere wiederverwendbare LOP-Listen. Beim Anwenden auf ein Projekt werden die Vorlagen-Punkte als neue LOP-Einträge angelegt.
+            </p>
+            <TemplateManager />
           </div>
         </div>
       )}

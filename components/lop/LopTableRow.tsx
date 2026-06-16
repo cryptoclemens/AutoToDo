@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import type { LopItem } from './LopItemDialog'
 import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
+import { useStatusLabels } from '@/lib/statusLabels'
 
 type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
@@ -24,13 +25,13 @@ interface Props {
   onOpenDetail: () => void
 }
 
-const STATUS_OPTIONS: { value: Status; label: string }[] = [
-  { value: 'offen', label: 'Offen' },
-  { value: 'in_bearbeitung', label: 'In Bearbeitung' },
-  { value: 'abgeschlossen', label: 'Abgeschlossen' },
-]
-
 export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onPark, onOpenDetail }: Props) {
+  const statusLabels = useStatusLabels()
+  const STATUS_OPTIONS: { value: Status; label: string }[] = [
+    { value: 'offen', label: statusLabels.offen },
+    { value: 'in_bearbeitung', label: statusLabels.in_bearbeitung },
+    { value: 'abgeschlossen', label: statusLabels.abgeschlossen },
+  ]
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<LopItem>(item)
   const [saving, setSaving] = useState(false)

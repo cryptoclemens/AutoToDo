@@ -12,6 +12,42 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-028',
+    date: '16.06.2026',
+    title: 'Eigene Status-Bezeichnungen',
+    description: 'In den Workspace-Einstellungen können die vier LOP-Status-Bezeichnungen (Offen, In Bearbeitung usw.) durch eigene Begriffe ersetzt werden – z.B. „Neu", „Läuft" oder „Fertig".',
+  },
+  {
+    id: 'F-020',
+    date: '16.06.2026',
+    title: 'LOP-Vorlagen',
+    description: 'Wiederkehrende Aufgabenpakete lassen sich als Vorlage speichern und mit einem Klick auf ein Projekt anwenden – inklusive Priorität und Fälligkeitsoffset.',
+  },
+  {
+    id: 'F-029',
+    date: '16.06.2026',
+    title: 'Archiv-Export (XLSX)',
+    description: 'Abgeschlossene LOP-Punkte lassen sich gefiltert nach Zeitraum als Excel-Datei herunterladen – ideal für Dokumentationszwecke.',
+  },
+  {
+    id: 'F-027',
+    date: '16.06.2026',
+    title: 'Tätigkeitsnachweis als XLSX',
+    description: 'Der monatliche Tätigkeitsnachweis kann jetzt auch als Excel-Datei exportiert werden – zusätzlich zum bisherigen PDF-Druck.',
+  },
+  {
+    id: 'F-025',
+    date: '16.06.2026',
+    title: 'KI-Zusammenfassung',
+    description: 'Auf Knopfdruck fasst die KI alle offenen LOP-Punkte eines Projekts zusammen – hilfreich zur Vorbereitung auf Meetings oder für schnellen Überblick.',
+  },
+  {
+    id: 'F-021',
+    date: '16.06.2026',
+    title: 'Globale Suche (⌘K)',
+    description: 'Mit ⌘K (Mac) oder Strg+K lässt sich blitzschnell über alle Projekte und LOP-Punkte hinweg suchen.',
+  },
+  {
     id: 'F-024',
     date: '08.06.2026',
     title: 'Desktop 0.3.0: System-Audio ohne BlackHole',

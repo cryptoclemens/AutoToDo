@@ -7,6 +7,7 @@ import { isSuperAdmin } from '@/lib/superAdmin'
 import WorkspaceNav from '@/components/workspace/WorkspaceNav'
 import FeedbackButton from '@/components/FeedbackButton'
 import Image from 'next/image'
+import { StatusLabelsProvider } from '@/lib/statusLabels'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const authClient = createClient()
@@ -49,7 +50,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <style>{`
         :root { --brand: ${brandColor}; }
       `}</style>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <StatusLabelsProvider>
+      <div className="min-h-screen bg-gray-50">
         <WorkspaceNav
           workspace={workspace}
           userRole={member?.role ?? 'viewer'}
@@ -69,6 +71,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Image src="/vencly-logo.svg" alt="vencly" width={72} height={18} />
         </a>
       </div>
+      </StatusLabelsProvider>
     </>
   )
 }

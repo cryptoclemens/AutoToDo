@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
 import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
+import { useStatusLabels } from '@/lib/statusLabels'
 
 interface ActivityInfo {
   created: { name: string; date: string; byAi: boolean } | null
@@ -70,6 +71,7 @@ function isValidUrl(s: string): boolean {
 
 export default function LopItemDialog({ item, canEdit, members, existingNames = [], onClose, onUpdate, onDelete, onPark }: Props) {
   const t = useTranslations('lop')
+  const statusLabels = useStatusLabels()
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
@@ -175,10 +177,10 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="offen">Offen</SelectItem>
-                      <SelectItem value="in_bearbeitung">In Bearbeitung</SelectItem>
-                      <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
-                      <SelectItem value="geparkt">Geparkt</SelectItem>
+                      <SelectItem value="offen">{statusLabels.offen}</SelectItem>
+                      <SelectItem value="in_bearbeitung">{statusLabels.in_bearbeitung}</SelectItem>
+                      <SelectItem value="abgeschlossen">{statusLabels.abgeschlossen}</SelectItem>
+                      <SelectItem value="geparkt">{statusLabels.geparkt}</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
