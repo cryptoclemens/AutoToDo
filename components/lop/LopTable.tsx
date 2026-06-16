@@ -671,7 +671,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                           {idea.note && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{idea.note}</p>}
                         </div>
                         {canEdit && (
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <div className="flex gap-1 shrink-0">
                             {idea.source === 'parked_lop' ? (
                               <button
                                 type="button"

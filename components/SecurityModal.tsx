@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const SECTIONS = [
   {
@@ -67,8 +68,8 @@ export default function SecurityModal({ trigger }: { trigger?: React.ReactNode }
         </button>
       )}
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {open && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setOpen(false)} />
 
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
@@ -111,7 +112,8 @@ export default function SecurityModal({ trigger }: { trigger?: React.ReactNode }
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

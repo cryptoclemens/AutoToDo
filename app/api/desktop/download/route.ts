@@ -28,19 +28,24 @@ export async function GET(req: NextRequest) {
 
   if (!asset) return NextResponse.json({ error: 'Asset not found' }, { status: 404 })
 
-  // Fetch asset with auth, follow redirects → final URL is the signed CDN URL
+  // GitHub liefert einen 302 zur signierten CDN-URL — wir leiten den Browser direkt
+  // dorthin weiter statt die Datei zu proxyen (verhindert Timeouts bei großen DMGs).
   const assetRes = await fetch(`https://api.github.com/repos/${REPO}/releases/assets/${asset.id}`, {
     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/octet-stream', 'User-Agent': 'AutoToDo' },
-    redirect: 'follow',
+    redirect: 'manual',
   })
 
-  if (!assetRes.ok) return NextResponse.json({ error: 'Asset fetch failed', status: assetRes.status }, { status: 502 })
+  const cdnUrl = assetRes.headers.get('location')
+  if (!cdnUrl) {
+    // Kein Redirect → direkt ohne Auth streambar (öffentliche Release)
+    if (!assetRes.ok) return NextResponse.json({ error: 'Asset fetch failed' }, { status: 502 })
+    return new Response(assetRes.body, {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${asset.name}"`,
+      },
+    })
+  }
 
-  // Stream the file directly to the client
-  return new Response(assetRes.body, {
-    headers: {
-      'Content-Type': 'application/octet-stream',
-      'Content-Disposition': `attachment; filename="${asset.name}"`,
-    },
-  })
+  return NextResponse.redirect(cdnUrl, { status: 302 })
 }
