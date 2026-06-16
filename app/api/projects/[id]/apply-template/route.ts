@@ -25,9 +25,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
 
+  const { data: member } = await supabase
+    .from('workspace_members').select('role')
+    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle() as { data: { role: string } | null }
+  if (!member || !['workspace_owner', 'workspace_admin', 'editor'].includes(member.role)) {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+
   const { data: project } = await supabase
-    .from('projects').select('id').eq('id', params.id).eq('workspace_id', workspace.id).single() as { data: { id: string } | null }
+    .from('projects').select('id, archived_at').eq('id', params.id).eq('workspace_id', workspace.id).single() as { data: { id: string; archived_at: string | null } | null }
   if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (project.archived_at) return NextResponse.json({ error: 'Archivierte Projekte können nicht bearbeitet werden.' }, { status: 403 })
 
   const { data: template } = await supabase
     .from('lop_templates').select('items').eq('id', parsed.data.templateId).eq('workspace_id', workspace.id).single() as {
