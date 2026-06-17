@@ -445,12 +445,12 @@
     "s6": {
       "title": "Schritt 6 – Tätigkeitsnachweis",
       "subtitle": "Automatisch befüllter Monatsnachweis.",
-      "desc": "Unter »Tätigkeitsnachweis« findest du eine Tabelle aller Arbeitstage – automatisch befüllt aus deinen LOP-Punkten und Tagesplanungen. Die Einträge sind editierbar und lassen sich als PDF drucken."
+      "desc": "Unter »Tätigkeitsnachweis« findest du eine Tabelle aller Arbeitstage – automatisch befüllt aus deinen LOP-Punkten und Tagesplanungen. Die Einträge sind editierbar und lassen sich als PDF drucken oder direkt als XLSX-Datei exportieren."
     },
     "s7": {
-      "title": "Schritt 7 – Exportieren & teilen",
-      "subtitle": "XLSX-Export und Team-Einladungen.",
-      "desc": "Mit »↓ XLSX« exportierst du die LOP als Excel-Datei mit Workspace-Branding. Über »+ Mitglied einladen« kannst du Kolleginnen und Kollegen hinzufügen – mit individuellen Rollen und Berechtigungen."
+      "title": "Schritt 7 – Mehr entdecken",
+      "subtitle": "Globale Suche, KI-Zusammenfassung, Vorlagen & Archiv.",
+      "desc": "Mit ⌘K (Mac) oder Strg+K öffnest du die globale Suche über alle Projekte. »✦ KI-Zusammenfassung« fasst alle offenen Punkte eines Projekts auf Knopfdruck zusammen. Mit »☰ Vorlage anwenden« startest du neue Projekte mit vorgefertigten Aufgabenpaketen. Über »↓ Archiv exportieren« lädst du abgeschlossene Punkte als XLSX herunter."
     }
   },
   "errors": {

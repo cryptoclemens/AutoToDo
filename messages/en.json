@@ -444,12 +444,12 @@
     "s6": {
       "title": "Step 6 – Activity report",
       "subtitle": "Auto-filled monthly log.",
-      "desc": "The activity report shows all working days — automatically filled from your LOP items and daily plans. Entries are editable and can be printed as a PDF."
+      "desc": "The activity report shows all working days — automatically filled from your LOP items and daily plans. Entries are editable and can be printed as a PDF or exported directly as an XLSX file."
     },
     "s7": {
-      "title": "Step 7 – Export & share",
-      "subtitle": "XLSX export and team invitations.",
-      "desc": "Use »↓ XLSX« to export the action list as an Excel file with workspace branding. Use »+ Invite member« to add colleagues — with individual roles and permissions."
+      "title": "Step 7 – Discover more",
+      "subtitle": "Global search, AI summary, templates & archive.",
+      "desc": "Press ⌘K (Mac) or Ctrl+K to open global search across all projects. »✦ AI Summary« generates a quick overview of all open items in a project. »☰ Apply template« lets you kick off new projects with pre-built task packages. »↓ Export archive« downloads completed items as XLSX."
     }
   },
   "errors": {
