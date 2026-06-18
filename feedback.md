@@ -5,6 +5,12 @@
 
 ---
 
+## F-028 | 2026-06-18 | ✨ Feature-Wunsch | Status: bearbeitet
+**Feature:** Reminder-Funktion für regelmäßige Aufgaben
+**Lösung:** Nutzer können im LOP-Punkt-Dialog eine wiederkehrende E-Mail-Erinnerung aktivieren (täglich, wöchentlich, zweiwöchentlich, monatlich). DB-Tabelle `recurring_reminders` (Migration 039), API-Endpunkte `POST/GET /api/reminders` + `DELETE /api/reminders/[id]`, Cron-Job `GET /api/cron/reminders` (Bearer CRON_SECRET) versendet fällige Erinnerungen via Resend und berechnet `next_reminder_at` neu.
+
+---
+
 ## B-neu | 2026-05-21 13:16:42 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
