@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx'
 
 interface DayData {
   lop: string[]
+  lop_in_progress: string[]
   meetings: string[]
   plan?: string
 }
@@ -12,12 +13,23 @@ interface DayData {
 const MAX_LEN = 200
 
 function combine(day: DayData): string {
-  // Gespeicherter Tagesplan hat Vorrang
+  // Priorität 1: Gespeicherter Tagesplan
   if (day.plan?.trim()) {
     const p = day.plan.trim()
     return p.length <= MAX_LEN ? p : p.slice(0, MAX_LEN - 1).trimEnd() + '…'
   }
-  const parts = (day.lop.length > 0 ? day.lop : day.meetings).filter(Boolean)
+  // Priorität 2: Abgeschlossene LOP-Punkte
+  if (day.lop.length > 0) {
+    const joined = day.lop.filter(Boolean).join('; ')
+    return joined.length <= MAX_LEN ? joined : joined.slice(0, MAX_LEN - 1).trimEnd() + '…'
+  }
+  // Priorität 3: In-Bearbeitung LOP-Punkte
+  if ((day.lop_in_progress ?? []).length > 0) {
+    const joined = (day.lop_in_progress ?? []).filter(Boolean).join('; ')
+    return joined.length <= MAX_LEN ? joined : joined.slice(0, MAX_LEN - 1).trimEnd() + '…'
+  }
+  // Priorität 4: Transkripte als Fallback
+  const parts = day.meetings.filter(Boolean)
   if (parts.length === 0) return ''
   const joined = parts.join('; ')
   return joined.length <= MAX_LEN ? joined : joined.slice(0, MAX_LEN - 1).trimEnd() + '…'
@@ -286,7 +298,7 @@ export default function TaetigkeitsnachweisModal({ onClose, projectId, projectNa
           </div>
 
           <div className="tn-no-print px-6 py-3 border-t border-gray-50 text-xs text-gray-400">
-            Automatisch befüllt aus LOP-Punkten und Meetings – editierbar, max. {MAX_LEN} Zeichen.
+            Befüllt aus: Tagesplan › abgeschlossene LOP-Punkte › aktive LOP-Punkte › Meetings – editierbar, max. {MAX_LEN} Zeichen.
           </div>
         </div>
       </div>

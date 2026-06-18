@@ -310,7 +310,8 @@ Verbesserung:
 - Matche Stimmen in den Daily Aufzeichnungen zu den Personen in AutotoDo um Rückschlüsse darauf zu haben wer welche Aufgaben erledigt hat und was abgeschlossen hat für den Tätigkeitsnachweis.
 
 ---
-## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch
+## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch | Status: bearbeitet
+
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
@@ -319,6 +320,8 @@ Tätigkeitsnachweis-Funktion muss noch schlauere Intelligenz haben wer welche Au
 Informationen sollen aus Daily Stand Up + aus den ToDos extrahiert werden.
 
 In der Funktion/Button Tagesplanung kann dann direkt ein Vorschlag für alle Aufgaben für den Tag gemacht werden
+
+**Lösung:** Die Tätigkeitsnachweis-API kombiniert jetzt in fester Prioritätsreihenfolge: (1) Tagesplan aus `daily_plans`, (2) abgeschlossene LOP-Punkte (`completed_at` im Monat), (3) in Bearbeitung befindliche LOP-Punkte (`updated_at` im Monat, `status = in_bearbeitung`), (4) Transkripte als Fallback. Das Frontend-Modal (`TaetigkeitsnachweisModal.tsx`) wendet dieselbe Priorität in `combine()` an. Im Tagesplanungs-Modal (`TagesplanungModal.tsx`) wurde ein „Vorschläge laden"-Button ergänzt, der jederzeit offene LOP-Punkte als Vorausfüllung lädt – unabhängig davon, ob bereits Text eingegeben wurde.
 
 ---
 ## B-011 | 2026-06-02 08:48:53 | 🐛 Fehler
