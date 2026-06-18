@@ -43,3 +43,4 @@ supabase/.temp/
 .planning/todos/
 .planning/research/
 
+.claude/
