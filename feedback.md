@@ -302,12 +302,13 @@ Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überpr�
 Die Person "Markus" und die Person "Markus Wanzek I Plenum" kann zu einer Person zusammengefügt werden
 
 ---
-## F-024 | 2026-06-02 08:44:42 | ✨ Feature-Wunsch
+## F-024 | 2026-06-02 08:44:42 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Verbesserung:
 - Matche Stimmen in den Daily Aufzeichnungen zu den Personen in AutotoDo um Rückschlüsse darauf zu haben wer welche Aufgaben erledigt hat und was abgeschlossen hat für den Tätigkeitsnachweis.
+**Lösung:** Der LLM-System-Prompt wurde um eine SPRECHER-ZUORDNUNG-Sektion erweitert. Die KI analysiert Sprecherlabels im Transkript (z.B. „Sprecher 1:", „Speaker A:" oder direkte Namennennungen) und ordnet sie Workspace-Mitgliedern zu. Das Mapping wird als `speaker_map` (JSONB) in der `transcripts`-Tabelle gespeichert (Migration 039). Bei Ich-Form-Aussagen ("ich mache X") wird der gematchte Workspace-Member automatisch als Verantwortlicher in den LOP-Punkt eingetragen. Alle LLM-Provider (Anthropic, OpenAI, Azure, DeepSeek, Perplexity) geben das Mapping zurück.
 
 ---
 ## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch

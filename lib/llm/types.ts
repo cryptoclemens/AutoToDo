@@ -43,10 +43,17 @@ export interface ContextNote {
   relevant_until?: string | null
 }
 
+export interface SpeakerMapEntry {
+  speaker_label: string          // e.g. "Sprecher 1", "Speaker A", "Max"
+  matched_member: string | null  // matched display_name from workspace members, or null
+  confidence: 'high' | 'medium' | 'low'
+}
+
 export interface ProcessTranscriptResult {
   actions: LopAction[]
   context_notes: ContextNote[]
   summary: string
   daily_plan_text?: string | null
   ideas?: { title: string; note?: string | null }[]
+  speaker_map?: SpeakerMapEntry[]
 }

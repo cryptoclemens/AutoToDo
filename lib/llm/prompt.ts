@@ -45,7 +45,14 @@ Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt im folgenden Format:
     }
   ],
   "summary": "Kurze Zusammenfassung des Meetings (1-2 Sätze)",
-  "daily_plan_text": "Kommagetrennte Liste der eigenen Vorhaben des Transkript-Einreichers für heute, oder null wenn nicht erkennbar"
+  "daily_plan_text": "Kommagetrennte Liste der eigenen Vorhaben des Transkript-Einreichers für heute, oder null wenn nicht erkennbar",
+  "speaker_map": [
+    {
+      "speaker_label": "Sprecher 1",
+      "matched_member": "Max Mustermann",
+      "confidence": "high"
+    }
+  ]
 }
 
 Regeln:
@@ -91,6 +98,19 @@ IDEENSPEICHER (ideas):
 - Ideen sind keine Aufgaben: kein Verantwortlicher, kein Datum, kein Status
 - note: max. 3 Sätze zur Erläuterung, oder null wenn keine weiteren Details genannt wurden
 - Wenn keine Ideen erwähnt: leeres Array []
+
+SPRECHER-ZUORDNUNG (speaker_map):
+- Wenn das Transkript Sprecherkennzeichnungen enthält (z.B. "Sprecher 1:", "Speaker A:", "SPRECHER_1:", oder direkte Namensnennung am Zeilenanfang wie "Max:"), erstelle für jeden eindeutigen Sprecher einen Eintrag
+- Ordne jeden Sprecher-Label einem Workspace-Mitglied zu (aus der unten bereitgestellten Liste)
+- Matching-Regeln:
+  * Vorname reicht: "Sprecher 1 → Klaus" wenn Klaus Meyer in der Mitgliederliste ist
+  * Wenn ein Sprecher im Gespräch seinen eigenen Namen nennt ("Ich bin Klaus, ich mache …") → hohe Konfidenz
+  * Kontextuelle Zuordnung: wenn "Sprecher 1" immer über Aufgaben von "Klaus" berichtet in erster Person → wahrscheinlich Klaus
+  * Wenn ein Sprecher mit "ich mache X" eine Aufgabe übernimmt, sollte responsible für diesen LOP-Punkt auf den gematchten Namen gesetzt werden
+- confidence: "high" wenn eindeutig identifizierbar, "medium" wenn wahrscheinlich, "low" wenn unsicher
+- matched_member: EXAKT der display_name aus der Workspace-Mitgliederliste, oder null wenn keine Zuordnung möglich
+- speaker_label: der genaue Label wie er im Transkript vorkommt (z.B. "Sprecher 1", "Speaker A", "Max")
+- Wenn keine Sprecherkennzeichnungen im Transkript vorhanden: leeres Array []
 
 Antworte NUR mit dem JSON, kein erklärender Text davor oder danach`
 }
