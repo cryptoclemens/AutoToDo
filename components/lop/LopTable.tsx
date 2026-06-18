@@ -117,7 +117,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
     return Array.from(new Set(values)).sort()
   }, [items])
 
-  const STATUS_ORDER: Record<string, number> = { offen: 0, in_bearbeitung: 1, abgeschlossen: 2 }
+  const STATUS_ORDER: Record<string, number> = { offen: 0, in_bearbeitung: 1, abgeschlossen: 2, geparkt: 3, backlog: 4 }
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -127,6 +127,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
   const filtered = items
     .filter(item => {
       if (standupMode && item.status === 'abgeschlossen') return false
+      if (standupMode && item.status === 'backlog') return false
       if (filterStatus !== 'all' && item.status !== filterStatus) return false
       if (filterPriority !== 'all' && item.priority !== filterPriority) return false
       if (filterResponsible !== 'all' && item.responsible !== filterResponsible) return false
@@ -203,6 +204,8 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
       items: displayFiltered.filter(i => i.status === 'offen' && (!i.due_date || new Date(i.due_date) >= tomorrow)),
     },
   ].filter(s => s.items.length > 0) : []
+
+  const backlogItems = standupMode ? items.filter(i => i.status === 'backlog') : []
 
   async function handleUpdate(id: string, changes: Partial<LopItem>) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i))
@@ -412,6 +415,7 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                 <SelectItem value="offen">{t('status.offen')}</SelectItem>
                 <SelectItem value="in_bearbeitung">{t('status.in_bearbeitung')}</SelectItem>
                 <SelectItem value="abgeschlossen">{t('status.abgeschlossen')}</SelectItem>
+                <SelectItem value="backlog">{t('status.backlog')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterPriority} onValueChange={v => setFilterPriority(v ?? 'all')}>
@@ -536,6 +540,39 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                 </div>
               </div>
             ))
+          )}
+
+          {/* Backlog-Sektion im Stand-up */}
+          {backlogItems.length > 0 && (
+            <div className="mt-2">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-t-xl bg-slate-50 dark:bg-slate-800/40 border border-b-0 border-gray-100 dark:border-gray-700">
+                <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Backlog</span>
+                <span className="text-xs text-gray-400 ml-1">({backlogItems.length})</span>
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-b-xl border border-gray-100 dark:border-gray-700 px-4 py-3 space-y-2">
+                {backlogItems.map(item => (
+                  <div key={item.id} className="flex items-center gap-3 py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate">{item.title}</p>
+                      {item.responsible && (
+                        <p className="text-xs text-gray-400 mt-0.5">{item.responsible}</p>
+                      )}
+                    </div>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdate(item.id, { status: 'offen' as LopItem['status'] })}
+                        className="shrink-0 text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 font-medium transition-colors"
+                        title="In aktive Aufgaben verschieben"
+                      >
+                        Aktivieren
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       ) : (

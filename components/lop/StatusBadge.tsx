@@ -2,13 +2,14 @@
 
 import { useStatusLabel } from '@/lib/statusLabels'
 
-export type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
+export type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt' | 'backlog'
 
 const styleMap: Record<Status, { pill: string; dot: string }> = {
-  offen:          { pill: 'bg-slate-100 text-slate-600',       dot: 'bg-slate-400' },
-  in_bearbeitung: { pill: 'bg-blue-50 text-blue-700',          dot: 'bg-blue-500' },
-  abgeschlossen:  { pill: 'bg-emerald-50 text-emerald-700',    dot: 'bg-emerald-500' },
-  geparkt:        { pill: 'bg-amber-50 text-amber-700',        dot: 'bg-amber-400' },
+  offen:          { pill: 'bg-slate-100 text-slate-600',                                        dot: 'bg-slate-400' },
+  in_bearbeitung: { pill: 'bg-blue-50 text-blue-700',                                           dot: 'bg-blue-500' },
+  abgeschlossen:  { pill: 'bg-emerald-50 text-emerald-700',                                     dot: 'bg-emerald-500' },
+  geparkt:        { pill: 'bg-amber-50 text-amber-700',                                         dot: 'bg-amber-400' },
+  backlog:        { pill: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',  dot: 'bg-slate-400 dark:bg-slate-500' },
 }
 
 export default function StatusBadge({ status }: { status: Status }) {

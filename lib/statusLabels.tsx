@@ -7,6 +7,7 @@ export const DEFAULT_STATUS_LABELS: Record<string, string> = {
   in_bearbeitung: 'In Bearbeitung',
   abgeschlossen: 'Abgeschlossen',
   geparkt: 'Geparkt',
+  backlog: 'Backlog',
 }
 
 const StatusLabelsContext = createContext<Record<string, string>>(DEFAULT_STATUS_LABELS)

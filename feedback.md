@@ -344,10 +344,12 @@ Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
 Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigter Name, hinterlegte E-Mail Adresse, Häufigkeit für E-Mail Digest) haben -> Aktuell hat Admin alle Rechte
 
 ---
-## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch
+## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch | ✅ bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgesetzt werden müssen oder mußten
+
+**Lösung:** Neuer Status `backlog` auf `lop_items` hinzugefügt (Migration 039). Backlog-Items erscheinen im Status-Dropdown, werden mit eigenem Badge (slate) angezeigt, tauchen im Daily Digest nicht auf und werden im Stand-up-Modus als separate Sektion mit „Aktivieren"-Button dargestellt. Status-Labels für Backlog sind über Workspace-Einstellungen anpassbar.
 
 ---

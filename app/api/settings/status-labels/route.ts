@@ -10,6 +10,7 @@ const labelSchema = z.object({
   in_bearbeitung: z.string().max(40).optional(),
   abgeschlossen: z.string().max(40).optional(),
   geparkt: z.string().max(40).optional(),
+  backlog: z.string().max(40).optional(),
 })
 
 export async function GET() {

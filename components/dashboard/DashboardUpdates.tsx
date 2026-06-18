@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-027',
+    date: '18.06.2026',
+    title: 'Backlog-Status für Langzeit-Aufgaben',
+    description: 'LOP-Punkte können jetzt als "Backlog" markiert werden – für Aufgaben, die real sind, aber keine Deadline haben. Im Stand-up werden sie separat angezeigt und lassen sich mit einem Klick aktivieren.',
+  },
+  {
     id: 'F-028',
     date: '16.06.2026',
     title: 'Eigene Status-Bezeichnungen',
