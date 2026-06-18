@@ -1,6 +1,6 @@
 # AutoToDo – Projektstatus
 
-Letzte Aktualisierung: 19.05.2026 · Version 0.1.198
+Letzte Aktualisierung: 18.06.2026 · Version 0.1.198
 
 ---
 
@@ -15,6 +15,15 @@ Letzte Aktualisierung: 19.05.2026 · Version 0.1.198
 ---
 
 ## Zuletzt ausgeliefert
+
+### 18.06.2026 — Feedback-Sammelrelease (8 Features/Bugfixes) deployed
+Auf `main` gemergt und live deployed (Migrationen 039–042 gegen self-hosted Supabase via `psql` angewandt, Container per Compose neu erstellt):
+- **F-027 — Backlog-Status:** Neuer Status `backlog` für LOP-Punkte ohne konkrete Deadline (Migration 039)
+- **F-028 — Wiederkehrende Erinnerungen:** Neue Tabelle `recurring_reminders` (+ RLS), Endpoint `/api/cron/reminders`, neuer Host-Cron 07:00 Mo–Fr (Migration 041)
+- **F-024 — Speaker-Attribution:** `speaker_map` (JSONB) auf `transcripts` für LLM-Sprecher-Zuordnung (Migration 042)
+- **F-025 — Tätigkeitsnachweis Smart** sowie Bugfixes **B-009/010/011/012** (B-010: Backfill „Markus Wanzek"-Varianten → „Markus", Migration 040)
+- **Infra-Fix:** Container lief versehentlich via Legacy-`deployatd.sh` (ohne `CRON_SECRET`/`RESEND_API_KEY`) → jetzt korrekt via `deploy-autotodo.sh` (Compose). Behebt die zeitweisen `RESEND_API_KEY not set`-Ausfälle bei Digest-/Reminder-Mails.
+- Smoke-Test: App 200, Reminder-Endpoint authentifiziert + funktional (0 fällige), keine 500er.
 
 ### F-021 — LOP ↔ Ideenspeicher (bidirektionaler Transfer)
 - LOP-Punkte können per Hover-Menü in den Ideenspeicher geparkt werden
@@ -57,6 +66,12 @@ Letzte Aktualisierung: 19.05.2026 · Version 0.1.198
 | 034 | `034_lop_parked_status.sql` | `geparkt`-Status für lop_items |
 | 035 | `035_workspace_bundesland.sql` | `bundesland` auf workspaces |
 | 036 | `036_workspace_digest_frequency.sql` | `digest_frequency` auf workspaces |
+| 037 | `037_user_digest_preferences.sql` | User-Digest-Präferenzen |
+| 038 | `038_lop_templates_status_labels.sql` | LOP-Templates & Status-Labels |
+| 039 | `039_backlog_status.sql` | `backlog`-Status für lop_items (F-027) |
+| 040 | `040_merge_markus_b010.sql` | Backfill „Markus Wanzek"-Varianten → „Markus" (B-010) |
+| 041 | `041_recurring_reminders.sql` | Tabelle `recurring_reminders` + RLS (F-028) |
+| 042 | `042_speaker_map.sql` | `speaker_map` (JSONB) auf transcripts (F-024) |
 
 ---
 
