@@ -189,17 +189,17 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
           <HowToModal />
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 transition-colors font-medium">
-              <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+            <DropdownMenuTrigger className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium">
+              <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
                 {userRole.slice(0, 1).toUpperCase()}
               </span>
-              <span className="hidden sm:inline text-gray-700">Konto</span>
+              <span className="hidden sm:inline text-gray-700 dark:text-gray-300">Konto</span>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-400">
                 <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 shadow-lg rounded-xl border-gray-100">
-              <div className="px-3 py-2 text-xs text-gray-400 font-medium uppercase tracking-wider">
+            <DropdownMenuContent align="end" className="w-48 shadow-lg rounded-xl border-gray-100 dark:border-gray-700 dark:bg-gray-900">
+              <div className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider">
                 {userRole.replace(/_/g, ' ')}
               </div>
               <DropdownMenuSeparator />
@@ -222,20 +222,20 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex flex-col gap-1.5 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden flex flex-col gap-1.5 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             onClick={() => setMobileOpen(v => !v)}
             aria-label="Menü"
           >
-            <span className={`block w-5 h-0.5 bg-gray-600 transition-transform ${mobileOpen ? 'translate-y-2 rotate-45' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-gray-600 transition-opacity ${mobileOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-gray-600 transition-transform ${mobileOpen ? '-translate-y-2 -rotate-45' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 transition-transform ${mobileOpen ? 'translate-y-2 rotate-45' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 transition-opacity ${mobileOpen ? 'opacity-0' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 transition-transform ${mobileOpen ? '-translate-y-2 -rotate-45' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Drawer */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 py-3 space-y-1">
+        <div className="md:hidden border-t border-gray-100 dark:border-gray-700 py-3 space-y-1">
           {navLinks.map(({ href, label, icon }) => (
             <Link
               key={href}
@@ -243,17 +243,17 @@ export default function WorkspaceNav({ workspace, userRole, userId: _userId, isS
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors
                 ${pathname.startsWith(href)
-                  ? 'bg-gray-100 text-gray-900 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'}`}
+                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
-              <span className="text-gray-400">{icon}</span>
+              <span className="text-gray-400 dark:text-gray-500">{icon}</span>
               {label}
             </Link>
           ))}
-          <div className="border-t border-gray-100 mt-2 pt-2">
+          <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
             <button
               onClick={() => { setMobileOpen(false); handleSignOut() }}
-              className="flex items-center gap-2 px-3 py-2.5 w-full rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center gap-2 px-3 py-2.5 w-full rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
             >
               {t('logout')}
             </button>

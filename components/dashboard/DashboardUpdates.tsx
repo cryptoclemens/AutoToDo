@@ -142,43 +142,43 @@ export default function DashboardUpdates() {
   const visible = showAll ? UPDATES : UPDATES.slice(0, INITIAL_VISIBLE)
 
   return (
-    <div className="mt-10 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+    <div className="mt-10 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold text-gray-800">Updates</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Updates</span>
           <span className="text-xs text-white rounded-full px-2 py-0.5 font-medium" style={{ backgroundColor: 'var(--brand, #2563eb)' }}>
             Neu
           </span>
           {!open && (
-            <span className="text-xs text-gray-400 hidden sm:inline">
+            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">
               {UPDATES[0].title} · {UPDATES[0].date}
             </span>
           )}
         </div>
         <svg
           width="14" height="14" viewBox="0 0 14 14" fill="none"
-          className={`text-gray-400 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
+          className={`text-gray-400 dark:text-gray-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
         >
           <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
 
       {open && (
-        <div className="border-t border-gray-100 divide-y divide-gray-50">
+        <div className="border-t border-gray-100 dark:border-gray-800 divide-y divide-gray-50 dark:divide-gray-800">
           {visible.map(u => (
             <div key={u.id} className="flex gap-4 px-5 py-3.5">
               <div className="shrink-0 pt-0.5">
-                <span className="text-xs font-mono text-gray-300">{u.id}</span>
+                <span className="text-xs font-mono text-gray-300 dark:text-gray-600">{u.id}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className="text-sm font-semibold text-gray-800">{u.title}</span>
-                  <span className="text-xs text-gray-400">{u.date}</span>
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{u.title}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{u.date}</span>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">{u.description}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{u.description}</p>
               </div>
             </div>
           ))}
@@ -186,7 +186,7 @@ export default function DashboardUpdates() {
           {UPDATES.length > INITIAL_VISIBLE && (
             <button
               onClick={() => setShowAll(s => !s)}
-              className="w-full py-2.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+              className="w-full py-2.5 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               {showAll ? 'Weniger anzeigen' : `${UPDATES.length - INITIAL_VISIBLE} ältere Updates anzeigen`}
             </button>
