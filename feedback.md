@@ -280,13 +280,14 @@ Der Daily Report per Mail hackt noch. Dieser aktualisiert sich nicht täglich an
 **Lösung:** Drei Bugs behoben: (1) `isOverdue` verglich Datum mit Timestamp statt Datum-String – heute fällige Aufgaben wurden falsch als überfällig markiert. (2) Sortierung im E-Mail war rein DB-seitig (ascending) ohne Priorisierung: neu werden Aufgaben clientseitig sortiert – überfällig (⚠ rot) zuerst, dann heute fällig (★ amber), dann ohne Fälligkeitsdatum. (3) E-Mail-Template hebt heute fällige Aufgaben jetzt farblich ab (amber statt grau). DB-Query (`due_date.lte.today OR due_date.is.null`) war korrekt und bleibt unverändert.
 
 ---
-## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch
+## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Möglichkeit im Admin Bereich Accounts zusammenzu legen:
 Problem besteht wenn:
 Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann entstehen zwei "Personen", die dann zu einer zusammengeführt werden müssen.
+**Lösung:** Neues Admin-Tool „Name mit Account verknüpfen" in der Steuerung. Admin wählt Workspace, dann den Freitext-Namen (z.B. „Markus Wanzek") und das passende Workspace-Mitglied aus den Dropdowns. Klick auf „Verknüpfen" setzt `responsible_user_id` auf allen betroffenen LOP-Punkten und aktualisiert `responsible` auf den Account-Anzeigenamen. API: `POST /api/admin/link-responsible` mit Service-Role-Client.
 
 ---
 ## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch
