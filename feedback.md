@@ -321,20 +321,22 @@ Informationen sollen aus Daily Stand Up + aus den ToDos extrahiert werden.
 In der Funktion/Button Tagesplanung kann dann direkt ein Vorschlag für alle Aufgaben für den Tag gemacht werden
 
 ---
-## B-011 | 2026-06-02 08:48:53 | 🐛 Fehler
+## B-011 | 2026-06-02 08:48:53 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Wenn man auf Datensicherheit geht öffnet sich kein Infofenster in der Mitte des Bildschirms, sondern oben ein Fenstern, dass sich nicht so gut schließen lässt.
 
 Bitte so umsetzen, dass es vom Layout her responsive ist und es sich in der Mitte öffnet.
+**Lösung:** SecurityModal (`components/SecurityModal.tsx`) verbessert: Overlay-Backdrop mit bg-black/50, Modal zentriert via `fixed inset-0 flex items-center justify-center`, responsiv mit `max-w-lg mx-4`, Escape-Taste schließt den Dialog, X-Button und Backdrop-Klick schließen den Dialog, Dark-Mode-Unterstützung ergänzt. `role="dialog"` und `aria-modal="true"` für Accessibility.
 
 ---
-## B-012 | 2026-06-02 08:49:22 | 🐛 Fehler
+## B-012 | 2026-06-02 08:49:22 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
+**Lösung:** Dark-Mode-Kontraste in 5 Komponenten verbessert (WCAG AA-konform): App-Layout (`bg-gray-950`), WorkspaceNav (Hamburger, Mobile Drawer, Dropdown), LopTableRow (Tabellentexte, Status-Dropdown, Datum, Ergebnis), DashboardAnalytics (Beschriftungen, Balkendiagramm), DashboardUpdates (Texte, Trennlinien). SecurityModal erhielt ebenfalls Dark-Mode-Unterstützung. Grau-Palette: `text-gray-400` → `dark:text-gray-300`, `text-gray-500` → `dark:text-gray-400`, `bg-white` → `dark:bg-gray-900` etc.
 
 ---
 ## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch

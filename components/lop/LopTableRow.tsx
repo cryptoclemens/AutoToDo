@@ -101,8 +101,8 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
 
   if (editing) {
     return (
-      <tr ref={editRowRef} className="border-b bg-blue-50/60">
-        <td className="px-3 py-2 text-center text-xs text-gray-400">{index + 1}</td>
+      <tr ref={editRowRef} className="border-b bg-blue-50/60 dark:bg-blue-950/30">
+        <td className="px-3 py-2 text-center text-xs text-gray-400 dark:text-gray-500">{index + 1}</td>
         <td className="px-3 py-2" colSpan={2}>
           <Input
             value={draft.title}
@@ -187,8 +187,8 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
   }
 
   return (
-    <tr className={`border-b border-gray-100 hover:bg-slate-50/70 group transition-all ${rowBg} ${rowOpacity}`}>
-      <td className="px-3 py-3 text-center text-xs text-gray-300 font-mono">{index + 1}</td>
+    <tr className={`border-b border-gray-100 dark:border-gray-800 hover:bg-slate-50/70 dark:hover:bg-gray-800/50 group transition-all ${rowBg} ${rowOpacity}`}>
+      <td className="px-3 py-3 text-center text-xs text-gray-300 dark:text-gray-600 font-mono">{index + 1}</td>
       <td className="px-3 py-3 max-w-[240px]">
         <button
           onClick={onOpenDetail}
@@ -196,14 +196,14 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
           title="Details anzeigen"
         >
           <div
-            className="font-medium text-sm text-gray-900 truncate hover:text-blue-600 transition-colors"
+            className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             title={item.title}
           >
             {item.title}
           </div>
           {item.description && (
             <div
-              className="text-xs text-gray-400 truncate mt-0.5 leading-relaxed"
+              className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5 leading-relaxed"
               title={item.description}
             >
               {item.description}
@@ -228,11 +228,11 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
               <StatusBadge status={item.status} />
             </button>
             {statusDropdownOpen && (
-              <div className="absolute z-50 left-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+              <div className="absolute z-50 left-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1">
                 {STATUS_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center gap-2 ${item.status === opt.value ? 'bg-gray-50/80' : ''}`}
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${item.status === opt.value ? 'bg-gray-50/80 dark:bg-gray-700/60' : ''}`}
                     onClick={() => {
                       setStatusDropdownOpen(false)
                       onUpdate(item.id, { status: opt.value })
@@ -248,14 +248,14 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
           <StatusBadge status={item.status} />
         )}
       </td>
-      <td className="px-3 py-3 text-sm text-gray-600 whitespace-nowrap">
+      <td className="px-3 py-3 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
         {(() => {
           const resolved = item.responsible_user_id
             ? (members.find(m => m.user_id === item.responsible_user_id)?.display_name ?? item.responsible)
             : item.responsible
           return resolved
-            ? <span className="font-medium text-gray-700">{resolved}</span>
-            : <span className="text-gray-300">–</span>
+            ? <span className="font-medium text-gray-700 dark:text-gray-200">{resolved}</span>
+            : <span className="text-gray-300 dark:text-gray-600">–</span>
         })()}
       </td>
       <td className="px-3 py-3 text-sm whitespace-nowrap">
@@ -266,7 +266,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
               today.setHours(0, 0, 0, 0)
               const overdue = !isDone && due < today
               return (
-                <span className={`inline-flex items-center gap-1 ${overdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                <span className={`inline-flex items-center gap-1 ${overdue ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>
                   {overdue && (
                     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-label="Überfällig">
                       <path d="M6.5 1L12 12H1L6.5 1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -277,15 +277,15 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
                 </span>
               )
             })()
-          : <span className="text-gray-300">–</span>}
+          : <span className="text-gray-300 dark:text-gray-600">–</span>}
       </td>
       <td className="px-3 py-3">
         <PriorityBadge priority={item.priority} />
       </td>
       <td className="px-3 py-3 max-w-[200px]">
         {item.result
-          ? <span className="text-xs text-gray-500 truncate block leading-relaxed" title={item.result}>{item.result}</span>
-          : <span className="text-gray-300 text-xs">–</span>}
+          ? <span className="text-xs text-gray-500 dark:text-gray-400 truncate block leading-relaxed" title={item.result}>{item.result}</span>
+          : <span className="text-gray-300 dark:text-gray-600 text-xs">–</span>}
       </td>
       <td className="px-3 py-3 text-right">
         {canEdit && (
