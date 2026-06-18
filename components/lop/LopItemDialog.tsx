@@ -20,7 +20,7 @@ interface ActivityInfo {
   lastEdited: { name: string; date: string; byAi: boolean } | null
 }
 
-type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
+type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt' | 'backlog'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
 export interface LopLink {
@@ -181,6 +181,7 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
                       <SelectItem value="in_bearbeitung">{statusLabels.in_bearbeitung}</SelectItem>
                       <SelectItem value="abgeschlossen">{statusLabels.abgeschlossen}</SelectItem>
                       <SelectItem value="geparkt">{statusLabels.geparkt}</SelectItem>
+                      <SelectItem value="backlog">{statusLabels.backlog ?? 'Backlog'}</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -450,7 +451,7 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
         )}
 
         <DialogFooter className="flex-row items-center gap-2">
-          {canEdit && draft && draft.status !== 'geparkt' && (
+          {canEdit && draft && draft.status !== 'geparkt' && draft.status !== 'backlog' && (
             <Button
               variant="outline"
               size="sm"
@@ -460,7 +461,7 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
               <>💡 {t('parkItem')}</>
             </Button>
           )}
-          {canEdit && draft && draft.status === 'geparkt' && (
+          {canEdit && draft && (draft.status === 'geparkt' || draft.status === 'backlog') && (
             <Button
               variant="outline"
               size="sm"

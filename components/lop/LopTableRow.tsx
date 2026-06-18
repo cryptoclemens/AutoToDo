@@ -11,7 +11,7 @@ import type { LopItem } from './LopItemDialog'
 import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 import { useStatusLabels } from '@/lib/statusLabels'
 
-type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt'
+type Status = 'offen' | 'in_bearbeitung' | 'abgeschlossen' | 'geparkt' | 'backlog'
 type Priority = 'hoch' | 'mittel' | 'niedrig'
 
 interface Props {
@@ -31,6 +31,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
     { value: 'offen', label: statusLabels.offen },
     { value: 'in_bearbeitung', label: statusLabels.in_bearbeitung },
     { value: 'abgeschlossen', label: statusLabels.abgeschlossen },
+    { value: 'backlog', label: statusLabels.backlog ?? 'Backlog' },
   ]
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<LopItem>(item)
@@ -96,8 +97,9 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
 
   const isDone = item.status === 'abgeschlossen'
   const isParked = item.status === 'geparkt'
-  const rowBg = item.requires_review ? 'bg-amber-50/60' : isDone ? 'bg-gray-50/80' : ''
-  const rowOpacity = (isDone || isParked) ? 'opacity-50' : ''
+  const isBacklog = item.status === 'backlog'
+  const rowBg = item.requires_review ? 'bg-amber-50/60' : isDone ? 'bg-gray-50/80' : isBacklog ? 'bg-slate-50/60 dark:bg-slate-900/30' : ''
+  const rowOpacity = (isDone || isParked || isBacklog) ? 'opacity-60' : ''
 
   if (editing) {
     return (
@@ -169,7 +171,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
             <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 text-xs px-2">
               ✕
             </Button>
-            {item.status !== 'geparkt' && (
+            {item.status !== 'geparkt' && item.status !== 'backlog' && (
               <Button
                 size="sm"
                 variant="outline"
@@ -301,7 +303,7 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
                 <path d="M9 2l2 2-7 7H2v-2l7-7Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
               </svg>
             </Button>
-            {canEdit && item.status !== 'geparkt' && (
+            {canEdit && item.status !== 'geparkt' && item.status !== 'backlog' && (
               <Button
                 size="sm"
                 variant="ghost"

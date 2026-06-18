@@ -10,6 +10,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   in_bearbeitung: 'In Bearbeitung',
   abgeschlossen: 'Abgeschlossen',
   geparkt: 'Geparkt',
+  backlog: 'Backlog',
 }
 
 export default function StatusLabelEditor() {

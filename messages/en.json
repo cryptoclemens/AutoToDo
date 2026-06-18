@@ -146,7 +146,8 @@
       "offen": "Open",
       "in_bearbeitung": "In Progress",
       "abgeschlossen": "Done",
-      "geparkt": "Parked"
+      "geparkt": "Parked",
+      "backlog": "Backlog"
     },
     "parkItem": "Park in idea storage",
     "unparkItem": "Reactivate",
