@@ -272,11 +272,12 @@ Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbe
 Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Aufgaben gibt, bzw. Aufgaben voneinander trennen zu können um große Arbeitspakete in kleinere aufzuteilen.
 
 ---
-## B-009 | 2026-06-02 08:36:59 | 🐛 Fehler
+## B-009 | 2026-06-02 08:36:59 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Der Daily Report per Mail hackt noch. Dieser aktualisiert sich nicht täglich an die Aufgaben, die anstehen. Es müssten ja immer die Tages ToDos im Daily Digest drinnen stehen.
+**Lösung:** Drei Bugs behoben: (1) `isOverdue` verglich Datum mit Timestamp statt Datum-String – heute fällige Aufgaben wurden falsch als überfällig markiert. (2) Sortierung im E-Mail war rein DB-seitig (ascending) ohne Priorisierung: neu werden Aufgaben clientseitig sortiert – überfällig (⚠ rot) zuerst, dann heute fällig (★ amber), dann ohne Fälligkeitsdatum. (3) E-Mail-Template hebt heute fällige Aufgaben jetzt farblich ab (amber statt grau). DB-Query (`due_date.lte.today OR due_date.is.null`) war korrekt und bleibt unverändert.
 
 ---
 ## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch

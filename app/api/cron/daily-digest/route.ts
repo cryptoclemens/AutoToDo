@@ -20,9 +20,22 @@ function formatDate(dateStr: string | null): string {
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-function isOverdue(dateStr: string | null): boolean {
+function isOverdue(dateStr: string | null, todayStr: string): boolean {
   if (!dateStr) return false
-  return new Date(dateStr) < new Date()
+  // Compare date strings directly (YYYY-MM-DD) to avoid timezone/time-of-day issues
+  return dateStr < todayStr
+}
+
+function isDueToday(dateStr: string | null, todayStr: string): boolean {
+  return dateStr === todayStr
+}
+
+/** Sort key: 0 = overdue, 1 = due today, 2 = no date */
+function sortPriority(dateStr: string | null, todayStr: string): number {
+  if (!dateStr) return 2
+  if (dateStr < todayStr) return 0
+  if (dateStr === todayStr) return 1
+  return 2 // future (should not appear, but safe fallback)
 }
 
 interface DigestItem {
@@ -45,10 +58,23 @@ function buildDigestEmail(
   projectMap: Record<string, Project>,
   workspaceNameMap: Record<string, string>,
   appUrl: string,
+  todayStr: string,
 ): string {
+  // Sort items: overdue first (0), today (1), no due date (2)
+  const sorted = [...items].sort((a, b) => {
+    const pa = sortPriority(a.due_date, todayStr)
+    const pb = sortPriority(b.due_date, todayStr)
+    if (pa !== pb) return pa - pb
+    // Within same priority: sort by due_date ascending, nulls last
+    if (!a.due_date && !b.due_date) return 0
+    if (!a.due_date) return 1
+    if (!b.due_date) return -1
+    return a.due_date.localeCompare(b.due_date)
+  })
+
   // Group items by workspace → project
   const grouped: Record<string, Record<string, DigestItem[]>> = {}
-  for (const item of items) {
+  for (const item of sorted) {
     const proj = projectMap[item.project_id]
     if (!proj) continue
     const wsId = proj.workspace_id
@@ -64,7 +90,10 @@ function buildDigestEmail(
       const projectUrl = `${appUrl}/projects/${projId}`
       const rows = projItems.map(item => {
         const sc = STATUS_COLORS[item.status] ?? { bg: '#f3f4f6', text: '#374151' }
-        const overdue = isOverdue(item.due_date)
+        const overdue = isOverdue(item.due_date, todayStr)
+        const dueToday = isDueToday(item.due_date, todayStr)
+        const dateColor = overdue ? '#ef4444' : dueToday ? '#d97706' : '#475569'
+        const dateSuffix = overdue ? ' ⚠' : dueToday ? ' ★' : ''
         return `
           <tr style="border-bottom:1px solid #f1f5f9;">
             <td style="padding:8px 12px;font-size:14px;color:#1e293b;">${item.title}</td>
@@ -73,8 +102,8 @@ function buildDigestEmail(
                 ${STATUS_LABELS[item.status] ?? item.status}
               </span>
             </td>
-            <td style="padding:8px 12px;font-size:14px;color:${overdue ? '#ef4444' : '#475569'};white-space:nowrap;">
-              ${formatDate(item.due_date)}${overdue ? ' ⚠' : ''}
+            <td style="padding:8px 12px;font-size:14px;color:${dateColor};white-space:nowrap;">
+              ${formatDate(item.due_date)}${dateSuffix}
             </td>
           </tr>`
       }).join('')
@@ -302,7 +331,7 @@ export async function GET(request: NextRequest) {
         continue
       }
 
-      const html = buildDigestEmail(displayName, userItems, projectMap, workspaceNameMap, appUrl)
+      const html = buildDigestEmail(displayName, userItems, projectMap, workspaceNameMap, appUrl, todayStr)
 
       await sendEmail(
         user.email,
