@@ -257,25 +257,28 @@ Hinweis: Feiertage sind abhängig vom Bundesland
 Möglichkeit meine Accountinfos (insbesondere meinen Namen zu ändern, E-Mail und Häufigkeit der E-Mail Push Benachrichtigungen)
 
 ---
-## F-020 | 2026-05-19 15:11:24 | ✨ Feature-Wunsch
+## F-020 | 2026-05-19 15:11:24 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Ist Ideen Speicher und "Geparkt" nicht das selbe?
+**Lösung:** Duplikat von F-neu (bereits bearbeitet). Ideen (💡) = neue lose Gedanken ohne Umsetzungsdruck (eigene `idea_items`-Tabelle). Geparkt (🟡) = frühere LOP-Punkte die pausiert wurden (LOP-Status `geparkt`, behalten alle Felder). Beide erscheinen im Ideenspeicher; geparkte Items zeigen ein Badge und öffnen beim Bearbeiten den vollständigen LOP-Dialog.
 
 ---
-## B-008 | 2026-05-21 13:16:42 | 🐛 Fehler
+## B-008 | 2026-05-21 13:16:42 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbeitet werden
+**Lösung:** Duplikat von B-neu (bereits bearbeitet). Ideenspeicher-Liste im Standup-Modus erhält Hover-Aktionen (✎ Edit, → Aufgabe, ✕ Löschen). Normalansicht: Edit-Button ergänzt. Geparkte LOP-Items öffnen den vollen LopItemDialog.
 
 ---
-## F-021 | 2026-06-02 08:35:05 | ✨ Feature-Wunsch
+## F-021 | 2026-06-02 08:35:05 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Aufgaben gibt, bzw. Aufgaben voneinander trennen zu können um große Arbeitspakete in kleinere aufzuteilen.
+**Lösung:** Ähnliche LOP-Punkte zusammenführen: Jaccard-Similarity-Check (`lib/similarity.ts`) erkennt semantisch ähnliche Punkte; Dialog „Punkte zusammenführen?" mit Vorschau (M12.8–12.9). Globale Suche (⌘K) ermöglicht workspace-weite Duplikat-Suche. Aufteilen großer Pakete: über den neuen Backlog-Status (F-027) können Teilaufgaben angelegt und priorisiert werden.
 
 ---
 ## B-009 | 2026-06-02 08:36:59 | 🐛 Fehler | Status: bearbeitet
@@ -296,11 +299,12 @@ Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann
 **Lösung:** Neues Admin-Tool „Name mit Account verknüpfen" in der Steuerung. Admin wählt Workspace, dann den Freitext-Namen (z.B. „Markus Wanzek") und das passende Workspace-Mitglied aus den Dropdowns. Klick auf „Verknüpfen" setzt `responsible_user_id` auf allen betroffenen LOP-Punkten und aktualisiert `responsible` auf den Account-Anzeigenamen. API: `POST /api/admin/link-responsible` mit Service-Role-Client.
 
 ---
-## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch
+## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überprüft werden und dann nur noch die aktuellen Informationen gezeigt werden.
+**Lösung:** GET-Route archiviert automatisch beim Laden: abgelaufene Notizen (`relevant_until < heute`), Info/Availability > 14 Tage ohne Deadline, Risk/Decision > 30 Tage ohne Deadline. Im Header kurzer Hinweis wenn Einträge bereinigt wurden (M18.3).
 
 ---
 ## B-010 | 2026-06-02 08:41:35 | 🐛 Fehler | Status: bearbeitet
@@ -352,11 +356,12 @@ Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
 **Lösung:** Dark-Mode-Kontraste in 5 Komponenten verbessert (WCAG AA-konform): App-Layout (`bg-gray-950`), WorkspaceNav (Hamburger, Mobile Drawer, Dropdown), LopTableRow (Tabellentexte, Status-Dropdown, Datum, Ergebnis), DashboardAnalytics (Beschriftungen, Balkendiagramm), DashboardUpdates (Texte, Trennlinien). SecurityModal erhielt ebenfalls Dark-Mode-Unterstützung. Grau-Palette: `text-gray-400` → `dark:text-gray-300`, `text-gray-500` → `dark:text-gray-400`, `bg-white` → `dark:bg-gray-900` etc.
 
 ---
-## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch
+## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigter Name, hinterlegte E-Mail Adresse, Häufigkeit für E-Mail Digest) haben -> Aktuell hat Admin alle Rechte
+**Lösung:** Alle drei Einstellungen für jeden Nutzer verfügbar: Anzeigename (`full_name` in user_metadata, Konto-Tab, M18.4), E-Mail-Adresse ändern (Supabase auth.updateUser, M7d.9), Passwort ändern (M7d.10). Digest-Häufigkeit pro Nutzer: eigene `user_digest_preferences`-Tabelle, API und Konto-Tab in Einstellungen (M22.4).
 
 ---
 ## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch | ✅ bearbeitet
