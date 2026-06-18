@@ -87,30 +87,37 @@ export default function ResponsibleSelect({
       .filter(n => n && n !== responsible)
       .sort()
     return (
-      <div className="flex gap-1">
-        <Input
-          value={responsible ?? ''}
-          onChange={e => onChange(e.target.value || null, null)}
-          className={`flex-1 ${className}`}
-          placeholder={placeholder}
-          disabled={disabled}
-          autoFocus
-          list={suggestions.length > 0 ? listId : undefined}
-        />
+      <div className="flex flex-col gap-0.5">
+        <div className="flex gap-1">
+          <Input
+            value={responsible ?? ''}
+            onChange={e => onChange(e.target.value || null, null)}
+            className={`flex-1 ${className}`}
+            placeholder={placeholder}
+            disabled={disabled}
+            autoFocus
+            list={suggestions.length > 0 ? listId : undefined}
+          />
+          {suggestions.length > 0 && (
+            <datalist id={listId}>
+              {suggestions.map(n => <option key={n} value={n} />)}
+            </datalist>
+          )}
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => { setShowInput(false); onChange(null, null) }}
+            className="text-xs text-gray-400 hover:text-gray-600 shrink-0 px-1"
+            title="Zurück zur Mitgliederliste"
+          >
+            ↩
+          </button>
+        </div>
         {suggestions.length > 0 && (
-          <datalist id={listId}>
-            {suggestions.map(n => <option key={n} value={n} />)}
-          </datalist>
+          <p className="text-xs text-gray-400">
+            Bitte einen bestehenden Namen aus der Liste wählen
+          </p>
         )}
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => { setShowInput(false); onChange(null, null) }}
-          className="text-xs text-gray-400 hover:text-gray-600 shrink-0 px-1"
-          title="Zurück zur Mitgliederliste"
-        >
-          ↩
-        </button>
       </div>
     )
   }

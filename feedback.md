@@ -295,11 +295,12 @@ Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann
 Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überprüft werden und dann nur noch die aktuellen Informationen gezeigt werden.
 
 ---
-## B-010 | 2026-06-02 08:41:35 | 🐛 Fehler
+## B-010 | 2026-06-02 08:41:35 | 🐛 Fehler | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Die Person "Markus" und die Person "Markus Wanzek I Plenum" kann zu einer Person zusammengefügt werden
+**Lösung:** Migration 039 bereinigt alle Varianten ("Markus Wanzek", "Markus Wanzek I Plenum", alle ILIKE-Treffer) im `responsible`-Feld sowie im `co_responsibles`-JSONB-Array → "Markus". Da der LLM-Prompt bekannte Namen aus bestehenden lop_items liest, verhindert der DB-Backfill, dass die alte Schreibweise erneut als Vorlage dient. Zusätzlich zeigt `ResponsibleSelect` im Freitext-Modus jetzt einen Hinweis "Bitte einen bestehenden Namen aus der Liste wählen" wenn Autocomplete-Vorschläge vorhanden sind.
 
 ---
 ## F-024 | 2026-06-02 08:44:42 | ✨ Feature-Wunsch
