@@ -40,6 +40,7 @@ export default function TagesplanungModal({ onClose, projectId }: Props) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false)
   // All history entries (excluding currently viewed date)
   const [history, setHistory] = useState<{ date: string; text: string }[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -96,6 +97,22 @@ export default function TagesplanungModal({ onClose, projectId }: Props) {
     setSaved(false)
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => save(value, date), 1200)
+  }
+
+  async function loadSuggestion() {
+    setLoadingSuggestion(true)
+    try {
+      const res = await fetch(`/api/daily-plan?date=${date}&days=1&projectId=${projectId}`)
+      if (!res.ok) return
+      const json = await res.json()
+      if (json.suggestion) {
+        setText(json.suggestion)
+        setCache(prev => ({ ...prev, [date]: { plan: prev[date]?.plan ?? '', suggestion: json.suggestion } }))
+        setSaved(false)
+      }
+    } finally {
+      setLoadingSuggestion(false)
+    }
   }
 
   function goDay(delta: number) {
@@ -202,21 +219,28 @@ export default function TagesplanungModal({ onClose, projectId }: Props) {
                   </div>
                 </div>
 
-                {isSuggested && (
-                  <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center justify-between mt-2">
+                  {isSuggested ? (
                     <p className="text-xs text-blue-500">
                       ↑ Automatisch aus offenen LOP-Punkten vorausgefüllt – einfach anpassen.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => fetchDate(date)}
-                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors ml-3 shrink-0"
-                      title="Vorschlag aktualisieren"
-                    >
-                      ↻ Aktualisieren
-                    </button>
-                  </div>
-                )}
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    type="button"
+                    onClick={loadSuggestion}
+                    disabled={loadingSuggestion || isFuture}
+                    className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 border border-blue-200 hover:border-blue-300 rounded-lg px-2.5 py-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    title="Vorschläge aus offenen LOP-Punkten laden"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" className={loadingSuggestion ? 'animate-spin' : ''}>
+                      <path d="M10 5.5A4.5 4.5 0 1 1 5.5 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                      <path d="M5.5 1L7.5 3l-2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Vorschläge laden
+                  </button>
+                </div>
               </>
             )}
 

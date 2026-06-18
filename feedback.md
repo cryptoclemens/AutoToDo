@@ -314,7 +314,8 @@ Verbesserung:
 **Lösung:** Der LLM-System-Prompt wurde um eine SPRECHER-ZUORDNUNG-Sektion erweitert. Die KI analysiert Sprecherlabels im Transkript (z.B. „Sprecher 1:", „Speaker A:" oder direkte Namennennungen) und ordnet sie Workspace-Mitgliedern zu. Das Mapping wird als `speaker_map` (JSONB) in der `transcripts`-Tabelle gespeichert (Migration 039). Bei Ich-Form-Aussagen ("ich mache X") wird der gematchte Workspace-Member automatisch als Verantwortlicher in den LOP-Punkt eingetragen. Alle LLM-Provider (Anthropic, OpenAI, Azure, DeepSeek, Perplexity) geben das Mapping zurück.
 
 ---
-## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch
+## F-025 | 2026-06-02 08:47:01 | ✨ Feature-Wunsch | Status: bearbeitet
+
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
@@ -323,6 +324,8 @@ Tätigkeitsnachweis-Funktion muss noch schlauere Intelligenz haben wer welche Au
 Informationen sollen aus Daily Stand Up + aus den ToDos extrahiert werden.
 
 In der Funktion/Button Tagesplanung kann dann direkt ein Vorschlag für alle Aufgaben für den Tag gemacht werden
+
+**Lösung:** Die Tätigkeitsnachweis-API kombiniert jetzt in fester Prioritätsreihenfolge: (1) Tagesplan aus `daily_plans`, (2) abgeschlossene LOP-Punkte (`completed_at` im Monat), (3) in Bearbeitung befindliche LOP-Punkte (`updated_at` im Monat, `status = in_bearbeitung`), (4) Transkripte als Fallback. Das Frontend-Modal (`TaetigkeitsnachweisModal.tsx`) wendet dieselbe Priorität in `combine()` an. Im Tagesplanungs-Modal (`TagesplanungModal.tsx`) wurde ein „Vorschläge laden"-Button ergänzt, der jederzeit offene LOP-Punkte als Vorausfüllung lädt – unabhängig davon, ob bereits Text eingegeben wurde.
 
 ---
 ## B-011 | 2026-06-02 08:48:53 | 🐛 Fehler | Status: bearbeitet

@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-025',
+    date: '18.06.2026',
+    title: 'Intelligenterer Tätigkeitsnachweis',
+    description: 'Der Tätigkeitsnachweis kombiniert jetzt Tagesplan, abgeschlossene und aktive LOP-Punkte sowie Meetings in einer festen Prioritätsreihenfolge – und die Tagesplanung bietet einen „Vorschläge laden"-Button zum Befüllen aus offenen Aufgaben.',
+  },
+  {
     id: 'F-024',
     date: '18.06.2026',
     title: 'Automatische Sprecher-Zuordnung',
@@ -46,12 +52,6 @@ const UPDATES: Update[] = [
     date: '16.06.2026',
     title: 'Tätigkeitsnachweis als XLSX',
     description: 'Der monatliche Tätigkeitsnachweis kann jetzt auch als Excel-Datei exportiert werden – zusätzlich zum bisherigen PDF-Druck.',
-  },
-  {
-    id: 'F-025',
-    date: '16.06.2026',
-    title: 'KI-Zusammenfassung',
-    description: 'Auf Knopfdruck fasst die KI alle offenen LOP-Punkte eines Projekts zusammen – hilfreich zur Vorbereitung auf Meetings oder für schnellen Überblick.',
   },
   {
     id: 'F-021',
