@@ -79,12 +79,26 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
   const [newLinkLabel, setNewLinkLabel] = useState('')
   const [linkError, setLinkError] = useState('')
 
+  // Reminder state
+  const [reminderActive, setReminderActive] = useState(false)
+  const [reminderId, setReminderId] = useState<string | null>(null)
+  const [reminderFrequency, setReminderFrequency] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('weekly')
+  const [reminderDayOfWeek, setReminderDayOfWeek] = useState<number>(0) // 0=Montag
+  const [reminderDayOfMonth, setReminderDayOfMonth] = useState<number>(1)
+  const [reminderSaving, setReminderSaving] = useState(false)
+
   useEffect(() => {
     setDraft(item ? { ...item, links: item.links ?? [], co_responsibles: item.co_responsibles ?? [] } : null)
     setActivity(null)
     setNewLinkUrl('')
     setNewLinkLabel('')
     setLinkError('')
+    // Reset reminder state
+    setReminderActive(false)
+    setReminderId(null)
+    setReminderFrequency('weekly')
+    setReminderDayOfWeek(0)
+    setReminderDayOfMonth(1)
   }, [item])
 
   const loadActivity = useCallback(async (id: string) => {
@@ -92,9 +106,62 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
     if (res.ok) setActivity(await res.json())
   }, [])
 
+  const loadReminder = useCallback(async (lopItemId: string) => {
+    const res = await fetch(`/api/reminders?lopItemId=${lopItemId}`)
+    if (res.ok) {
+      const json = await res.json()
+      if (json.reminder) {
+        setReminderActive(true)
+        setReminderId(json.reminder.id)
+        setReminderFrequency(json.reminder.frequency)
+        if (json.reminder.day_of_week !== null) setReminderDayOfWeek(json.reminder.day_of_week)
+        if (json.reminder.day_of_month !== null) setReminderDayOfMonth(json.reminder.day_of_month)
+      }
+    }
+  }, [])
+
   useEffect(() => {
-    if (item?.id) loadActivity(item.id)
-  }, [item?.id, loadActivity])
+    if (item?.id) {
+      loadActivity(item.id)
+      loadReminder(item.id)
+    }
+  }, [item?.id, loadActivity, loadReminder])
+
+  async function handleReminderToggle(active: boolean) {
+    if (!draft) return
+    if (!active && reminderId) {
+      // Delete reminder
+      setReminderSaving(true)
+      await fetch(`/api/reminders/${reminderId}`, { method: 'DELETE' })
+      setReminderActive(false)
+      setReminderId(null)
+      setReminderSaving(false)
+    } else if (!active) {
+      setReminderActive(false)
+    } else {
+      setReminderActive(true)
+    }
+  }
+
+  async function handleReminderSave() {
+    if (!draft) return
+    setReminderSaving(true)
+    const res = await fetch('/api/reminders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lopItemId: draft.id,
+        frequency: reminderFrequency,
+        dayOfWeek: (reminderFrequency === 'weekly' || reminderFrequency === 'biweekly') ? reminderDayOfWeek : null,
+        dayOfMonth: reminderFrequency === 'monthly' ? reminderDayOfMonth : null,
+      }),
+    })
+    if (res.ok) {
+      const json = await res.json()
+      setReminderId(json.reminder?.id ?? null)
+    }
+    setReminderSaving(false)
+  }
 
   async function handleSave() {
     if (!draft) return
@@ -402,6 +469,95 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
               {/* View-only: no links */}
               {!canEdit && (draft.links ?? []).length === 0 && (
                 <p className="text-sm text-gray-400 italic">–</p>
+              )}
+            </div>
+
+            {/* Erinnerung */}
+            <div className="space-y-2 border-t pt-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-gray-500">Regelmäßige Erinnerung</Label>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <span className="text-xs text-gray-500">{reminderActive ? 'Aktiv' : 'Inaktiv'}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={reminderActive}
+                    onClick={() => handleReminderToggle(!reminderActive)}
+                    disabled={!canEdit || reminderSaving}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 ${reminderActive ? 'bg-blue-600' : 'bg-gray-200'}`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition-transform ${reminderActive ? 'translate-x-4' : 'translate-x-0'}`}
+                    />
+                  </button>
+                </label>
+              </div>
+
+              {reminderActive && canEdit && (
+                <div className="space-y-2 pt-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-400">Häufigkeit</Label>
+                    <select
+                      value={reminderFrequency}
+                      onChange={e => setReminderFrequency(e.target.value as typeof reminderFrequency)}
+                      className="h-8 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
+                    >
+                      <option value="daily">Täglich</option>
+                      <option value="weekly">Wöchentlich</option>
+                      <option value="biweekly">Zweiwöchentlich</option>
+                      <option value="monthly">Monatlich</option>
+                    </select>
+                  </div>
+
+                  {(reminderFrequency === 'weekly' || reminderFrequency === 'biweekly') && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-gray-400">Wochentag</Label>
+                      <select
+                        value={reminderDayOfWeek}
+                        onChange={e => setReminderDayOfWeek(Number(e.target.value))}
+                        className="h-8 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
+                      >
+                        <option value={0}>Montag</option>
+                        <option value={1}>Dienstag</option>
+                        <option value={2}>Mittwoch</option>
+                        <option value={3}>Donnerstag</option>
+                        <option value={4}>Freitag</option>
+                        <option value={5}>Samstag</option>
+                        <option value={6}>Sonntag</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {reminderFrequency === 'monthly' && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-gray-400">Tag des Monats</Label>
+                      <select
+                        value={reminderDayOfMonth}
+                        onChange={e => setReminderDayOfMonth(Number(e.target.value))}
+                        className="h-8 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
+                      >
+                        {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                          <option key={d} value={d}>{d}.</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleReminderSave}
+                    disabled={reminderSaving}
+                    className="h-8 px-3 text-sm border border-blue-200 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                  >
+                    {reminderSaving ? 'Wird gespeichert…' : reminderId ? 'Erinnerung aktualisieren' : 'Erinnerung speichern'}
+                  </button>
+                </div>
+              )}
+
+              {reminderActive && !canEdit && (
+                <p className="text-xs text-gray-500">
+                  Erinnerung aktiv ({reminderFrequency === 'daily' ? 'täglich' : reminderFrequency === 'weekly' ? 'wöchentlich' : reminderFrequency === 'biweekly' ? 'zweiwöchentlich' : 'monatlich'})
+                </p>
               )}
             </div>
 

@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-030',
+    date: '18.06.2026',
+    title: 'Wiederkehrende Erinnerungen',
+    description: 'Auf LOP-Punkten lässt sich eine regelmäßige E-Mail-Erinnerung einrichten – täglich, wöchentlich, zweiwöchentlich oder monatlich.',
+  },
+  {
     id: 'F-027',
     date: '18.06.2026',
     title: 'Backlog-Status für Langzeit-Aufgaben',
