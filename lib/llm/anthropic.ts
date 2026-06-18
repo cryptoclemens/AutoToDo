@@ -58,6 +58,8 @@ function parseResponse(raw: string): ProcessTranscriptResult {
       context_notes: Array.isArray(parsed.context_notes) ? parsed.context_notes : [],
       summary: typeof parsed.summary === 'string' ? parsed.summary : '',
       daily_plan_text: typeof parsed.daily_plan_text === 'string' ? parsed.daily_plan_text : null,
+      ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+      speaker_map: Array.isArray(parsed.speaker_map) ? parsed.speaker_map : [],
     }
   } catch {
     throw new Error(`LLM returned invalid JSON: ${cleaned.slice(0, 200)}`)

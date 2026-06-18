@@ -321,6 +321,16 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       }
     } catch { /* migration 027 not yet deployed */ }
 
+    // Save speaker map (resilient — silently skips if migration not yet deployed)
+    try {
+      const speakerMap = (result.speaker_map ?? []).filter(s => s.speaker_label?.trim())
+      if (speakerMap.length > 0) {
+        await supabase.from('transcripts').update({
+          speaker_map: speakerMap,
+        }).eq('id', transcriptId)
+      }
+    } catch { /* migration 039 not yet deployed */ }
+
     // Mark done
     await supabase.from('transcripts').update({
       processing_status: 'done',

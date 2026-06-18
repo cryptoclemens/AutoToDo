@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-024',
+    date: '18.06.2026',
+    title: 'Automatische Sprecher-Zuordnung',
+    description: 'Die KI erkennt beim Verarbeiten von Meeting-Transkripten, welcher Sprecher welchem Workspace-Mitglied entspricht – und trägt die richtige Person automatisch als Verantwortlichen in die LOP-Punkte ein.',
+  },
+  {
     id: 'F-022',
     date: '18.06.2026',
     title: 'Admin: Name mit Account verknüpfen',
