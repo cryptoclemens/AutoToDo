@@ -65,12 +65,37 @@ export default function SteuerungClient() {
   const [respTo, setRespTo] = useState('')
   const [respMerging, setRespMerging] = useState(false)
 
+  // Link freetext name to user account
+  const [linkWorkspaces, setLinkWorkspaces] = useState<{ id: string; name: string }[]>([])
+  const [linkWorkspaceId, setLinkWorkspaceId] = useState('')
+  const [linkMembers, setLinkMembers] = useState<{ user_id: string; email: string; display_name: string; role: string }[]>([])
+  const [linkMembersLoading, setLinkMembersLoading] = useState(false)
+  const [linkFreetext, setLinkFreetext] = useState('')
+  const [linkUserId, setLinkUserId] = useState('')
+  const [linking, setLinking] = useState(false)
+  const [linkResult, setLinkResult] = useState<string | null>(null)
+
   const loadRespNames = useCallback(async () => {
     const res = await fetch('/api/admin/responsible-names')
     if (res.ok) setRespNames(await res.json())
   }, [])
 
   useEffect(() => { loadRespNames() }, [loadRespNames])
+
+  const loadLinkWorkspaces = useCallback(async () => {
+    const res = await fetch('/api/admin/link-responsible')
+    if (res.ok) setLinkWorkspaces(await res.json())
+  }, [])
+
+  useEffect(() => { loadLinkWorkspaces() }, [loadLinkWorkspaces])
+
+  const loadLinkMembers = useCallback(async (wsId: string) => {
+    if (!wsId) { setLinkMembers([]); return }
+    setLinkMembersLoading(true)
+    const res = await fetch(`/api/admin/link-responsible?workspaceId=${wsId}`)
+    if (res.ok) setLinkMembers(await res.json())
+    setLinkMembersLoading(false)
+  }, [])
 
   async function handleRespMerge() {
     if (!respFrom || !respTo || respFrom === respTo) return
@@ -90,6 +115,28 @@ export default function SteuerungClient() {
       toast.error('Zusammenführen fehlgeschlagen.')
     }
     setRespMerging(false)
+  }
+
+  async function handleLink() {
+    if (!linkFreetext || !linkUserId || !linkWorkspaceId) return
+    setLinking(true)
+    setLinkResult(null)
+    const res = await fetch('/api/admin/link-responsible', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ freetext: linkFreetext, userId: linkUserId, workspaceId: linkWorkspaceId }),
+    })
+    if (res.ok) {
+      const { updated, displayName } = await res.json() as { updated: number; displayName: string }
+      toast.success(`${updated} LOP-Punkte mit „${displayName}" verknüpft.`)
+      setLinkResult(`${updated} LOP-Punkte aktualisiert → Verantwortlicher: „${displayName}"`)
+      setLinkFreetext('')
+      setLinkUserId('')
+      await loadRespNames()
+    } else {
+      toast.error('Verknüpfen fehlgeschlagen.')
+    }
+    setLinking(false)
   }
 
   const loadCodes = useCallback(async () => {
@@ -587,6 +634,104 @@ export default function SteuerungClient() {
             {respNames.find(r => r.name === respFrom)?.count ?? 0} LOP-Punkte werden von &quot;{respFrom}&quot; auf &quot;{respTo}&quot; umgestellt.
           </p>
         )}
+      </div>
+
+      {/* Name mit Account verknüpfen */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <h2 className="text-sm font-semibold text-gray-900 mb-1">Name mit Account verknüpfen</h2>
+        <p className="text-xs text-gray-400 mb-4">
+          Freitext-Verantwortliche (z.B. &quot;Markus Wanzek&quot;) mit einem echten Supabase-Account verbinden.
+          Setzt <code className="bg-gray-100 px-1 rounded">responsible_user_id</code> und aktualisiert den Anzeigenamen auf allen betroffenen LOP-Punkten.
+        </p>
+
+        <div className="space-y-4">
+          {/* Workspace Selektor */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-400">Workspace</label>
+            <select
+              value={linkWorkspaceId}
+              onChange={e => {
+                setLinkWorkspaceId(e.target.value)
+                setLinkFreetext('')
+                setLinkUserId('')
+                setLinkResult(null)
+                loadLinkMembers(e.target.value)
+              }}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">– Workspace wählen –</option>
+              {linkWorkspaces.map(ws => (
+                <option key={ws.id} value={ws.id}>{ws.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {linkWorkspaceId && (
+            <div className="flex items-end gap-3 flex-wrap">
+              {/* Freitext-Name Dropdown */}
+              <div className="flex flex-col gap-1 flex-1 min-w-40">
+                <label className="text-xs text-gray-400">Freitext-Verantwortlicher</label>
+                <select
+                  value={linkFreetext}
+                  onChange={e => { setLinkFreetext(e.target.value); setLinkResult(null) }}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                  <option value="">– Name wählen –</option>
+                  {respNames.map(r => (
+                    <option key={r.name} value={r.name}>{r.name} ({r.count})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pb-2 text-gray-400 text-lg shrink-0">→</div>
+
+              {/* Account Dropdown */}
+              <div className="flex flex-col gap-1 flex-1 min-w-40">
+                <label className="text-xs text-gray-400">
+                  Workspace-Mitglied
+                  {linkMembersLoading && <span className="ml-1 text-gray-300">(lädt…)</span>}
+                </label>
+                <select
+                  value={linkUserId}
+                  onChange={e => { setLinkUserId(e.target.value); setLinkResult(null) }}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  disabled={linkMembersLoading}
+                >
+                  <option value="">– Mitglied wählen –</option>
+                  {linkMembers.map(m => (
+                    <option key={m.user_id} value={m.user_id}>
+                      {m.display_name} ({m.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pb-0.5">
+                <Button
+                  onClick={handleLink}
+                  disabled={linking || !linkFreetext || !linkUserId}
+                  size="sm"
+                  className="rounded-lg text-white shrink-0 disabled:opacity-40"
+                  style={{ backgroundColor: 'var(--brand)' }}
+                >
+                  {linking ? 'Wird verknüpft…' : 'Verknüpfen'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {linkFreetext && linkUserId && !linkResult && (
+            <p className="text-xs text-blue-700 bg-blue-50 px-3 py-2 rounded-lg">
+              {respNames.find(r => r.name === linkFreetext)?.count ?? 0} LOP-Punkte werden mit dem gewählten Account verknüpft und der Freitext-Name wird auf den Account-Anzeigenamen aktualisiert.
+            </p>
+          )}
+
+          {linkResult && (
+            <p className="text-xs text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">
+              ✓ {linkResult}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Digest-Diagnose */}

@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-022',
+    date: '18.06.2026',
+    title: 'Admin: Name mit Account verknüpfen',
+    description: 'Im Admin-Bereich können Freitext-Verantwortliche (z.B. "Markus Wanzek") mit einem echten Nutzer-Account verbunden werden – so werden doppelte Personen zusammengeführt und alle betroffenen LOP-Punkte automatisch aktualisiert.',
+  },
+  {
     id: 'F-028',
     date: '16.06.2026',
     title: 'Eigene Status-Bezeichnungen',

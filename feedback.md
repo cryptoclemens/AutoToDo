@@ -279,13 +279,14 @@ Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Auf
 Der Daily Report per Mail hackt noch. Dieser aktualisiert sich nicht täglich an die Aufgaben, die anstehen. Es müssten ja immer die Tages ToDos im Daily Digest drinnen stehen.
 
 ---
-## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch
+## F-022 | 2026-06-02 08:39:00 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Möglichkeit im Admin Bereich Accounts zusammenzu legen:
 Problem besteht wenn:
 Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann entstehen zwei "Personen", die dann zu einer zusammengeführt werden müssen.
+**Lösung:** Neues Admin-Tool „Name mit Account verknüpfen" in der Steuerung. Admin wählt Workspace, dann den Freitext-Namen (z.B. „Markus Wanzek") und das passende Workspace-Mitglied aus den Dropdowns. Klick auf „Verknüpfen" setzt `responsible_user_id` auf allen betroffenen LOP-Punkten und aktualisiert `responsible` auf den Account-Anzeigenamen. API: `POST /api/admin/link-responsible` mit Service-Role-Client.
 
 ---
 ## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch
