@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   buildTodoEmail,
   makeResendSender,
+  esc,
   type TodoEmailItem,
   type ProjectInfo,
 } from './todoEmail'
@@ -117,7 +118,7 @@ export async function sendPostMeetingTodoEmails(
         appUrl,
         todayStr,
         headerSubtitle: 'Deine Aufgaben aus dem Meeting',
-        intro: `ein Meeting im Projekt <strong>${project.name}</strong> wurde gerade verarbeitet. ` +
+        intro: `ein Meeting im Projekt <strong>${esc(project.name)}</strong> wurde gerade verarbeitet. ` +
           `Hier sind deine <strong>${userItems.length} offene${userItems.length !== 1 ? 'n' : ''} Aufgabe${userItems.length !== 1 ? 'n' : ''}</strong>:`,
         footer: 'Diese E-Mail wurde nach der Verarbeitung eines Meetings versendet.',
       })

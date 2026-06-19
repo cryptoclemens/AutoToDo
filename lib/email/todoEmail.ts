@@ -16,6 +16,16 @@ export interface ProjectInfo {
   workspace_id: string
 }
 
+/** Escaped einen String für die sichere Einbettung in HTML-Mails (verhindert HTML-Injection). */
+export function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export const STATUS_LABELS: Record<string, string> = {
   offen: 'Offen',
   in_bearbeitung: 'In Bearbeitung',
@@ -57,11 +67,15 @@ export interface BuildTodoEmailOptions {
   workspaceNameMap: Record<string, string>
   appUrl: string
   todayStr: string
-  /** Untertitel im dunklen Header. */
+  /** Untertitel im dunklen Header. Wird als vertrauenswürdiges HTML eingebettet. */
   headerSubtitle: string
-  /** Einleitungssatz unter der Begrüßung (HTML erlaubt). */
+  /**
+   * Einleitungssatz unter der Begrüßung. Wird als vertrauenswürdiges HTML
+   * eingebettet (z.B. <strong>). Dynamische/nutzerkontrollierte Anteile MUSS
+   * der Aufrufer vorher mit esc() escapen.
+   */
   intro: string
-  /** Fußzeilen-Text. */
+  /** Fußzeilen-Text. Wird als vertrauenswürdiges HTML eingebettet. */
   footer: string
 }
 
@@ -107,7 +121,7 @@ export function buildTodoEmail(opts: BuildTodoEmailOptions): string {
         const dateSuffix = overdue ? ' ⚠' : dueToday ? ' ★' : ''
         return `
           <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:8px 12px;font-size:14px;color:#1e293b;">${item.title}</td>
+            <td style="padding:8px 12px;font-size:14px;color:#1e293b;">${esc(item.title)}</td>
             <td style="padding:8px 12px;">
               <span style="background:${sc.bg};color:${sc.text};padding:2px 8px;border-radius:4px;font-size:12px;white-space:nowrap;">
                 ${STATUS_LABELS[item.status] ?? item.status}
@@ -122,7 +136,7 @@ export function buildTodoEmail(opts: BuildTodoEmailOptions): string {
       return `
         <div style="margin:16px 0;">
           <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #e2e8f0;padding-bottom:6px;margin-bottom:8px;">
-            <h3 style="margin:0;font-size:15px;color:#1e293b;">${proj?.name ?? 'Projekt'}</h3>
+            <h3 style="margin:0;font-size:15px;color:#1e293b;">${esc(proj?.name ?? 'Projekt')}</h3>
             <a href="${projectUrl}" style="font-size:12px;color:#2563eb;text-decoration:none;">Zur Liste →</a>
           </div>
           <table style="width:100%;border-collapse:collapse;">
@@ -140,7 +154,7 @@ export function buildTodoEmail(opts: BuildTodoEmailOptions): string {
 
     return `
       <div style="margin:24px 0;">
-        <p style="margin:0 0 12px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;">${wsName}</p>
+        <p style="margin:0 0 12px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;">${esc(wsName)}</p>
         ${projectSections}
       </div>`
   }).join('<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">')
@@ -157,7 +171,7 @@ export function buildTodoEmail(opts: BuildTodoEmailOptions): string {
     </div>
     <!-- Body -->
     <div style="padding:28px 32px;">
-      <p style="margin:0 0 8px;font-size:16px;color:#1e293b;">Hallo ${displayName},</p>
+      <p style="margin:0 0 8px;font-size:16px;color:#1e293b;">Hallo ${esc(displayName)},</p>
       <p style="margin:0 0 24px;font-size:14px;color:#475569;">${intro}</p>
       ${sections}
     </div>
