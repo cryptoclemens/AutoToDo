@@ -368,3 +368,10 @@ Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgeset
 **Lösung:** Neuer Status `backlog` auf `lop_items` hinzugefügt (Migration 039). Backlog-Items erscheinen im Status-Dropdown, werden mit eigenem Badge (slate) angezeigt, tauchen im Daily Digest nicht auf und werden im Stand-up-Modus als separate Sektion mit „Aktivieren"-Button dargestellt. Status-Labels für Backlog sind über Workspace-Einstellungen anpassbar.
 
 ---
+## F-030 | 2026-06-19 09:58:07 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Statt abendliche Erinnerungsemails immer eine individuelle Email an jeweilige LOP-Listen-Mitglieder mit den ToDos nachdem eine Aufnahme beendet wurde und das Transkript bearbeitet wurde. Quasi „Deine ToDos aus dem heutigen Meeting:…"
+
+---
