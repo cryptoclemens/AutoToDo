@@ -2,6 +2,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { decrypt } from '@/lib/encryption'
 import { processTranscriptWithLlm } from '@/lib/llm/factory'
 import type { LlmConfig } from '@/lib/llm/types'
+import { sendPostMeetingTodoEmails } from '@/lib/email/postMeetingNotify'
 
 const CONFIDENCE_AUTO = 0.85
 const CONFIDENCE_MARK = 0.70
@@ -339,6 +340,15 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       llm_summary: result.summary,
       processed_at: new Date().toISOString(),
     }).eq('id', transcriptId)
+
+    // Post-Meeting-ToDo-Mails versenden (ersetzt den abendlichen Digest, F-030).
+    // Mail-Fehler dürfen die Verarbeitung nie kippen.
+    try {
+      await sendPostMeetingTodoEmails(supabase, {
+        projectId: transcript.project_id,
+        workspaceId: transcript.workspace_id,
+      })
+    } catch { /* Versandfehler ignorieren – Verarbeitung gilt als erfolgreich */ }
 
     return { ok: true, itemsCreated, itemsUpdated }
 
