@@ -13,6 +13,12 @@ interface Update {
 const UPDATES: Update[] = [
   {
     id: 'F-030',
+    date: '19.06.2026',
+    title: 'ToDo-Mail direkt nach dem Meeting',
+    description: 'Statt einer abendlichen Sammelmail bekommst du jetzt direkt nach der Verarbeitung eines Meetings eine persönliche E-Mail mit all deinen offenen Aufgaben aus dem Projekt.',
+  },
+  {
+    id: 'F-028',
     date: '18.06.2026',
     title: 'Wiederkehrende Erinnerungen',
     description: 'Auf LOP-Punkten lässt sich eine regelmäßige E-Mail-Erinnerung einrichten – täglich, wöchentlich, zweiwöchentlich oder monatlich.',

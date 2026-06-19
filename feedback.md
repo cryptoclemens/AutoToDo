@@ -368,10 +368,12 @@ Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgeset
 **Lösung:** Neuer Status `backlog` auf `lop_items` hinzugefügt (Migration 039). Backlog-Items erscheinen im Status-Dropdown, werden mit eigenem Badge (slate) angezeigt, tauchen im Daily Digest nicht auf und werden im Stand-up-Modus als separate Sektion mit „Aktivieren"-Button dargestellt. Status-Labels für Backlog sind über Workspace-Einstellungen anpassbar.
 
 ---
-## F-030 | 2026-06-19 09:58:07 | ✨ Feature-Wunsch
+## F-030 | 2026-06-19 09:58:07 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** clemens.pompey@vencly.com
 
 Statt abendliche Erinnerungsemails immer eine individuelle Email an jeweilige LOP-Listen-Mitglieder mit den ToDos nachdem eine Aufnahme beendet wurde und das Transkript bearbeitet wurde. Quasi „Deine ToDos aus dem heutigen Meeting:…"
+
+**Lösung:** Die abendliche Digest-Sammelmail wird durch eine event-getriggerte, personalisierte Mail ersetzt. Sobald ein Transkript fertig verarbeitet ist (`processing_status = 'done'`), versendet `sendPostMeetingTodoEmails()` (`lib/email/postMeetingNotify.ts`) an jedes Projekt-Mitglied mit offenen Aufgaben (`responsible_user_id` gesetzt, Status `offen`/`in_bearbeitung`) eine individuelle Mail „Deine ToDos aus dem Meeting – «Projekt»" mit all seinen offenen Items im Projekt. Der HTML-Aufbau ist mit dem bisherigen Digest in `lib/email/todoEmail.ts` zusammengeführt. Der Versand ist resilient (Mail-Fehler kippen die Verarbeitung nicht). Der abendliche Digest-Code bleibt reversibel bestehen; sein Host-Crontab-Eintrag wird beim nächsten Deploy entfernt.
 
 ---

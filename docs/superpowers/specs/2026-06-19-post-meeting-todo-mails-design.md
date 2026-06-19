@@ -20,11 +20,11 @@ Die abendliche Digest-Sammelmail wird **ersetzt** durch eine **event-getriggerte
 
 ## Architektur
 
-### 1. `lib/email/todoEmail.ts` (neu, Refactor)
-Extrahiert aus `app/api/cron/daily-digest/route.ts`:
-- `sendEmail(to, subject, html)` — Resend-Versand (unverändert übernommen).
-- `buildTodoEmail(opts)` — generalisierter HTML-Builder. Bestehende `buildDigestEmail`-Optik, aber mit parametrisierbarem `intro`/`subtitle`, sodass Digest **und** Post-Meeting dieselbe Optik teilen.
-- `daily-digest/route.ts` importiert künftig von hier (DRY, kein Verhaltens-Change am Digest selbst).
+### 1. `lib/email/todoEmail.ts` (neu)
+Wiederverwendbare Mail-Bausteine (Optik identisch zum bisherigen Digest):
+- `makeResendSender(resendKey)` → `sendEmail(to, subject, html)`.
+- `buildTodoEmail(opts)` — HTML-Builder mit parametrisierbarem `headerSubtitle`/`intro`/`footer`.
+- Genutzt vom Post-Meeting-Mailer. `daily-digest/route.ts` bleibt **unangetastet** (eigene Kopie der Optik), da der Endpoint ohnehin per Crontab-Entfernung stillgelegt wird — ein Refactor an ausscheidendem Code wäre nur Risiko. Die Duplizierung verschwindet, sobald der Digest endgültig entfernt wird.
 
 ### 2. `lib/email/postMeetingNotify.ts` (neu)
 ```
