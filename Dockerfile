@@ -39,6 +39,9 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# feedback.md wird zur Laufzeit von /api/admin/feedback gelesen (syncFeedbackMd),
+# um den DB-Status an die in feedback.md dokumentierten Erledigungen anzugleichen.
+COPY --from=builder --chown=nextjs:nodejs /app/feedback.md ./feedback.md
 
 USER nextjs
 EXPOSE 3000

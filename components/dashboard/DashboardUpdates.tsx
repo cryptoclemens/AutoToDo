@@ -12,6 +12,18 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-029',
+    date: '29.06.2026',
+    title: 'Aufgaben verschmelzen, verknüpfen und aufteilen',
+    description: 'Mehrere LOP-Punkte lassen sich jetzt in der Liste auswählen und zu einem verschmelzen (Duplikate) oder als „verwandt" verknüpfen. Große Aufgaben kannst du im Detail-Dialog in Teilaufgaben aufteilen – mit Fortschrittsanzeige.',
+  },
+  {
+    id: 'F-023',
+    date: '29.06.2026',
+    title: 'Kontext-Aktualität im Blick',
+    description: 'Der Kontext-Bereich zeigt jetzt an, wenn er seit über einer Woche nicht geprüft wurde – mit einem Klick lässt er sich als aktuell bestätigen, damit nur relevante Infos stehen bleiben.',
+  },
+  {
     id: 'F-030',
     date: '19.06.2026',
     title: 'ToDo-Mail direkt nach dem Meeting',

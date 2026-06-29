@@ -23,9 +23,12 @@ interface Props {
   onDelete: (id: string) => void
   onPark: (id: string) => void
   onOpenDetail: () => void
+  /** Mehrfachauswahl (F-29/F-21): wenn gesetzt, zeigt die #-Zelle eine Checkbox */
+  selected?: boolean
+  onToggleSelect?: (id: string) => void
 }
 
-export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onPark, onOpenDetail }: Props) {
+export default function LopTableRow({ item, index, canEdit, members, onUpdate, onDelete, onPark, onOpenDetail, selected, onToggleSelect }: Props) {
   const statusLabels = useStatusLabels()
   const STATUS_OPTIONS: { value: Status; label: string }[] = [
     { value: 'offen', label: statusLabels.offen },
@@ -189,8 +192,20 @@ export default function LopTableRow({ item, index, canEdit, members, onUpdate, o
   }
 
   return (
-    <tr className={`border-b border-gray-100 dark:border-gray-800 hover:bg-slate-50/70 dark:hover:bg-gray-800/50 group transition-all ${rowBg} ${rowOpacity}`}>
-      <td className="px-3 py-3 text-center text-xs text-gray-300 dark:text-gray-600 font-mono">{index + 1}</td>
+    <tr className={`border-b border-gray-100 dark:border-gray-800 hover:bg-slate-50/70 dark:hover:bg-gray-800/50 group transition-all ${rowBg} ${rowOpacity} ${selected ? 'bg-indigo-50/70 dark:bg-indigo-950/30' : ''}`}>
+      <td className="px-3 py-3 text-center text-xs text-gray-300 dark:text-gray-600 font-mono">
+        {onToggleSelect ? (
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={() => onToggleSelect(item.id)}
+            className="h-3.5 w-3.5 cursor-pointer accent-indigo-600 align-middle"
+            title="Für Verschmelzen/Verknüpfen auswählen"
+          />
+        ) : (
+          index + 1
+        )}
+      </td>
       <td className="px-3 py-3 max-w-[240px]">
         <button
           onClick={onOpenDetail}

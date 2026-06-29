@@ -257,11 +257,13 @@ Hinweis: Feiertage sind abhängig vom Bundesland
 Möglichkeit meine Accountinfos (insbesondere meinen Namen zu ändern, E-Mail und Häufigkeit der E-Mail Push Benachrichtigungen)
 
 ---
-## F-020 | 2026-05-19 15:11:24 | ✨ Feature-Wunsch
+## F-020 | 2026-05-19 15:11:24 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Ist Ideen Speicher und "Geparkt" nicht das selbe?
+
+**Antwort:** Ja – beides bezeichnet denselben Zwischenspeicher für nicht-aktive Punkte. Keine Änderung nötig, reine Verständnisfrage.
 
 ---
 ## B-008 | 2026-05-21 13:16:42 | 🐛 Fehler
@@ -271,11 +273,13 @@ Ist Ideen Speicher und "Geparkt" nicht das selbe?
 Im Standup-Modus können Punkte aus dem ideenspeicher nicht geöffnet und bearbeitet werden
 
 ---
-## F-021 | 2026-06-02 08:35:05 | ✨ Feature-Wunsch
+## F-021 | 2026-06-02 08:35:05 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Aufgaben miteinander verknüpfen zu können, wenn es doppelte oder ähnliche Aufgaben gibt, bzw. Aufgaben voneinander trennen zu können um große Arbeitspakete in kleinere aufzuteilen.
+
+**Lösung:** Gemeinsam mit F-29 umgesetzt (Migration 043). **Verknüpfen:** zwei LOP-Punkte in der Liste auswählen → „Verknüpfen" (Tabelle `lop_item_relations`, symmetrisch); verwandte Punkte erscheinen als Chips im Detail-Dialog. **Aufteilen:** im Detail-Dialog „In Teilaufgaben aufteilen" erzeugt Kind-Punkte (`parent_id`) via `POST /api/lop/split`; der Eltern-Punkt zeigt die Teilaufgaben mit Fortschritt (erledigt/gesamt). APIs: `/api/lop/split`, `/api/lop/relations` (GET/POST/DELETE). Deployment inkl. Migration 043 noch ausstehend.
 
 ---
 ## B-009 | 2026-06-02 08:36:59 | 🐛 Fehler | Status: bearbeitet
@@ -296,11 +300,13 @@ Manuell Personen angelegt werden -> dann Person per Mail eingeladen wird -> Dann
 **Lösung:** Neues Admin-Tool „Name mit Account verknüpfen" in der Steuerung. Admin wählt Workspace, dann den Freitext-Namen (z.B. „Markus Wanzek") und das passende Workspace-Mitglied aus den Dropdowns. Klick auf „Verknüpfen" setzt `responsible_user_id` auf allen betroffenen LOP-Punkten und aktualisiert `responsible` auf den Account-Anzeigenamen. API: `POST /api/admin/link-responsible` mit Service-Role-Client.
 
 ---
-## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch
+## F-023 | 2026-06-02 08:40:36 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Der Kontext-Bereich muss eigentlich einmal in der Woche auf Aktualität überprüft werden und dann nur noch die aktuellen Informationen gezeigt werden.
+
+**Lösung:** Pro Projekt ein „zuletzt bestätigt"-Zeitstempel (`projects.context_reviewed_at`, Migration 044). Ist der Kontext seit ≥ 7 Tagen (oder noch nie) nicht geprüft, zeigt der Kontext-Bereich ein Badge „Aktualität prüfen" und ein Hinweisbanner mit Button „Als aktuell bestätigen" (`PATCH …/context-notes { confirmReview }`). Veraltete Einzelnotizen werden zusätzlich weiterhin automatisch archiviert. Deployment inkl. Migration 044 noch ausstehend.
 
 ---
 ## B-010 | 2026-06-02 08:41:35 | 🐛 Fehler | Status: bearbeitet
@@ -352,11 +358,13 @@ Kontrastverhältnisse im Dark Mode sind sehr schlecht. Ablesbarkeit optimieren.
 **Lösung:** Dark-Mode-Kontraste in 5 Komponenten verbessert (WCAG AA-konform): App-Layout (`bg-gray-950`), WorkspaceNav (Hamburger, Mobile Drawer, Dropdown), LopTableRow (Tabellentexte, Status-Dropdown, Datum, Ergebnis), DashboardAnalytics (Beschriftungen, Balkendiagramm), DashboardUpdates (Texte, Trennlinien). SecurityModal erhielt ebenfalls Dark-Mode-Unterstützung. Grau-Palette: `text-gray-400` → `dark:text-gray-300`, `text-gray-500` → `dark:text-gray-400`, `bg-white` → `dark:bg-gray-900` etc.
 
 ---
-## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch
+## F-026 | 2026-06-02 08:51:05 | ✨ Feature-Wunsch | Status: bearbeitet
 **Workspace:** Vencly
 **Nutzer:** markus.wanzek@plenum.de
 
 Ich als einfacher Nutzer würde auch gerne Einstellungsmöglichkeiten (angezeigter Name, hinterlegte E-Mail Adresse, Häufigkeit für E-Mail Digest) haben -> Aktuell hat Admin alle Rechte
+
+**Lösung:** Bereits umgesetzt: Die Konto-Einstellungen (`/settings`, Tab „Konto", `components/settings/AccountSettings.tsx`) sind für **jeden** eingeloggten Nutzer erreichbar – Anzeigename (`user_metadata.full_name`), E-Mail (`supabase.auth.updateUser`) und persönliche Digest-Häufigkeit (`user_digest_preferences`, Migration 037, API `/api/settings/digest-preferences`). Die persönliche Häufigkeit übersteuert den Workspace-Default im Daily-Digest-Cron.
 
 ---
 ## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch | ✅ bearbeitet
@@ -375,5 +383,14 @@ Langzeit-Speicher für ToDos, die kein Idee sind, aber auch nicht sofort umgeset
 Statt abendliche Erinnerungsemails immer eine individuelle Email an jeweilige LOP-Listen-Mitglieder mit den ToDos nachdem eine Aufnahme beendet wurde und das Transkript bearbeitet wurde. Quasi „Deine ToDos aus dem heutigen Meeting:…"
 
 **Lösung:** Die abendliche Digest-Sammelmail wird durch eine event-getriggerte, personalisierte Mail ersetzt. Sobald ein Transkript fertig verarbeitet ist (`processing_status = 'done'`), versendet `sendPostMeetingTodoEmails()` (`lib/email/postMeetingNotify.ts`) an jedes Projekt-Mitglied mit offenen Aufgaben (`responsible_user_id` gesetzt, Status `offen`/`in_bearbeitung`) eine individuelle Mail „Deine ToDos aus dem Meeting – «Projekt»" mit all seinen offenen Items im Projekt. Der HTML-Aufbau ist mit dem bisherigen Digest in `lib/email/todoEmail.ts` zusammengeführt. Der Versand ist resilient (Mail-Fehler kippen die Verarbeitung nicht). Der abendliche Digest-Code bleibt reversibel bestehen; sein Host-Crontab-Eintrag wird beim nächsten Deploy entfernt.
+
+---
+## F-029 | 2026-06-15 07:54:19 | ✨ Feature-Wunsch | Status: bearbeitet
+**Workspace:** Vencly
+**Nutzer:** clemens.pompey@vencly.com
+
+Verschmelzen von Lop-Punkten möglich machen
+
+**Lösung:** Mehrfachauswahl in der LOP-Tabelle (Checkbox in der #-Spalte). Bei ≥2 ausgewählten Punkten erscheint „Verschmelzen": ein Dialog fragt, welcher Punkt erhalten bleibt; die übrigen werden als Status `merged` archiviert (Migration 043, `merged_into_id`, reversibel) und ihre Beschreibungen/Ergebnisse an den Ziel-Punkt angehängt. Kinder verschmolzener Punkte und deren Verknüpfungen werden auf das Ziel umgehängt. `merged`-Punkte sind aus der normalen Ansicht ausgeblendet. API: `POST /api/lop/merge`. Gemeinsam mit F-21 (Verknüpfen/Aufteilen) umgesetzt. Deployment inkl. Migration 043 noch ausstehend.
 
 ---

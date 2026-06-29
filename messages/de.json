@@ -187,6 +187,32 @@
       "editTitle": "LOP-Punkt bearbeiten",
       "requiresReview": "Erfordert Review",
       "noResult": "Noch kein Ergebnis"
+    },
+    "split": {
+      "partOf": "Teil von:",
+      "subtasks": "Teilaufgaben",
+      "intoSubtasks": "In Teilaufgaben aufteilen",
+      "subtaskPlaceholder": "Teilaufgabe",
+      "addRow": "weitere Zeile",
+      "cancel": "Abbrechen",
+      "saving": "Wird gespeichert…",
+      "create": "Teilaufgaben erstellen",
+      "button": "In Teilaufgaben aufteilen"
+    },
+    "relations": {
+      "label": "Verknüpfte Punkte",
+      "unlink": "Verknüpfung lösen",
+      "add": "Punkt verknüpfen"
+    },
+    "selection": {
+      "count": "{count} ausgewählt",
+      "merge": "Verschmelzen",
+      "link": "Verknüpfen",
+      "linkHint": "Genau 2 Punkte zum Verknüpfen auswählen",
+      "clear": "Auswahl aufheben",
+      "mergeTitle": "Punkte verschmelzen",
+      "mergeHint": "Welcher Punkt bleibt erhalten? Die anderen werden als „verschmolzen“ archiviert und ihre Inhalte an den Ziel-Punkt angehängt.",
+      "mergeConfirm": "Verschmelzen"
     }
   },
   "settings": {

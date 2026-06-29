@@ -24,23 +24,38 @@ async function assertAdmin() {
 async function syncFeedbackMd(supabase: ReturnType<typeof serviceClient>) {
   try {
     const md = readFileSync(join(process.cwd(), 'feedback.md'), 'utf-8')
-    // Matches: ## F-018 | ... | ✅ bearbeitet
-    const pattern = /^## ([FBG])-(\d+)\s+\|[^|\n]*\|[^|\n]*\|[^|\n]*✅\s+bearbeitet/gm
-    type Row = { category: string; category_seq: number }
+    // Jede Eintrags-Überschrift, z.B.:
+    //   ## F-018 | 2026-05-14 | ✨ Feature-Wunsch | Status: bearbeitet
+    //   ## F-027 | 2026-06-03 07:16:32 | ✨ Feature-Wunsch | ✅ bearbeitet
+    //   ## F-002 | 2026-04-02 08:20:28 | ✨ Feature-Wunsch | Status: gestrichen
+    // Der Resttext der Zeile entscheidet über den Status; ohne Marker bleibt der Eintrag offen.
+    const pattern = /^## ([FBG])-(\d+)\b(.*)$/gm
+    type Row = { category: string; category_seq: number; status: 'done' | 'rejected' }
     const toUpdate: Row[] = []
     let match = pattern.exec(md)
     while (match !== null) {
-      const prefix = match[1]
-      const seq = parseInt(match[2], 10)
-      const category = prefix === 'F' ? 'feature' : prefix === 'B' ? 'bug' : 'general'
-      toUpdate.push({ category, category_seq: seq })
+      const rest = match[3]
+      // "gestrichen"/"abgelehnt" → rejected, sonst "bearbeitet"/"erledigt" → done
+      const status: Row['status'] | null = /gestrichen|abgelehnt/i.test(rest)
+        ? 'rejected'
+        : /bearbeitet|erledigt/i.test(rest)
+          ? 'done'
+          : null
+      if (status) {
+        const prefix = match[1]
+        const seq = parseInt(match[2], 10)
+        const category = prefix === 'F' ? 'feature' : prefix === 'B' ? 'bug' : 'general'
+        toUpdate.push({ category, category_seq: seq, status })
+      }
       match = pattern.exec(md)
     }
     for (const row of toUpdate) {
       await supabase.from('feedback')
-        .update({ status: 'done' })
+        .update({ status: row.status })
         .eq('category', row.category)
         .eq('category_seq', row.category_seq)
+        // nur offene/in Prüfung befindliche Einträge angleichen – manuell gesetzte
+        // Status (done/rejected) werden nicht überschrieben
         .in('status', ['new', 'in_review'])
     }
   } catch {

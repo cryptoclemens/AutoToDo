@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -48,6 +49,8 @@ export interface LopItem {
   source_quote: string | null
   links?: LopLink[]
   co_responsibles?: CoResponsible[]
+  parent_id?: string | null
+  merged_into_id?: string | null
 }
 
 interface Props {
@@ -55,6 +58,8 @@ interface Props {
   canEdit: boolean
   members: WorkspaceMember[]
   existingNames?: string[]
+  /** Alle Punkte des Projekts – für Teilaufgaben (parent_id), Eltern-Anzeige und Verknüpfungs-Auswahl */
+  allItems?: LopItem[]
   onClose: () => void
   onUpdate: (id: string, changes: Partial<LopItem>) => Promise<void>
   onDelete?: (id: string) => void
@@ -69,11 +74,26 @@ function isValidUrl(s: string): boolean {
   try { new URL(s); return true } catch { return false }
 }
 
-export default function LopItemDialog({ item, canEdit, members, existingNames = [], onClose, onUpdate, onDelete, onPark }: Props) {
+export default function LopItemDialog({ item, canEdit, members, existingNames = [], allItems = [], onClose, onUpdate, onDelete, onPark }: Props) {
   const t = useTranslations('lop')
+  const router = useRouter()
   const statusLabels = useStatusLabels()
   const [draft, setDraft] = useState<LopItem | null>(null)
   const [saving, setSaving] = useState(false)
+
+  // Aufteilen (F-21b): Teilaufgaben-Titel
+  const [splitOpen, setSplitOpen] = useState(false)
+  const [subtaskTitles, setSubtaskTitles] = useState<string[]>(['', ''])
+  const [splitSaving, setSplitSaving] = useState(false)
+
+  // Verknüpfen (F-21a): verwandte Punkte
+  const [related, setRelated] = useState<{ id: string; title: string; status: string }[]>([])
+  const [linkSaving, setLinkSaving] = useState(false)
+
+  // Abgeleitete Beziehungen aus allItems
+  const children = item ? allItems.filter(i => i.parent_id === item.id) : []
+  const parentItem = item?.parent_id ? allItems.find(i => i.id === item.parent_id) ?? null : null
+  const doneChildren = children.filter(c => c.status === 'abgeschlossen').length
   const [activity, setActivity] = useState<ActivityInfo | null>(null)
   const [newLinkUrl, setNewLinkUrl] = useState('')
   const [newLinkLabel, setNewLinkLabel] = useState('')
@@ -99,6 +119,10 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
     setReminderFrequency('weekly')
     setReminderDayOfWeek(0)
     setReminderDayOfMonth(1)
+    // Split/Verknüpfungs-State zurücksetzen
+    setSplitOpen(false)
+    setSubtaskTitles(['', ''])
+    setRelated([])
   }, [item])
 
   const loadActivity = useCallback(async (id: string) => {
@@ -120,12 +144,59 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
     }
   }, [])
 
+  const loadRelated = useCallback(async (id: string) => {
+    const res = await fetch(`/api/lop/relations?itemId=${id}`)
+    if (res.ok) setRelated(await res.json())
+  }, [])
+
   useEffect(() => {
     if (item?.id) {
       loadActivity(item.id)
       loadReminder(item.id)
+      loadRelated(item.id)
     }
-  }, [item?.id, loadActivity, loadReminder])
+  }, [item?.id, loadActivity, loadReminder, loadRelated])
+
+  async function handleSplit() {
+    if (!draft) return
+    const titles = subtaskTitles.map(s => s.trim()).filter(Boolean)
+    if (titles.length === 0) return
+    setSplitSaving(true)
+    const res = await fetch('/api/lop/split', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: draft.id, subtasks: titles.map(title => ({ title })) }),
+    })
+    setSplitSaving(false)
+    if (res.ok) {
+      onClose()
+      router.refresh()
+    }
+  }
+
+  async function handleLink(relatedId: string) {
+    if (!draft || !relatedId) return
+    setLinkSaving(true)
+    const res = await fetch('/api/lop/relations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: draft.id, relatedId }),
+    })
+    setLinkSaving(false)
+    if (res.ok) loadRelated(draft.id)
+  }
+
+  async function handleUnlink(relatedId: string) {
+    if (!draft) return
+    setLinkSaving(true)
+    const res = await fetch('/api/lop/relations', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: draft.id, relatedId }),
+    })
+    setLinkSaving(false)
+    if (res.ok) setRelated(prev => prev.filter(r => r.id !== relatedId))
+  }
 
   async function handleReminderToggle(active: boolean) {
     if (!draft) return
@@ -559,6 +630,133 @@ export default function LopItemDialog({ item, canEdit, members, existingNames = 
                   Erinnerung aktiv ({reminderFrequency === 'daily' ? 'täglich' : reminderFrequency === 'weekly' ? 'wöchentlich' : reminderFrequency === 'biweekly' ? 'zweiwöchentlich' : 'monatlich'})
                 </p>
               )}
+            </div>
+
+            {/* Teilaufgaben & Verknüpfungen */}
+            <div className="space-y-3 border-t pt-3">
+              {/* Eltern-Punkt */}
+              {parentItem && (
+                <p className="text-xs text-gray-500">
+                  {t('split.partOf')}{' '}
+                  <span className="font-medium text-gray-600 dark:text-gray-300">{parentItem.title}</span>
+                </p>
+              )}
+
+              {/* Teilaufgaben (Kinder) */}
+              {children.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">
+                    {t('split.subtasks')} · {doneChildren}/{children.length}
+                  </Label>
+                  <ul className="space-y-1">
+                    {children.map(c => (
+                      <li key={c.id} className="flex items-center gap-2 text-sm">
+                        <span className={c.status === 'abgeschlossen' ? 'text-green-600' : 'text-gray-300'}>
+                          {c.status === 'abgeschlossen' ? '✓' : '○'}
+                        </span>
+                        <span className={`flex-1 min-w-0 truncate ${c.status === 'abgeschlossen' ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-200'}`}>
+                          {c.title}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Aufteilen (F-21b) */}
+              {canEdit && (
+                splitOpen ? (
+                  <div className="space-y-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <Label className="text-xs text-gray-500">{t('split.intoSubtasks')}</Label>
+                    {subtaskTitles.map((val, idx) => (
+                      <Input
+                        key={idx}
+                        value={val}
+                        onChange={e => setSubtaskTitles(prev => prev.map((v, i) => i === idx ? e.target.value : v))}
+                        placeholder={`${t('split.subtaskPlaceholder')} ${idx + 1}`}
+                        className="h-8 text-sm"
+                      />
+                    ))}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSubtaskTitles(prev => [...prev, ''])}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        + {t('split.addRow')}
+                      </button>
+                      <div className="ml-auto flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setSplitOpen(false)}>{t('split.cancel')}</Button>
+                        <Button
+                          size="sm"
+                          onClick={handleSplit}
+                          disabled={splitSaving || subtaskTitles.every(s => !s.trim())}
+                          style={{ backgroundColor: 'var(--brand)' }}
+                          className="text-white"
+                        >
+                          {splitSaving ? t('split.saving') : t('split.create')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setSplitOpen(true)}
+                    className="text-xs text-gray-400 hover:text-blue-600 flex items-center gap-1 transition-colors"
+                  >
+                    <span className="text-sm leading-none">⑂</span> {t('split.button')}
+                  </button>
+                )
+              )}
+
+              {/* Verknüpfte Punkte (F-21a) */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-500">{t('relations.label')}</Label>
+                {related.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {related.map(r => (
+                      <span key={r.id} className="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800">
+                        {r.title}
+                        {canEdit && (
+                          <button
+                            onClick={() => handleUnlink(r.id)}
+                            disabled={linkSaving}
+                            className="hover:text-red-500 transition-colors ml-0.5"
+                            title={t('relations.unlink')}
+                          >
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {canEdit && (
+                  <select
+                    className="h-8 text-sm border border-gray-200 rounded-lg px-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 w-full focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    value=""
+                    disabled={linkSaving}
+                    onChange={e => { if (e.target.value) handleLink(e.target.value); e.target.value = '' }}
+                  >
+                    <option value="">+ {t('relations.add')}…</option>
+                    {allItems
+                      .filter(i =>
+                        i.id !== draft.id &&
+                        i.id !== draft.parent_id &&
+                        i.parent_id !== draft.id &&
+                        !related.some(r => r.id === i.id))
+                      .map(i => (
+                        <option key={i.id} value={i.id}>{i.title}</option>
+                      ))}
+                  </select>
+                )}
+                {!canEdit && related.length === 0 && (
+                  <p className="text-sm text-gray-400 italic">–</p>
+                )}
+              </div>
             </div>
 
             {/* KI-Metadaten */}

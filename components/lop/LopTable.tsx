@@ -12,6 +12,7 @@ import ResponsibleSelect, { type WorkspaceMember } from './ResponsibleSelect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { findSimilarPairs, type SimilarPair } from '@/lib/similarity'
 
 type Priority = 'hoch' | 'mittel' | 'niedrig'
@@ -52,6 +53,12 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
   const [standupMode, setStandupMode] = useState(false)
   const [mergePairs, setMergePairs] = useState<SimilarPair[]>([])
   const [showMergeDialog, setShowMergeDialog] = useState(false)
+
+  // Mehrfachauswahl für Verschmelzen (F-29) / Verknüpfen (F-21a)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [mergeChooseOpen, setMergeChooseOpen] = useState(false)
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null)
+  const [actionBusy, setActionBusy] = useState(false)
   const [translations, setTranslations] = useState<TranslationMap>({})
   const [translating, setTranslating] = useState(false)
   const [translateError, setTranslateError] = useState('')
@@ -356,6 +363,58 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
     }
   }
 
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set())
+    setMergeChooseOpen(false)
+    setMergeTargetId(null)
+  }
+
+  const selectedItems = items.filter(i => selectedIds.has(i.id))
+
+  async function handleLinkSelected() {
+    if (selectedItems.length !== 2) return
+    setActionBusy(true)
+    const [a, b] = selectedItems
+    const res = await fetch('/api/lop/relations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: a.id, relatedId: b.id }),
+    })
+    setActionBusy(false)
+    if (res.ok) clearSelection()
+  }
+
+  function openMergeChooser() {
+    if (selectedItems.length < 2) return
+    setMergeTargetId(selectedItems[0].id)
+    setMergeChooseOpen(true)
+  }
+
+  async function confirmMerge() {
+    if (!mergeTargetId || selectedItems.length < 2) return
+    setActionBusy(true)
+    const sourceIds = selectedItems.map(i => i.id).filter(id => id !== mergeTargetId)
+    const res = await fetch('/api/lop/merge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetId: mergeTargetId, sourceIds }),
+    })
+    setActionBusy(false)
+    if (res.ok) {
+      setItems(prev => prev.filter(i => !sourceIds.includes(i.id)))
+      clearSelection()
+      router.refresh()
+    }
+  }
+
   async function handleTranslate() {
     if (isTranslated) { setTranslations({}); return }
     setTranslating(true)
@@ -577,6 +636,38 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
         </div>
       ) : (
         /* Normale Tabellen-Ansicht */
+        <>
+        {canEdit && selectedItems.length > 0 && (
+          <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 flex-wrap">
+            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+              {t('selection.count', { count: selectedItems.length })}
+            </span>
+            <button
+              type="button"
+              onClick={openMergeChooser}
+              disabled={selectedItems.length < 2 || actionBusy}
+              className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 disabled:opacity-40 font-medium transition-colors"
+            >
+              ⛙ {t('selection.merge')}
+            </button>
+            <button
+              type="button"
+              onClick={handleLinkSelected}
+              disabled={selectedItems.length !== 2 || actionBusy}
+              className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 disabled:opacity-40 font-medium transition-colors"
+              title={selectedItems.length !== 2 ? t('selection.linkHint') : undefined}
+            >
+              🔗 {t('selection.link')}
+            </button>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-xs px-2.5 py-1 rounded-lg text-gray-500 hover:text-gray-700 ml-auto"
+            >
+              {t('selection.clear')}
+            </button>
+          </div>
+        )}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-x-auto shadow-sm">
           <table className="w-full text-sm">
             <thead>
@@ -612,12 +703,15 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
                     onDelete={handleDelete}
                     onPark={handleParkItem}
                     onOpenDetail={() => setSelectedItem(items.find(i => i.id === item.id) ?? item)}
+                    selected={selectedIds.has(item.id)}
+                    onToggleSelect={canEdit ? toggleSelect : undefined}
                   />
                 ))
               )}
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* Neuer LOP-Punkt */}
@@ -637,11 +731,48 @@ export default function LopTable({ initialItems, projectId, currentLocale, canEd
         canEdit={canEdit}
         members={members}
         existingNames={responsibleOptions}
+        allItems={items}
         onClose={() => setSelectedItem(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         onPark={handleParkItem}
       />
+
+      {/* Merge-Zielauswahl (F-29): welcher Punkt bleibt erhalten? */}
+      <Dialog open={mergeChooseOpen} onOpenChange={open => { if (!open) setMergeChooseOpen(false) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('selection.mergeTitle')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('selection.mergeHint')}</p>
+          <div className="space-y-2 max-h-[50vh] overflow-y-auto py-1">
+            {selectedItems.map(it => (
+              <label key={it.id} className="flex items-start gap-2 p-2 rounded-lg border border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <input
+                  type="radio"
+                  name="mergeTarget"
+                  checked={mergeTargetId === it.id}
+                  onChange={() => setMergeTargetId(it.id)}
+                  className="mt-1 accent-indigo-600"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-200">{it.title}</span>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setMergeChooseOpen(false)}>{t('selection.clear')}</Button>
+            <Button
+              size="sm"
+              onClick={confirmMerge}
+              disabled={actionBusy || !mergeTargetId}
+              style={{ backgroundColor: 'var(--brand)' }}
+              className="text-white"
+            >
+              {actionBusy ? t('split.saving') : t('selection.mergeConfirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Merge-Vorschlag-Dialog */}
       {showMergeDialog && mergePairs.length > 0 && (

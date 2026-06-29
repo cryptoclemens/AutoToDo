@@ -64,7 +64,20 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 
   const active = notes.filter(n => !toArchive.includes(n.id))
-  return NextResponse.json({ notes: active, autoArchived: toArchive.length })
+
+  // Aktualitäts-Zeitstempel des Kontext-Bereichs (F-23)
+  const { data: proj } = await supabase
+    .from('projects')
+    .select('context_reviewed_at')
+    .eq('id', params.id)
+    .eq('workspace_id', workspace.id)
+    .maybeSingle()
+
+  return NextResponse.json({
+    notes: active,
+    autoArchived: toArchive.length,
+    reviewedAt: (proj as { context_reviewed_at: string | null } | null)?.context_reviewed_at ?? null,
+  })
 }
 
 // PATCH /api/projects/[id]/context-notes
@@ -76,13 +89,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { noteId, text } = body as { noteId?: string; text?: string }
-  if (!noteId) return NextResponse.json({ error: 'noteId required' }, { status: 400 })
+  const { noteId, text, confirmReview } = body as { noteId?: string; text?: string; confirmReview?: boolean }
 
   const supabase = serviceDb()
   const slug = headers().get('x-workspace-slug') ?? ''
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 })
+
+  // F-23: Kontext-Bereich als aktuell bestätigen
+  if (confirmReview) {
+    const reviewedAt = new Date().toISOString()
+    await supabase
+      .from('projects')
+      .update({ context_reviewed_at: reviewedAt })
+      .eq('id', params.id)
+      .eq('workspace_id', workspace.id)
+    return NextResponse.json({ ok: true, reviewedAt })
+  }
+
+  if (!noteId) return NextResponse.json({ error: 'noteId required' }, { status: 400 })
 
   if (text !== undefined) {
     if (typeof text !== 'string' || text.trim().length === 0) {

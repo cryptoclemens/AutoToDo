@@ -47,6 +47,8 @@ export default function ContextNotes({ projectId }: Props) {
   const [editText, setEditText] = useState('')
   const [saving, setSaving] = useState(false)
   const [autoArchived, setAutoArchived] = useState(0)
+  const [reviewedAt, setReviewedAt] = useState<string | null>(null)
+  const [confirmingReview, setConfirmingReview] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function ContextNotes({ projectId }: Props) {
       .then(r => r.ok ? r.json() : { notes: [] })
       .then(d => {
         setNotes(d.notes ?? [])
+        setReviewedAt(d.reviewedAt ?? null)
         setLoaded(true)
         if (d.autoArchived > 0) {
           setAutoArchived(d.autoArchived)
@@ -62,6 +65,27 @@ export default function ContextNotes({ projectId }: Props) {
       })
       .catch(() => setLoaded(true))
   }, [projectId])
+
+  // F-23: Aktualität des Kontext-Bereichs – Hinweis, wenn seit ≥ 7 Tagen nicht geprüft
+  const REVIEW_STALE_DAYS = 7
+  const reviewAgeDays = reviewedAt
+    ? Math.floor((Date.now() - new Date(reviewedAt).getTime()) / 86_400_000)
+    : null
+  const reviewStale = reviewAgeDays === null || reviewAgeDays >= REVIEW_STALE_DAYS
+
+  async function confirmReview() {
+    setConfirmingReview(true)
+    const res = await fetch(`/api/projects/${projectId}/context-notes`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirmReview: true }),
+    })
+    if (res.ok) {
+      const d = await res.json()
+      setReviewedAt(d.reviewedAt ?? new Date().toISOString())
+    }
+    setConfirmingReview(false)
+  }
 
   useEffect(() => {
     if (editingId && textareaRef.current) {
@@ -136,6 +160,11 @@ export default function ContextNotes({ projectId }: Props) {
               {autoArchived} abgelaufen bereinigt
             </span>
           )}
+          {reviewStale && (
+            <span className="text-xs text-orange-600 bg-orange-50 border border-orange-200 rounded-full px-2 py-0.5">
+              Aktualität prüfen
+            </span>
+          )}
         </div>
         <svg
           width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -148,6 +177,24 @@ export default function ContextNotes({ projectId }: Props) {
       {/* Notes list */}
       {expanded && (
         <div className="border-t border-gray-100 divide-y divide-gray-50">
+          {/* F-23: Aktualitäts-Hinweis + Bestätigung */}
+          {reviewStale && (
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-orange-50">
+              <span className="text-base shrink-0">🕑</span>
+              <p className="flex-1 text-xs text-orange-800 leading-snug">
+                {reviewAgeDays === null
+                  ? 'Der Kontext wurde noch nie auf Aktualität geprüft. Bitte sieh die Einträge durch und entferne Veraltetes.'
+                  : `Der Kontext wurde seit ${reviewAgeDays} Tagen nicht geprüft. Bitte sieh die Einträge durch und entferne Veraltetes.`}
+              </p>
+              <button
+                onClick={confirmReview}
+                disabled={confirmingReview}
+                className="shrink-0 text-xs px-2.5 py-1 rounded-lg bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 font-medium transition-colors"
+              >
+                {confirmingReview ? '…' : 'Als aktuell bestätigen'}
+              </button>
+            </div>
+          )}
           {visible.map(note => {
             const cfg = CATEGORY_CONFIG[note.category] ?? CATEGORY_CONFIG.info
             const isEditing = editingId === note.id

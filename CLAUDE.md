@@ -14,6 +14,22 @@ Bei jedem neuen Feature (F-xxx) **immer** einen Eintrag in `components/dashboard
 
 ---
 
+## Feedback erledigen (Status immer in DB UND feedback.md)
+
+Feedback lebt an **zwei Orten**, die synchron bleiben müssen:
+- **`feedback.md`** — Quelle für Lösungsdoku (vom Entwickler gepflegt)
+- **DB-Tabelle `feedback`** — Quelle fürs Admin-Dashboard (`/admin/feedback`)
+
+**Beim Erledigen eines Punkts IMMER beides setzen:**
+1. In `feedback.md` die Überschrift um den Status ergänzen — `| Status: bearbeitet` (erledigt) bzw. `| Status: gestrichen` (verworfen) — und eine `**Lösung:** …`-Zeile anhängen.
+2. `bash scripts/resolve-feedback.sh F-029 [done|rejected]` → setzt den DB-Status sofort.
+
+**Auto-Sync als Sicherheitsnetz:** `GET /api/admin/feedback` ruft `syncFeedbackMd()` auf und gleicht beim Laden des Dashboards alle in `feedback.md` als `bearbeitet`/`gestrichen` markierten Einträge in der DB an (nur `new`/`in_review` → wird nicht über manuelle Status geschrieben). Setzt voraus, dass `feedback.md` ins Runtime-Image kopiert wird (Dockerfile) — greift also erst nach dem nächsten Deploy. Das Skript aus Schritt 2 wirkt sofort.
+
+**Achtung:** Die DB nutzt `category_seq` pro Kategorie. `feedback.md`-IDs (`F-NNN`/`B-NNN`/`G-NNN`) entsprechen `category` + `category_seq` (z.B. `F-029` = `feature`, seq 29). Vor Status-Updates per Volltext gegenprüfen, falls IDs und Sequenz auseinanderlaufen.
+
+---
+
 ## Build & Validation (Projekt-spezifisch)
 
 `npm run build` schlägt lokal fehl wegen fehlendem Internetzugang (Google Fonts).

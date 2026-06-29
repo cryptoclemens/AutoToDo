@@ -101,13 +101,15 @@ export default async function ProjectPage({ params }: Props) {
     result: string | null; requires_review: boolean
     ai_confidence: number | null; source_quote: string | null
     links?: { url: string; label?: string }[]
+    parent_id?: string | null; merged_into_id?: string | null
     created_at: string; updated_at: string; completed_at: string | null
   }
 
   const { data: lopItemsInit, error: lopError } = await supabase
     .from('lop_items')
-    .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, links, created_at, updated_at, completed_at')
+    .select('id, title, description, responsible, responsible_user_id, due_date, priority, status, result, requires_review, ai_confidence, source_quote, links, parent_id, merged_into_id, created_at, updated_at, completed_at')
     .eq('project_id', project.id)
+    .neq('status', 'merged') // verschmolzene Quell-Punkte ausblenden (F-29)
     .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false }) as { data: LopRow[] | null; error: unknown }
 

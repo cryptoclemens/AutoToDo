@@ -187,6 +187,32 @@
       "editTitle": "Edit action item",
       "requiresReview": "Requires review",
       "noResult": "No result yet"
+    },
+    "split": {
+      "partOf": "Part of:",
+      "subtasks": "Subtasks",
+      "intoSubtasks": "Split into subtasks",
+      "subtaskPlaceholder": "Subtask",
+      "addRow": "another row",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "create": "Create subtasks",
+      "button": "Split into subtasks"
+    },
+    "relations": {
+      "label": "Linked items",
+      "unlink": "Remove link",
+      "add": "Link an item"
+    },
+    "selection": {
+      "count": "{count} selected",
+      "merge": "Merge",
+      "link": "Link",
+      "linkHint": "Select exactly 2 items to link",
+      "clear": "Clear selection",
+      "mergeTitle": "Merge items",
+      "mergeHint": "Which item should remain? The others are archived as “merged” and their content is appended to the target item.",
+      "mergeConfirm": "Merge"
     }
   },
   "settings": {
