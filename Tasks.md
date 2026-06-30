@@ -1,6 +1,6 @@
 # AutoToDo – Aufgaben & Meilensteine
 
-Letzte Aktualisierung: 19.05.2026 · Version 0.1.198 · M1–M18 erledigt
+Letzte Aktualisierung: 29.06.2026 · Version 0.1.198 · M1–M18 + 7g erledigt
 
 ---
 
@@ -227,6 +227,18 @@ Letzte Aktualisierung: 19.05.2026 · Version 0.1.198 · M1–M18 erledigt
 |---|---|---|---|
 | 7f.1 | XLSX-Reimport: offline bearbeitete LOP-Datei hochladen & mit bestehender LOP abgleichen (Spalten-Mapping, Konflikterkennung) | Feature-Wunsch 2026-03-27 | ✅ Erledigt |
 | 7f.2 | Statusanzeige: Rohwerte (`in_bearbeitung`) prüfen & überall durch lesbare Labels ersetzen – v. a. in Tooltips, XLSX-Spaltenköpfen, API-Responses | Bug 2026-03-27 | ✅ Erledigt |
+
+### Meilenstein 7g: LOP-Beziehungen & Feedback-Workflow (29.06.2026)
+
+| # | Aufgabe | Quelle | Status |
+|---|---|---|---|
+| 7g.1 | LOP-Punkte verschmelzen: Mehrfachauswahl, Ziel-Wahl, Quellen als `merged` archiviert (`merged_into_id`), Inhalte angehängt, Kinder/Verknüpfungen umgehängt; `POST /api/lop/merge` (Migration 043) | F-29 (feedback.md) | ✅ Erledigt |
+| 7g.2 | LOP-Punkte verknüpfen: symmetrische Tabelle `lop_item_relations`, Chips im Detail-Dialog; `GET/POST/DELETE /api/lop/relations` (Migration 043) | F-21a | ✅ Erledigt |
+| 7g.3 | Große Pakete aufteilen: Teilaufgaben via `parent_id`, Fortschrittsanzeige im Eltern-Punkt; `POST /api/lop/split` (Migration 043) | F-21b | ✅ Erledigt |
+| 7g.4 | Kontext-Aktualität: `projects.context_reviewed_at` (Migration 044), Badge + „Als aktuell bestätigen" ab ≥ 7 Tagen | F-23 | ✅ Erledigt |
+| 7g.5 | Self-Service-Einstellungen (Name/E-Mail/Digest pro Nutzer) – Verifikation, war bereits via Migration 037 implementiert | F-26 | ✅ Erledigt (bereits vorhanden) |
+| 7g.6 | Feedback-Sync-Fix: `syncFeedbackMd()` erkennt `Status: bearbeitet`/`gestrichen`; `feedback.md` ins Runtime-Image (.dockerignore-Fix); Helfer `scripts/resolve-feedback.sh` | Workflow | ✅ Erledigt |
+| 7g.7 | Feedback-Triage: 9 driftende DB-Status auf `done` korrigiert → 44 done / 1 rejected / 0 offen | Workflow | ✅ Erledigt |
 
 ### Meilenstein 8: Webhooks & Audit
 

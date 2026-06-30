@@ -1,6 +1,6 @@
 # AutoToDo – Systemarchitektur
 
-> Stand: Mai 2026 · Version 0.1.198
+> Stand: 30.06.2026 · Version 0.1.198
 
 ---
 
@@ -113,18 +113,33 @@ projects
 ├── brand_color, logo_url, branding_inherited
 ├── bundesland, call_language ('de'|'en'|'fr'|...)
 ├── needs_activity_report (boolean)
+├── context_reviewed_at (Aktualitätsprüfung Kontext-Bereich, F-23)
 └── archived_at
 
 lop_items
 ├── id, project_id, workspace_id
-├── title, description, status ('offen'|'in_bearbeitung'|'abgeschlossen')
+├── title, description
+├── status ('offen'|'in_bearbeitung'|'abgeschlossen'|'geparkt'|'backlog'|'merged')
 ├── responsible (text), responsible_user_id → auth.users
 ├── co_responsibles (JSONB: [{user_id, name}])
 ├── due_date, priority ('hoch'|'mittel'|'niedrig')
 ├── links (JSONB: [{url, label}])
+├── parent_id → lop_items      (Teilaufgaben-Hierarchie, F-21 Aufteilen)
+├── merged_into_id → lop_items (Ziel beim Verschmelzen, F-29; Quelle bekommt status='merged')
 ├── source ('manual'|'ai'), ai_confidence, requires_review
 ├── transcript_id → transcripts
 └── created_at, updated_at, completed_at
+
+lop_item_relations              (verwandte Punkte, F-21 Verknüpfen)
+├── id, workspace_id, created_by
+├── item_a → lop_items, item_b → lop_items
+└── CHECK (item_a < item_b) + UNIQUE (item_a, item_b)  -- symmetrisch, kanonisch geordnet
+
+feedback                        (Nutzerfeedback; Status-Spiegel von feedback.md)
+├── id, workspace_id, user_id
+├── message, category ('general'|'bug'|'feature'|'other'), category_seq
+└── status ('new'|'in_review'|'done'|'rejected')
+    ↑ /api/admin/feedback synct beim Laden aus feedback.md (Status: bearbeitet/gestrichen)
 
 idea_items
 ├── id, project_id, workspace_id

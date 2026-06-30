@@ -667,3 +667,34 @@ Workspace-Mitglieder:
 ```
 KI normalisiert automatisch Tippfehler im Transkript (Katarina → Katharina) wenn der korrekte Name im Kontext steht.
 Externe Personen (nicht in der Liste) → Freitext-Name aus Transkript beibehalten.
+
+---
+
+## 22. Self-hosted Docker – `.dockerignore` vs. zur Laufzeit gelesene Dateien
+
+**Problem:** `app/api/admin/feedback` liest `feedback.md` zur Laufzeit (`readFileSync(process.cwd()/feedback.md)`), um den DB-Status an die Doku anzugleichen. In Prod griff das nie – aus zwei Gründen:
+1. Die Next.js-**standalone**-Runtime kopiert nur `.next/standalone`, `.next/static`, `public` ins Image. Zusätzliche Dateien müssen **explizit** im Dockerfile kopiert werden: `COPY --from=builder /app/feedback.md ./feedback.md`.
+2. `feedback.md` stand in `.dockerignore` → war damit gar nicht im Build-Kontext (`COPY . .` überspringt sie), und der explizite `COPY` schlug fehl mit `"/app/feedback.md": not found`.
+
+**Fix:** Datei aus `.dockerignore` entfernen **und** im Runner-Stage explizit kopieren.
+**Regel:** Wenn eine Route eine Repo-Datei zur Laufzeit liest, prüfen: (a) ist sie in `.dockerignore`? (b) wird sie im standalone-Runner-Stage kopiert? Beides nötig.
+
+## 23. Feedback-Status an zwei Orten synchron halten
+
+Feedback lebt in `feedback.md` (Lösungsdoku) **und** der DB-Tabelle `feedback` (Admin-Dashboard). Drift entstand, weil `syncFeedbackMd()` nur Überschriften mit `✅ bearbeitet` matchte, die meisten Einträge aber `Status: bearbeitet` (ohne Häkchen) tragen.
+
+**Fix:** Regex auf den gesamten Resttext der Überschrift prüfen – `/gestrichen|abgelehnt/i` → `rejected`, sonst `/bearbeitet|erledigt/i` → `done`; nur `new`/`in_review` angleichen (manuelle Status nicht überschreiben). Plus Helfer `scripts/resolve-feedback.sh <ID> [done|rejected]`, der den DB-Status sofort setzt (ohne Deploy abzuwarten).
+**Regel:** Bei Erledigung **beide** Orte setzen – `Status: bearbeitet` + `**Lösung:**` in `feedback.md`, Skript für die DB. ID-Mapping: `F/B/G-NNN` ↔ `category` + `category_seq`.
+
+## 24. Hintergrund-Subagent: Worktree-Base kann veraltet sein
+
+Ein parallel gestarteter Worktree-Subagent baute F-26 komplett neu, weil sein Worktree auf einem **älteren Commit** lag (Migrationen nur bis 036) – das Feature war auf `main` HEAD längst vorhanden (Migration 037 + API + UI). Ein blindes Kopieren seiner Dateien hätte neuere `main`-Stände überschrieben (z.B. `daily-digest/route.ts` −70 Zeilen).
+
+**Regel:** Vor dem Übernehmen von Subagent-Worktree-Änderungen die Base prüfen (`git -C <worktree> rev-parse HEAD` vs. `main` HEAD). Nur echte Lücken gegen den **aktuellen** Stand portieren, nicht den ganzen Diff mergen. Migrationsnummern dem Subagenten fest vorgeben, um Kollisionen zu vermeiden.
+
+## 25. LOP-Beziehungen: Verschmelzen / Verknüpfen / Aufteilen (Migration 043)
+
+- **Verschmelzen (F-29):** Quell-Punkte nicht löschen, sondern Status `merged` + `merged_into_id` (reversibel, Audit bleibt); aus normaler Ansicht via `.neq('status','merged')` ausblenden. Beschreibungen/Ergebnisse an den Ziel-Punkt anhängen, Kinder (`parent_id`) und Verknüpfungen aufs Ziel umhängen.
+- **Verknüpfen (F-21a):** symmetrische Tabelle `lop_item_relations` mit kanonischer Ordnung (`CHECK (item_a < item_b)` + `UNIQUE`), bidirektionale Abfrage via `OR(item_a.eq, item_b.eq)`.
+- **Aufteilen (F-21b):** self-reference `parent_id` (`ON DELETE SET NULL`); Teilaufgaben erben `project_id`/Verantwortliche vom Eltern-Punkt; Fortschritt (erledigt/gesamt) clientseitig aus `allItems` abgeleitet.
+- **UI ohne neue Tabellenspalte:** Mehrfachauswahl als Checkbox in der bestehenden `#`-Zelle von `LopTableRow` (optionale Props), um colSpan-Brüche im Inline-Edit-Modus zu vermeiden.

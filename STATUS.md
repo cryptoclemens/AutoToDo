@@ -1,6 +1,6 @@
 # AutoToDo – Projektstatus
 
-Letzte Aktualisierung: 18.06.2026 · Version 0.1.198
+Letzte Aktualisierung: 29.06.2026 · Version 0.1.198
 
 ---
 
@@ -15,6 +15,17 @@ Letzte Aktualisierung: 18.06.2026 · Version 0.1.198
 ---
 
 ## Zuletzt ausgeliefert
+
+### 29.06.2026 — LOP-Verschmelzen/Verknüpfen/Aufteilen + Feedback-Workflow-Fix deployed
+Auf `main` (`3ce5e66 → 6c3ff92`) live deployed (Migrationen 043+044 via `psql` gegen self-hosted Supabase, DB-Backup vorher; Container per Compose neu erstellt, Alt-Container vorher `docker rm -f`). Smoke-Test: `autotodo.vencly.com` → HTTP 200, Container `healthy`.
+
+- **F-29 — LOP-Punkte verschmelzen:** Mehrfachauswahl (Checkbox in #-Spalte) → Dialog „welcher Punkt bleibt erhalten"; Quellen werden als Status `merged` archiviert (`merged_into_id`, reversibel), ihre Inhalte an den Ziel-Punkt angehängt; Kinder & Verknüpfungen werden umgehängt. API `POST /api/lop/merge` (Migration 043).
+- **F-21 — Verknüpfen & Aufteilen:** Verwandte Punkte verknüpfen (Tabelle `lop_item_relations`, symmetrisch) → Chips im Detail-Dialog; große Pakete im Dialog in Teilaufgaben aufteilen (`parent_id`, Fortschrittsanzeige). APIs `/api/lop/split`, `/api/lop/relations` (Migration 043).
+- **F-23 — Kontext-Aktualität:** `projects.context_reviewed_at` (Migration 044); Badge „Aktualität prüfen" + Banner „Als aktuell bestätigen", wenn der Kontext-Bereich ≥ 7 Tage (oder nie) nicht geprüft wurde.
+- **F-26 — Self-Service-Einstellungen:** war bereits implementiert (Migration 037), nur als erledigt verbucht.
+- **F-20 — Verständnisfrage** (Ideenspeicher = Geparkt) beantwortet (Ja).
+- **Feedback-Workflow-Fix:** `syncFeedbackMd()` (`/api/admin/feedback`) erkennt jetzt `Status: bearbeitet`/`gestrichen` (vorher nur `✅ bearbeitet`) → Admin-Dashboard-Status driftete; zusätzlich `feedback.md` aus `.dockerignore` entfernt + ins Runtime-Image kopiert (lief vorher in Prod immer in den `catch`). Helfer `scripts/resolve-feedback.sh <ID> [done|rejected]` setzt den DB-Status sofort.
+- **Feedback-Triage:** 9 historisch in `feedback.md` als „bearbeitet" geführte, aber in der DB noch offene Einträge auf `done` korrigiert → Endstand **44 done / 1 rejected / 0 offen**.
 
 ### 18.06.2026 — Feedback-Sammelrelease (8 Features/Bugfixes) deployed
 Auf `main` gemergt und live deployed (Migrationen 039–042 gegen self-hosted Supabase via `psql` angewandt, Container per Compose neu erstellt):
@@ -72,6 +83,8 @@ Auf `main` gemergt und live deployed (Migrationen 039–042 gegen self-hosted Su
 | 040 | `040_merge_markus_b010.sql` | Backfill „Markus Wanzek"-Varianten → „Markus" (B-010) |
 | 041 | `041_recurring_reminders.sql` | Tabelle `recurring_reminders` + RLS (F-028) |
 | 042 | `042_speaker_map.sql` | `speaker_map` (JSONB) auf transcripts (F-024) |
+| 043 | `043_lop_merge_split_relations.sql` | `parent_id`/`merged_into_id` + Status `merged` auf lop_items, Tabelle `lop_item_relations` (F-29/F-21) |
+| 044 | `044_context_reviewed_at.sql` | `context_reviewed_at` auf projects (F-23) |
 
 ---
 
