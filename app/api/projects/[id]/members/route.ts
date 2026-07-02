@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAuthClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
-import { resolveWorkspace } from '@/lib/workspace'
-import { headers } from 'next/headers'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 function serviceClient() {
   return createClient(
@@ -16,29 +15,13 @@ async function requireAdmin(projectId: string) {
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return { error: 'Nicht authentifiziert.', status: 401, user: null }
 
-  const slug = headers().get('x-workspace-slug') ?? ''
   const supabase = serviceClient()
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return { error: 'Workspace nicht gefunden.', status: 404, user: null }
-
-  // Check workspace admin OR project admin
-  const { data: wsMember } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle() as { data: { role: string } | null }
-
-  if (wsMember && ['workspace_owner', 'workspace_admin', 'project_admin'].includes(wsMember.role)) {
-    return { error: null, status: 200, user, supabase }
+  // Zugriff über den Workspace DES PROJEKTS (nicht Heimat-Workspace): Admin nötig
+  const access = await resolveProjectAccess(supabase, user.id, projectId)
+  if (!access || !access.canAdmin) {
+    return { error: 'Keine Berechtigung.', status: 403, user: null }
   }
-
-  const { data: pmMember } = await supabase
-    .from('project_members').select('role')
-    .eq('project_id', projectId).eq('user_id', user.id).maybeSingle() as { data: { role: string } | null }
-
-  if (pmMember?.role === 'project_admin') {
-    return { error: null, status: 200, user, supabase }
-  }
-
-  return { error: 'Keine Berechtigung.', status: 403, user: null }
+  return { error: null, status: 200, user, supabase }
 }
 
 /** GET /api/projects/[id]/members — list project members */

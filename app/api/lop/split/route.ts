@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { z } from 'zod'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 const schema = z.object({
   itemId: z.string().uuid(),
@@ -29,19 +28,7 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  const { data: wsMember } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle()
-  const editRoles = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor']
-  if (!wsMember || !editRoles.includes((wsMember as { role: string }).role)) {
-    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-  }
-
-  // Eltern-Punkt laden (für project_id, Workspace-Check, Default-Verantwortlicher)
+  // Eltern-Punkt laden (für project_id, Workspace, Default-Verantwortlicher)
   const { data: parent } = await supabase
     .from('lop_items')
     .select('id, workspace_id, project_id, responsible, responsible_user_id, priority')
@@ -51,9 +38,16 @@ export async function POST(request: NextRequest) {
       responsible: string | null; responsible_user_id: string | null; priority: string
     } | null }
 
-  if (!parent || parent.workspace_id !== workspace.id) {
+  if (!parent) {
     return NextResponse.json({ error: 'Aufzuteilender Punkt nicht gefunden.' }, { status: 404 })
   }
+
+  // Berechtigung über den Workspace/das Projekt DES ELTERN-Punkts (nicht Heimat-Workspace)
+  const access = await resolveProjectAccess(supabase, user.id, parent.project_id)
+  if (!access || !access.canEdit) {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
+  const workspace = { id: access.workspaceId }
 
   const toInsert = parsed.data.subtasks.map(s => ({
     workspace_id: workspace.id,

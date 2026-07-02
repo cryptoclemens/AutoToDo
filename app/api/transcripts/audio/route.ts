@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { encrypt } from '@/lib/encryption'
 import { decrypt } from '@/lib/encryption'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 import { checkTranscriptLimit, incrementTranscriptUsage } from '@/lib/plan-gate'
 
@@ -23,27 +22,6 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  const { data: member } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as { data: { role: string } | null }
-  if (!member || member.role === 'viewer') {
-    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-  }
-
-  // Plan gate
-  const { data: ws } = await supabase
-    .from('workspaces').select('plan, plan_expires_at').eq('id', workspace.id).single() as {
-      data: { plan: string; plan_expires_at: string | null } | null
-    }
-  const gate = await checkTranscriptLimit(supabase, workspace.id, (ws?.plan ?? 'beta') as import('@/lib/plans').Plan, ws?.plan_expires_at)
-  if (!gate.allowed) {
-    return NextResponse.json({ error: gate.reason, upgradeHint: gate.upgradeHint }, { status: 402 })
-  }
-
   // Parse form data
   const formData = await req.formData()
   const projectId = formData.get('projectId') as string | null
@@ -53,6 +31,22 @@ export async function POST(req: NextRequest) {
 
   if (!projectId) return NextResponse.json({ error: 'projectId ist erforderlich.' }, { status: 400 })
   if (!audioFile) return NextResponse.json({ error: 'Audio-Datei ist erforderlich.' }, { status: 400 })
+
+  // Zugriff über den Workspace DES PROJEKTS (nicht Heimat-Workspace); Viewer dürfen nicht hochladen
+  const access = await resolveProjectAccess(supabase, user.id, projectId)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
+
+  // Plan gate (Plan des Projekt-Workspace)
+  const { data: ws } = await supabase
+    .from('workspaces').select('plan, plan_expires_at').eq('id', workspace.id).single() as {
+      data: { plan: string; plan_expires_at: string | null } | null
+    }
+  const gate = await checkTranscriptLimit(supabase, workspace.id, (ws?.plan ?? 'beta') as import('@/lib/plans').Plan, ws?.plan_expires_at)
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.reason, upgradeHint: gate.upgradeHint }, { status: 402 })
+  }
 
   // Validate audio
   if (audioFile.size > MAX_AUDIO_SIZE) {

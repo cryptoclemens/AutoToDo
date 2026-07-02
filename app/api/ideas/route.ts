@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 function db() {
   return createServiceClient(
@@ -21,9 +20,9 @@ export async function GET(request: NextRequest) {
   if (!projectId) return NextResponse.json({ error: 'projectId fehlt.' }, { status: 400 })
 
   const supabase = db()
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  const access = await resolveProjectAccess(supabase, user.id, projectId)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  const workspace = { id: access.workspaceId }
 
   const [{ data: ideas, error: ideasErr }, { data: parked, error: parkedErr }] = await Promise.all([
     supabase
@@ -69,9 +68,10 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = db()
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  const access = await resolveProjectAccess(supabase, user.id, body.projectId)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
 
   const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
   const displayName: string =

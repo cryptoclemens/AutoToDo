@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { resolveWorkspace } from '@/lib/workspace'
-import { headers } from 'next/headers'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 
 // Allow up to 300s for LLM processing
@@ -18,26 +17,17 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  // Verify transcript belongs to this workspace and user has permission
+  // Transkript per ID laden, Zugriff (Edit) über dessen Projekt-Workspace prüfen
   const { data: transcript } = await supabase
     .from('transcripts')
-    .select('id, workspace_id')
+    .select('id, project_id')
     .eq('id', params.id)
-    .eq('workspace_id', workspace.id)
-    .single() as { data: { id: string; workspace_id: string } | null }
+    .maybeSingle() as { data: { id: string; project_id: string } | null }
 
   if (!transcript) return NextResponse.json({ error: 'Transkript nicht gefunden.' }, { status: 404 })
 
-  const { data: member } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
-      data: { role: string } | null
-    }
-  if (!member || member.role === 'viewer') {
+  const access = await resolveProjectAccess(supabase, user.id, transcript.project_id)
+  if (!access || !access.canEdit) {
     return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
 

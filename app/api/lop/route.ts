@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { z } from 'zod'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { dispatchWebhook } from '@/lib/webhook'
 import { notifySlackForLopEvent } from '@/lib/slack'
 
@@ -33,30 +32,12 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-  const workspaceId = workspace.id
-
-  // Berechtigung prüfen
-  const { data: wsMember } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspaceId).eq('user_id', user.id).maybeSingle()
-
-  const editRoles = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor']
-  let hasAccess = wsMember !== null && editRoles.includes((wsMember as { role: string }).role)
-
-  if (!hasAccess) {
-    // Check project-specific membership
-    const { data: pmMember } = await supabase
-      .from('project_members').select('role')
-      .eq('project_id', parsed.data.projectId).eq('user_id', user.id).maybeSingle()
-    hasAccess = pmMember !== null && editRoles.includes((pmMember as { role: string }).role)
-  }
-
-  if (!hasAccess) {
-    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-  }
+  // Zugriff über den Workspace DES PROJEKTS auflösen (nicht den Heimat-Workspace),
+  // damit auch zu Einzelprojekten fremder Firmen eingeladene Editoren schreiben können.
+  const access = await resolveProjectAccess(supabase, user.id, parsed.data.projectId)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspaceId = access.workspaceId
 
   const { projectId, ...fields } = parsed.data
   const { data, error } = await supabase

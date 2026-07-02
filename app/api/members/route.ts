@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 export async function GET(request: NextRequest) {
   const authClient = createClient()
@@ -14,13 +15,23 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  // Bei Projektbezug den Workspace AUS DEM PROJEKT ableiten (auch fremde Firmen),
+  // damit die Verantwortlichen-Auswahl die richtigen Mitglieder zeigt.
+  const projectId = request.nextUrl.searchParams.get('projectId')
+  let workspaceId: string
+  if (projectId) {
+    const access = await resolveProjectAccess(supabase, user.id, projectId)
+    if (!access) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+    workspaceId = access.workspaceId
+  } else {
+    const home = await resolveWorkspace(supabase, user.id, headers().get('x-workspace-slug') ?? '')
+    if (!home) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+    workspaceId = home.id
+  }
 
   // Workspace members via existing RPC
   const { data: wsMembers, error } = await supabase.rpc('get_workspace_members_with_email', {
-    p_workspace_id: workspace.id,
+    p_workspace_id: workspaceId,
   })
 
   if (error) {
@@ -31,7 +42,6 @@ export async function GET(request: NextRequest) {
   const seenIds = new Set(members.map((m: { user_id: string }) => m.user_id))
 
   // Also include project members for this workspace (project-scoped users)
-  const projectId = request.nextUrl.searchParams.get('projectId')
   if (projectId) {
     const { data: pmRows } = await supabase
       .from('project_members')

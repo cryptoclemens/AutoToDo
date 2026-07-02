@@ -1,10 +1,9 @@
 import type React from 'react'
 import { redirect, notFound } from 'next/navigation'
-import { headers, cookies } from 'next/headers'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { resolveWorkspace } from '@/lib/workspace'
 import { getEffectiveBranding } from '@/lib/branding'
 import ProjectTitleEditor from '@/components/projects/ProjectTitleEditor'
 import ProjectPageClient from '@/components/projects/ProjectPageClient'
@@ -32,11 +31,9 @@ export default async function ProjectPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) redirect('/onboarding')
-
-  // Projekt laden — brand_color/logo_url/branding_inherited benötigen Migration 016
+  // Projekt per ID laden — NICHT an den Heimat-Workspace gebunden, damit auch
+  // zu Einzelprojekten fremder Firmen eingeladene Nutzer Zugriff bekommen.
+  // brand_color/logo_url/branding_inherited benötigen Migration 016 (Fallback ohne).
   type ProjectData = {
     id: string; name: string; description: string | null
     archived_at: string | null; workspace_id: string
@@ -48,16 +45,14 @@ export default async function ProjectPage({ params }: Props) {
       .from('projects')
       .select('id, name, description, archived_at, workspace_id, brand_color, logo_url, branding_inherited')
       .eq('id', params.id)
-      .eq('workspace_id', workspace.id)
-      .single() as { data: ProjectData | null; error: unknown }
+      .maybeSingle() as { data: ProjectData | null; error: unknown }
 
     if (error) {
       const { data: fallback } = await supabase
         .from('projects')
         .select('id, name, description, archived_at, workspace_id')
         .eq('id', params.id)
-        .eq('workspace_id', workspace.id)
-        .single() as { data: ProjectData | null }
+        .maybeSingle() as { data: ProjectData | null }
       project = fallback
     } else {
       project = data
@@ -66,30 +61,42 @@ export default async function ProjectPage({ params }: Props) {
 
   if (!project) notFound()
 
-  // Check workspace membership first
+  // Zugriff über den Workspace DES PROJEKTS: Workspace-Mitglied ODER direktes Projekt-Mitglied
+  let canEdit = false
+  let canAdmin = false
+  let hasAccess = false
+
   const { data: wsMember } = await supabase
     .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle() as {
+    .eq('workspace_id', project.workspace_id).eq('user_id', user.id).maybeSingle() as {
       data: { role: string } | null
     }
 
-  let canEdit = false
-  let canAdmin = false
-
   if (wsMember) {
+    hasAccess = true
     canEdit = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor'].includes(wsMember.role)
     canAdmin = ['workspace_owner', 'workspace_admin', 'project_admin'].includes(wsMember.role)
   } else {
-    // Check project-specific membership
     const { data: pmMember } = await supabase
       .from('project_members').select('role')
       .eq('project_id', project.id).eq('user_id', user.id).maybeSingle() as {
         data: { role: string } | null
       }
-    if (!pmMember) notFound() // No access at all
-    canEdit = ['project_admin', 'editor'].includes(pmMember.role)
-    canAdmin = pmMember.role === 'project_admin'
+    if (pmMember) {
+      hasAccess = true
+      canEdit = ['project_admin', 'editor'].includes(pmMember.role)
+      canAdmin = pmMember.role === 'project_admin'
+    }
   }
+
+  if (!hasAccess) notFound() // kein Zugriff
+
+  // Workspace des Projekts (für Branding-Fallback + Client-Kontext) — nicht der Heimat-Workspace
+  const { data: projectWorkspace } = await supabase
+    .from('workspaces').select('id, name, slug, brand_color, logo_url')
+    .eq('id', project.workspace_id).maybeSingle() as {
+      data: { id: string; name: string; slug: string; brand_color: string; logo_url: string | null } | null
+    }
 
   // LOP-Punkte laden (mit Fallback falls links-Spalte noch nicht migriert ist)
   type LopRow = {
@@ -151,7 +158,7 @@ export default async function ProjectPage({ params }: Props) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
 
-  const branding = getEffectiveBranding(project, workspace)
+  const branding = getEffectiveBranding(project, projectWorkspace ?? { brand_color: null, logo_url: null })
   const currentLocale = cookies().get('locale')?.value ?? 'de'
 
   return (
@@ -257,7 +264,7 @@ export default async function ProjectPage({ params }: Props) {
         initialItems={lopItems ?? []}
         projectId={project.id}
         projectName={project.name}
-        workspaceId={workspace.id}
+        workspaceId={project.workspace_id}
         canEdit={canEdit && !project.archived_at}
         canAdmin={canAdmin && !project.archived_at}
         currentLocale={currentLocale}

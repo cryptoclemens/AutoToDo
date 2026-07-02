@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { decrypt } from '@/lib/encryption'
 import { summarizeLopItems } from '@/lib/llm/summarizeLop'
 import type { LlmConfig } from '@/lib/llm/types'
@@ -17,18 +16,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id, name, workspace_id')
-    .eq('id', params.id)
-    .eq('workspace_id', workspace.id)
-    .single() as { data: { id: string; name: string; workspace_id: string } | null }
-
-  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  const access = await resolveProjectAccess(supabase, user.id, params.id, 'id, name, workspace_id')
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  const workspace = { id: access.workspaceId }
+  const project = access.project as { id: string; name: string; workspace_id: string }
 
   // LLM-Config laden (extraction role)
   const { data: llmRow } = await supabase

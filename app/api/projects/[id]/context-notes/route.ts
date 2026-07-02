@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { headers } from 'next/headers'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 function serviceDb() {
   return createServiceClient(
@@ -33,9 +32,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = serviceDb()
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 })
+  const access = await resolveProjectAccess(supabase, user.id, params.id)
+  if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  const workspace = { id: access.workspaceId }
 
   const { data: all } = await supabase
     .from('project_context_notes')
@@ -92,9 +91,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const { noteId, text, confirmReview } = body as { noteId?: string; text?: string; confirmReview?: boolean }
 
   const supabase = serviceDb()
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 })
+  const access = await resolveProjectAccess(supabase, user.id, params.id)
+  if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
 
   // F-23: Kontext-Bereich als aktuell bestätigen
   if (confirmReview) {

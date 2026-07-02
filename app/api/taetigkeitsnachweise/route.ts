@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { getWorkingDays, getGermanHolidays, getHolidayLabels } from '@/lib/holidays'
 
 export async function GET(request: NextRequest) {
@@ -22,9 +23,18 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  // Bei Projektbezug den Workspace AUS DEM PROJEKT ableiten (auch fremde Firmen),
+  // sonst den Heimat-Workspace des Nutzers verwenden.
+  let workspace: { id: string }
+  if (projectId) {
+    const access = await resolveProjectAccess(supabase, user.id, projectId)
+    if (!access) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+    workspace = { id: access.workspaceId }
+  } else {
+    const home = await resolveWorkspace(supabase, user.id, headers().get('x-workspace-slug') ?? '')
+    if (!home) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+    workspace = { id: home.id }
+  }
 
   const { data: wsRow } = await supabase
     .from('workspaces').select('bundesland').eq('id', workspace.id).single()

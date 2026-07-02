@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { decrypt } from '@/lib/encryption'
-import { headers } from 'next/headers'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const authClient = createClient()
@@ -15,24 +14,23 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
   const { data: transcript } = await supabase
     .from('transcripts')
-    .select('id, workspace_id, storage_path, encrypted_content, original_filename')
+    .select('id, project_id, storage_path, encrypted_content, original_filename')
     .eq('id', params.id)
-    .eq('workspace_id', workspace.id)
-    .single() as {
+    .maybeSingle() as {
       data: {
-        id: string; workspace_id: string
+        id: string; project_id: string
         storage_path: string | null; encrypted_content: string | null
         original_filename: string | null
       } | null
     }
 
   if (!transcript) return NextResponse.json({ error: 'Transkript nicht gefunden.' }, { status: 404 })
+
+  // Zugriff über den Workspace des Projekts prüfen (nicht Heimat-Workspace)
+  const access = await resolveProjectAccess(supabase, user.id, transcript.project_id)
+  if (!access) return NextResponse.json({ error: 'Transkript nicht gefunden.' }, { status: 404 })
 
   let encryptedContent = transcript.encrypted_content
   if (!encryptedContent && transcript.storage_path) {

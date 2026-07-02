@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { encrypt } from '@/lib/encryption'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { runTranscriptProcessing } from '@/lib/processTranscript'
 import { checkTranscriptLimit, incrementTranscriptUsage } from '@/lib/plan-gate'
 
@@ -40,12 +39,6 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const headersList = headers()
-  const slug = headersList.get('x-workspace-slug') ?? ''
-
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
   const formData = await req.formData()
   const projectId = formData.get('projectId') as string | null
   const meetingDate = formData.get('meetingDate') as string | null
@@ -56,34 +49,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'projectId ist erforderlich.' }, { status: 400 })
   }
 
-  // Verify project belongs to workspace
-  const { data: project } = await supabase
-    .from('projects').select('id').eq('id', projectId).eq('workspace_id', workspace.id).single() as {
-      data: { id: string } | null
-    }
-  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
-
-  // Permission: workspace member (non-viewer) OR project member (editor/project_admin)
-  const { data: wsMember } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as {
-      data: { role: string } | null
-    }
-  const wsAllowed = wsMember && wsMember.role !== 'viewer'
-
-  let projAllowed = false
-  if (!wsAllowed) {
-    const { data: projMember } = await supabase
-      .from('project_members').select('role')
-      .eq('project_id', projectId).eq('user_id', user.id).single() as {
-        data: { role: string } | null
-      }
-    projAllowed = !!(projMember && projMember.role !== 'viewer')
-  }
-
-  if (!wsAllowed && !projAllowed) {
-    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-  }
+  // Zugriff über den Workspace DES PROJEKTS (nicht Heimat-Workspace); Viewer dürfen nicht hochladen
+  const access = await resolveProjectAccess(supabase, user.id, projectId)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
 
   if (!pastedText && !file) {
     return NextResponse.json({ error: 'Entweder Text oder Datei erforderlich.' }, { status: 400 })

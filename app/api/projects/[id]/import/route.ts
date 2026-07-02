@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { resolveWorkspace } from '@/lib/workspace'
-import { headers } from 'next/headers'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { parseImportSheet, computeImportDiff } from '@/lib/import'
 
 export const runtime = 'nodejs'
@@ -22,28 +21,14 @@ export async function POST(
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 })
 
-  const slug = headers().get('x-workspace-slug') ?? ''
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  // Check project belongs to workspace and user has edit rights
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id')
-    .eq('id', params.id)
-    .eq('workspace_id', workspace.id)
-    .single()
-  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
-
-  const { data: member } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single()
-  const canEdit = member && ['workspace_owner', 'workspace_admin', 'project_admin', 'editor'].includes(member.role)
-  if (!canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  // Zugriff über den Workspace DES PROJEKTS (nicht Heimat-Workspace)
+  const access = await resolveProjectAccess(supabase, user.id, params.id)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
 
   // Parse multipart form data
   let fileBuffer: Buffer

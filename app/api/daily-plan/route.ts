@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { z } from 'zod'
 
 // GET /api/daily-plan?date=YYYY-MM-DD&projectId=UUID[&days=14]
@@ -16,16 +15,16 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date') ?? new Date().toISOString().slice(0, 10)
   const projectId = searchParams.get('projectId')
   const days = Math.min(Number(searchParams.get('days') ?? '14'), 60)
 
   if (!projectId) return NextResponse.json({ error: 'projectId fehlt.' }, { status: 400 })
+
+  // Zugriff über das Projekt (nicht Heimat-Workspace)
+  const access = await resolveProjectAccess(supabase, user.id, projectId)
+  if (!access) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
 
   // Fetch last N days of plans for this project
   const since = new Date(date)
@@ -104,9 +103,9 @@ export async function PUT(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  const access = await resolveProjectAccess(supabase, user.id, parsed.data.projectId)
+  if (!access) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
 
   const { error } = await supabase
     .from('daily_plans')

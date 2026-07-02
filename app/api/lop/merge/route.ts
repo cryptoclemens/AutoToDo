@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { z } from 'zod'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 const schema = z.object({
   targetId: z.string().uuid(),
@@ -39,29 +38,23 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  // Berechtigung: Editor-Rolle im Workspace
-  const { data: wsMember } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).maybeSingle()
-  const editRoles = ['workspace_owner', 'workspace_admin', 'project_admin', 'editor']
-  if (!wsMember || !editRoles.includes((wsMember as { role: string }).role)) {
-    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-  }
-
-  // Ziel + Quellen laden, Workspace-Zugehörigkeit prüfen
+  // Ziel + Quellen laden
   const { data: rows } = await supabase
     .from('lop_items')
     .select('id, workspace_id, project_id, title, description, result, status')
     .in('id', [targetId, ...sourceIds]) as { data: LopRow[] | null }
 
   const target = rows?.find(r => r.id === targetId)
-  if (!target || target.workspace_id !== workspace.id) {
-    return NextResponse.json({ error: 'Ziel-Punkt nicht gefunden.' }, { status: 404 })
+  if (!target) return NextResponse.json({ error: 'Ziel-Punkt nicht gefunden.' }, { status: 404 })
+
+  // Berechtigung über den Workspace/das Projekt DES ZIEL-Punkts (nicht Heimat-Workspace)
+  const access = await resolveProjectAccess(supabase, user.id, target.project_id)
+  if (!access || !access.canEdit) {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
   }
+  const workspace = { id: access.workspaceId }
+
+  // Nur Quellen aus demselben Workspace wie das Ziel verschmelzen
   const sources = (rows ?? []).filter(r => sourceIds.includes(r.id) && r.workspace_id === workspace.id)
   if (sources.length === 0) {
     return NextResponse.json({ error: 'Keine gültigen Quell-Punkte.' }, { status: 404 })

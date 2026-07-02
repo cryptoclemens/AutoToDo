@@ -26,62 +26,57 @@ export default async function DashboardPage() {
   const workspace = await resolveWorkspace(supabase, user.id, slug)
   if (!workspace) redirect('/onboarding')
 
-  // Check if workspace member
-  const { data: wsMember } = await supabase
-    .from('workspace_members')
-    .select('role')
-    .eq('workspace_id', workspace.id)
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Alle Workspaces (Firmen), in denen der Nutzer Mitglied ist – eigener + evtl. weitere
+  const { data: wsMemberships } = await supabase
+    .from('workspace_members').select('workspace_id, role').eq('user_id', user.id)
+  const memberWsIds = (wsMemberships ?? []).map(m => (m as { workspace_id: string }).workspace_id)
+  const isWorkspaceMember = memberWsIds.length > 0
 
-  type ProjectRow = { id: string; name: string; description: string | null; created_at: string; archived_at: string | null; brand_color?: string | null; logo_url?: string | null; branding_inherited?: boolean }
-  let projects: ProjectRow[] | null
+  // Direkt zugewiesene Projekte (Einladung zu EINZELNEN Projekten – ggf. in fremden Workspaces)
+  const { data: pmRows } = await supabase
+    .from('project_members').select('project_id').eq('user_id', user.id)
+  const pmProjectIds = (pmRows ?? []).map(r => (r as { project_id: string }).project_id)
 
-  if (wsMember) {
-    // Full access: show all workspace projects
-    // Note: brand_color/logo_url/branding_inherited require migration 016 — query without them if not yet deployed
-    const { data, error } = await supabase
-      .from('projects')
-      .select('id, name, description, created_at, archived_at, brand_color, logo_url, branding_inherited')
-      .eq('workspace_id', workspace.id)
-      .is('archived_at', null)
-      .order('created_at', { ascending: false })
+  type ProjectRow = { id: string; name: string; description: string | null; created_at: string; archived_at: string | null; workspace_id: string; brand_color?: string | null; logo_url?: string | null; branding_inherited?: boolean }
+  const PROJECT_COLS = 'id, name, description, created_at, archived_at, workspace_id, brand_color, logo_url, branding_inherited'
+  const PROJECT_COLS_FALLBACK = 'id, name, description, created_at, archived_at, workspace_id' // ohne Branding (Migration 016)
 
+  const projectMap = new Map<string, ProjectRow>()
+  const addProjects = (rows: ProjectRow[] | null) => {
+    for (const p of rows ?? []) if (!projectMap.has(p.id)) projectMap.set(p.id, p)
+  }
+
+  // Projekte aus allen Mitglieds-Workspaces (eigene Firma + weitere)
+  if (memberWsIds.length > 0) {
+    const { data, error } = await supabase.from('projects').select(PROJECT_COLS).in('workspace_id', memberWsIds)
     if (error) {
-      // Fallback: query without branding columns (migration not yet deployed)
-      const { data: fallback } = await supabase
-        .from('projects')
-        .select('id, name, description, created_at, archived_at')
-        .eq('workspace_id', workspace.id)
-        .is('archived_at', null)
-        .order('created_at', { ascending: false })
-      projects = fallback as typeof projects
-    } else {
-      projects = data as typeof projects
-    }
-  } else {
-    // Project-scoped: show only assigned projects
-    const { data: pmRows } = await supabase
-      .from('project_members')
-      .select('projects(id, name, description, created_at, archived_at)')
-      .eq('user_id', user.id)
-    projects = (pmRows ?? [])
-      .map(r => r.projects as unknown as ProjectRow | null)
-      .filter((p): p is NonNullable<typeof p> => p !== null && p.archived_at === null)
+      const { data: fb } = await supabase.from('projects').select(PROJECT_COLS_FALLBACK).in('workspace_id', memberWsIds)
+      addProjects(fb as ProjectRow[] | null)
+    } else addProjects(data as ProjectRow[] | null)
+  }
+  // Direkt zugewiesene Projekte (auch aus fremden Workspaces) – vereint mit obigen
+  if (pmProjectIds.length > 0) {
+    const { data, error } = await supabase.from('projects').select(PROJECT_COLS).in('id', pmProjectIds)
+    if (error) {
+      const { data: fb } = await supabase.from('projects').select(PROJECT_COLS_FALLBACK).in('id', pmProjectIds)
+      addProjects(fb as ProjectRow[] | null)
+    } else addProjects(data as ProjectRow[] | null)
   }
 
-  // Archivierte Projekte
-  type ArchivedRow = { id: string; name: string; archived_at: string }
-  let archivedProjects: ArchivedRow[] = []
-  if (wsMember) {
-    const { data: archived } = await supabase
-      .from('projects')
-      .select('id, name, archived_at')
-      .eq('workspace_id', workspace.id)
-      .not('archived_at', 'is', null)
-      .order('archived_at', { ascending: false })
-    archivedProjects = (archived ?? []) as ArchivedRow[]
-  }
+  const allAccessible = Array.from(projectMap.values())
+  const projects: ProjectRow[] = allAccessible
+    .filter(p => p.archived_at === null)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+  const archivedProjects = allAccessible
+    .filter((p): p is ProjectRow & { archived_at: string } => p.archived_at !== null)
+    .sort((a, b) => b.archived_at.localeCompare(a.archived_at))
+
+  // Branding-Fallback je Projekt aus dessen EIGENEM Workspace (nicht dem Heimat-Workspace)
+  const wsIds = Array.from(new Set(allAccessible.map(p => p.workspace_id).filter(Boolean)))
+  const { data: wsRows } = wsIds.length > 0
+    ? await supabase.from('workspaces').select('id, name, slug, brand_color, logo_url').in('id', wsIds)
+    : { data: [] as { id: string; name: string; slug: string; brand_color: string; logo_url: string | null }[] }
+  const wsBrandMap = new Map((wsRows ?? []).map(w => [(w as { id: string }).id, w as { id: string; name: string; slug: string; brand_color: string; logo_url: string | null }]))
 
   // Workspace-weite LOP-Statistiken
   const projectIds = (projects ?? []).map(p => p.id)
@@ -160,9 +155,9 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{wsMember ? workspace.name : 'Projektmitglied'}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{isWorkspaceMember ? workspace.name : 'Projektmitglied'}</p>
         </div>
-        {wsMember && (
+        {isWorkspaceMember && (
           <Link href="/projects/new">
             <Button style={{ backgroundColor: 'var(--brand)' }}>
               + {t('newProject')}
@@ -251,7 +246,7 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map(project => {
-            const branding = getEffectiveBranding(project, workspace)
+            const branding = getEffectiveBranding(project, wsBrandMap.get(project.workspace_id) ?? workspace)
             return (
             <Link key={project.id} href={`/projects/${project.id}`}>
               <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all cursor-pointer h-full p-5 flex flex-col">

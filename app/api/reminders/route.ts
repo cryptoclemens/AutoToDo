@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { z } from 'zod'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 
 const createSchema = z.object({
   lopItemId: z.string().uuid(),
@@ -97,18 +96,18 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  // Verify lop_item belongs to this workspace
+  // LOP-Punkt laden und Zugriff über dessen Projekt-Workspace prüfen (nicht Heimat-Workspace)
   const { data: lopItem } = await supabase
     .from('lop_items')
     .select('id, project_id')
     .eq('id', parsed.data.lopItemId)
-    .maybeSingle()
+    .maybeSingle() as { data: { id: string; project_id: string } | null }
 
   if (!lopItem) return NextResponse.json({ error: 'LOP-Punkt nicht gefunden.' }, { status: 404 })
+
+  const access = await resolveProjectAccess(supabase, user.id, lopItem.project_id)
+  if (!access) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
 
   const nextReminderAt = computeNextReminderAt(
     parsed.data.frequency,

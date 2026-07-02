@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
-import { resolveWorkspace } from '@/lib/workspace'
 
 export interface SearchResult {
   id: string
@@ -32,14 +30,22 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
+  // Über alle zugänglichen Projekte suchen: eigene Workspaces + direkt zugewiesene Projekte
+  const { data: wsm } = await supabase.from('workspace_members').select('workspace_id').eq('user_id', user.id)
+  const memberWsIds = (wsm ?? []).map(m => (m as { workspace_id: string }).workspace_id)
+  const projectIds = new Set<string>()
+  if (memberWsIds.length) {
+    const { data: ps } = await supabase.from('projects').select('id').in('workspace_id', memberWsIds)
+    for (const p of ps ?? []) projectIds.add((p as { id: string }).id)
+  }
+  const { data: pms } = await supabase.from('project_members').select('project_id').eq('user_id', user.id)
+  for (const r of pms ?? []) projectIds.add((r as { project_id: string }).project_id)
+  if (projectIds.size === 0) return NextResponse.json({ results: [] })
 
   const { data: items } = await supabase
     .from('lop_items')
     .select('id, title, responsible, status, due_date, priority, project_id, projects(name)')
-    .eq('workspace_id', workspace.id)
+    .in('project_id', Array.from(projectIds))
     .or(`title.ilike.%${q}%,responsible.ilike.%${q}%,description.ilike.%${q}%`)
     .neq('status', 'abgeschlossen')
     .order('due_date', { ascending: true, nullsFirst: false })

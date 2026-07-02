@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
-import { resolveWorkspace } from '@/lib/workspace'
+import { resolveProjectAccess } from '@/lib/projectAccess'
 import { getNotionToken } from '@/lib/notion'
 
 export const maxDuration = 60
@@ -116,15 +115,6 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-  const slug = headers().get('x-workspace-slug') ?? ''
-  const workspace = await resolveWorkspace(supabase, user.id, slug)
-  if (!workspace) return NextResponse.json({ error: 'Workspace nicht gefunden.' }, { status: 404 })
-
-  const { data: member } = await supabase
-    .from('workspace_members').select('role')
-    .eq('workspace_id', workspace.id).eq('user_id', user.id).single() as { data: { role: string } | null }
-  if (!member || member.role === 'viewer') return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
-
   const { pageUrl, projectId, meetingDate } = await req.json() as {
     pageUrl?: string
     projectId?: string
@@ -133,10 +123,11 @@ export async function POST(req: NextRequest) {
   if (!pageUrl?.trim()) return NextResponse.json({ error: 'Keine Notion-URL angegeben.' }, { status: 400 })
   if (!projectId) return NextResponse.json({ error: 'Kein Projekt angegeben.' }, { status: 400 })
 
-  // Verify project belongs to workspace
-  const { data: project } = await supabase
-    .from('projects').select('id').eq('id', projectId).eq('workspace_id', workspace.id).maybeSingle()
-  if (!project) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  // Zugriff über den Workspace DES PROJEKTS (nicht Heimat-Workspace); Viewer dürfen nicht importieren
+  const access = await resolveProjectAccess(supabase, user.id, projectId)
+  if (!access) return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 })
+  if (!access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  const workspace = { id: access.workspaceId }
 
   // Get Notion token
   const notionToken = await getNotionToken(workspace.id)
