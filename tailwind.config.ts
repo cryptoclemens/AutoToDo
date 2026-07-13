@@ -1,6 +1,10 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Klassen-basiert statt 'media': dark:-Utilities greifen NUR wenn <html> die Klasse
+  // "dark" trägt. Die Web-/Online-Version setzt diese Klasse nie (immer Light-Mode);
+  // nur die Desktop-App (Tauri) darf umschalten. Siehe components/ThemeProvider.tsx.
+  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",

@@ -9,23 +9,37 @@ declare global {
 }
 
 function applyTheme(theme: 'light' | 'dark') {
+  const root = document.documentElement
   if (theme === 'dark') {
-    document.documentElement.classList.add('dark')
+    root.classList.add('dark')
+    root.style.colorScheme = 'dark'
   } else {
-    document.documentElement.classList.remove('dark')
+    root.classList.remove('dark')
+    root.style.colorScheme = 'light'
   }
-  localStorage.setItem('theme', theme)
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    const isDesktop = typeof window !== 'undefined' && !!window.__TAURI__
+
+    // Web-/Online-Version: IMMER Light-Mode erzwingen – auch wenn das System im
+    // Dark-Mode läuft (schlechte Lesbarkeit in Safari & Co.). Dark-Mode bleibt der
+    // nativen Desktop-App (Tauri) vorbehalten.
+    if (!isDesktop) {
+      applyTheme('light')
+      window.__setTheme = () => applyTheme('light')
+      return
+    }
+
+    // Desktop-App: gespeicherte bzw. System-Präferenz respektieren + Umschalten erlauben
     const stored = localStorage.getItem('theme') as 'light' | 'dark' | null
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const initial: 'light' | 'dark' = stored ?? (systemDark ? 'dark' : 'light')
-    applyTheme(initial)
+    applyTheme(stored ?? (systemDark ? 'dark' : 'light'))
 
     window.__setTheme = (theme: 'light' | 'dark') => {
       applyTheme(theme)
+      localStorage.setItem('theme', theme)
     }
   }, [])
 
