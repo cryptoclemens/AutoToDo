@@ -103,58 +103,58 @@ export default async function DesktopPage() {
             <div className="flex flex-col gap-2">
               {macAsset ? (
                 <>
-                  {/* DMG as primary download */}
-                  {macDmgAsset ? (
+                  {/* PKG = empfohlener Hauptweg: Installer entfernt Quarantäne automatisch */}
+                  {macPkgAsset ? (
                     <a
-                      href="/api/desktop/download?type=mac"
+                      href="/api/desktop/download?type=mac-pkg"
                       className="flex items-center justify-between p-3 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors"
                     >
                       <div>
                         <span className="font-medium text-sm block">
-                          {isEn ? 'Download for macOS' : 'Download für macOS'} (.dmg)
+                          {isEn ? 'Download for macOS' : 'Download für macOS'} (.pkg)
                         </span>
                         <span className="text-xs text-gray-400">
-                          {isEn ? 'Drag to Applications folder' : 'In Programme-Ordner ziehen'}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400 shrink-0">{formatBytes(macDmgAsset.size)}</span>
-                    </a>
-                  ) : null}
-                  {/* PKG als Alternative (Installer) */}
-                  {macPkgAsset ? (
-                    <a
-                      href="/api/desktop/download?type=mac-pkg"
-                      className="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      <div>
-                        <span className="font-medium text-sm block text-gray-800">
-                          {isEn ? 'Installer' : 'Installer'} (.pkg)
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {isEn ? 'Guided installation' : 'Geführte Installation'}
+                          {isEn ? 'Recommended · installs without the “damaged” error' : 'Empfohlen · installiert ohne „beschädigt"-Meldung'}
                         </span>
                       </div>
                       <span className="text-xs text-gray-400 shrink-0">{formatBytes(macPkgAsset.size)}</span>
                     </a>
                   ) : null}
-                  {/* Gatekeeper-Hinweis – prominent, weil unsignierte App als „beschädigt" gemeldet wird */}
+                  {/* DMG = Fortgeschritten (manueller Quarantäne-Schritt nötig) */}
+                  {macDmgAsset ? (
+                    <a
+                      href="/api/desktop/download?type=mac"
+                      className="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                      <div>
+                        <span className="font-medium text-sm block text-gray-800">
+                          {isEn ? 'Disk image' : 'Disk-Image'} (.dmg)
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {isEn ? 'Advanced · needs a manual quarantine step' : 'Fortgeschritten · manueller Quarantäne-Schritt nötig'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">{formatBytes(macDmgAsset.size)}</span>
+                    </a>
+                  ) : null}
+                  {/* Erststart-Hinweis: .pkg einfach, .dmg braucht Terminal-Schritt */}
                   <div className="mt-1 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
                     <p className="font-semibold mb-1">
-                      {isEn ? 'macOS says “damaged” or won’t open?' : 'macOS meldet „beschädigt" oder öffnet nicht?'}
+                      {isEn ? 'First launch on macOS' : 'Erster Start auf macOS'}
                     </p>
                     <p className="mb-2 text-amber-800">
                       {isEn
-                        ? 'The app is not yet Apple-signed. Move it to “Applications”, then run this once in Terminal:'
-                        : 'Die App ist noch nicht Apple-signiert. Zuerst in „Programme" verschieben, dann einmalig im Terminal ausführen:'}
+                        ? 'The app is not yet Apple-signed. With the .pkg, just right-click it → “Open” once — it installs and removes the quarantine automatically.'
+                        : 'Die App ist noch nicht Apple-signiert. Bei der .pkg einfach einmal per Rechtsklick → „Öffnen" starten — sie installiert und entfernt die Quarantäne automatisch.'}
+                    </p>
+                    <p className="mb-1 text-amber-800">
+                      {isEn
+                        ? 'Only if you used the .dmg and macOS says “damaged”, run once in Terminal:'
+                        : 'Nur falls du die .dmg genutzt hast und macOS „beschädigt" meldet, einmalig im Terminal:'}
                     </p>
                     <code className="block bg-white border border-amber-200 rounded-lg px-2.5 py-1.5 font-mono text-amber-900 select-all break-all">
                       xattr -cr /Applications/AutoToDo.app
                     </code>
-                    <p className="mt-2 text-amber-800">
-                      {isEn
-                        ? 'Alternative: right-click the app → “Open”, then confirm “Open”.'
-                        : 'Alternativ: Rechtsklick auf die App → „Öffnen", dann „Öffnen" bestätigen.'}
-                    </p>
                   </div>
                 </>
               ) : (
