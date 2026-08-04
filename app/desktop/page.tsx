@@ -137,23 +137,43 @@ export default async function DesktopPage() {
                       <span className="text-xs text-gray-400 shrink-0">{formatBytes(macDmgAsset.size)}</span>
                     </a>
                   ) : null}
-                  {/* Erststart-Hinweis: .pkg einfach, .dmg braucht Terminal-Schritt */}
+                  {/* Erststart-Hinweis: unsigniert → macOS meldet „nicht überprüft"; Freigabe via Systemeinstellungen */}
                   <div className="mt-1 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
                     <p className="font-semibold mb-1">
                       {isEn ? 'First launch on macOS' : 'Erster Start auf macOS'}
                     </p>
                     <p className="mb-2 text-amber-800">
                       {isEn
-                        ? 'The app is not yet Apple-signed. With the .pkg, just right-click it → “Open” once — it installs and removes the quarantine automatically.'
-                        : 'Die App ist noch nicht Apple-signiert. Bei der .pkg einfach einmal per Rechtsklick → „Öffnen" starten — sie installiert und entfernt die Quarantäne automatisch.'}
+                        ? 'The app is not Apple-notarized, so macOS shows “cannot verify …”. Approve it once:'
+                        : 'Die App ist nicht Apple-notarisiert — macOS zeigt daher „konnte nicht überprüfen …". Einmalig freigeben:'}
                     </p>
-                    <p className="mb-1 text-amber-800">
-                      {isEn
-                        ? 'Only if you used the .dmg and macOS says “damaged”, run once in Terminal:'
-                        : 'Nur falls du die .dmg genutzt hast und macOS „beschädigt" meldet, einmalig im Terminal:'}
+                    <ol className="list-decimal ml-4 space-y-1 text-amber-800">
+                      <li>
+                        {isEn
+                          ? 'In the dialog click “Done” (not “Move to Trash”).'
+                          : 'Im Dialog auf „Fertig" klicken (nicht „In den Papierkorb legen").'}
+                      </li>
+                      <li>
+                        {isEn
+                          ? 'Open System Settings → Privacy & Security.'
+                          : 'Systemeinstellungen → Datenschutz & Sicherheit öffnen.'}
+                      </li>
+                      <li>
+                        {isEn
+                          ? 'Scroll down to “Security” and click “Open Anyway” next to AutoToDo-Installer.pkg.'
+                          : 'Ganz unten bei „Sicherheit" auf „Trotzdem öffnen" neben AutoToDo-Installer.pkg klicken.'}
+                      </li>
+                      <li>
+                        {isEn
+                          ? 'Confirm with Touch ID / password, then click “Open”. The installer runs.'
+                          : 'Mit Touch ID / Passwort bestätigen, dann „Öffnen". Der Installer läuft durch.'}
+                      </li>
+                    </ol>
+                    <p className="mt-2 mb-1 text-amber-800">
+                      {isEn ? 'Prefer Terminal? Run once, then double-click the .pkg:' : 'Lieber Terminal? Einmal ausführen, dann .pkg doppelklicken:'}
                     </p>
                     <code className="block bg-white border border-amber-200 rounded-lg px-2.5 py-1.5 font-mono text-amber-900 select-all break-all">
-                      xattr -cr /Applications/AutoToDo.app
+                      xattr -d com.apple.quarantine ~/Downloads/AutoToDo-Installer.pkg
                     </code>
                   </div>
                 </>
