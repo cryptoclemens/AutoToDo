@@ -171,8 +171,8 @@ export default async function ProjectPage({ params }: Props) {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4 mb-6">
+        <div className="min-w-0">
           <ProjectTitleEditor
             projectId={project.id}
             initialName={project.name}

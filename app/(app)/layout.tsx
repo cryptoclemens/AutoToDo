@@ -30,16 +30,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq('user_id', user.id)
     .maybeSingle() as { data: { role: string } | null }
 
-  // Project-scoped users are in project_members but not workspace_members — allow them through
+  // Project-scoped users are in project_members but not workspace_members — allow them
+  // through UND ihre tatsächliche Projektrolle anzeigen (statt fälschlich "Viewer").
+  let displayRole = member?.role ?? null
   if (!member) {
-    const { data: pm } = await supabase
+    // Höchste Projektrolle als Anzeige-Rolle wählen (project_admin > editor > viewer)
+    const { data: pmRows } = await supabase
       .from('project_members')
-      .select('project_id')
-      .eq('user_id', user.id)
-      .limit(1)
-      .maybeSingle()
+      .select('role')
+      .eq('user_id', user.id) as { data: { role: string }[] | null }
 
-    if (!pm) redirect('/onboarding')
+    if (!pmRows || pmRows.length === 0) redirect('/onboarding')
+    const rank: Record<string, number> = { project_admin: 3, editor: 2, viewer: 1 }
+    displayRole = (pmRows ?? []).map(r => r.role).sort((a, b) => (rank[b] ?? 0) - (rank[a] ?? 0))[0] ?? 'viewer'
   }
 
   const brandColor = workspace.brand_color ?? '#2563EB'
@@ -54,7 +57,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <WorkspaceNav
           workspace={workspace}
-          userRole={member?.role ?? 'viewer'}
+          userRole={displayRole ?? 'viewer'}
           userId={user.id}
           isSuperAdmin={superAdmin}
         />

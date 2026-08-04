@@ -120,13 +120,42 @@ export default async function DesktopPage() {
                       <span className="text-xs text-gray-400 shrink-0">{formatBytes(macDmgAsset.size)}</span>
                     </a>
                   ) : null}
-                  {/* Gatekeeper hint */}
-                  <p className="text-xs text-gray-400 px-1">
-                    {isEn
-                      ? 'After installing, run once in Terminal: '
-                      : 'Nach der Installation einmalig im Terminal ausführen: '}
-                    <code className="text-gray-300">xattr -cr /Applications/AutoToDo.app</code>
-                  </p>
+                  {/* PKG als Alternative (Installer) */}
+                  {macPkgAsset ? (
+                    <a
+                      href="/api/desktop/download?type=mac-pkg"
+                      className="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                      <div>
+                        <span className="font-medium text-sm block text-gray-800">
+                          {isEn ? 'Installer' : 'Installer'} (.pkg)
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {isEn ? 'Guided installation' : 'Geführte Installation'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">{formatBytes(macPkgAsset.size)}</span>
+                    </a>
+                  ) : null}
+                  {/* Gatekeeper-Hinweis – prominent, weil unsignierte App als „beschädigt" gemeldet wird */}
+                  <div className="mt-1 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
+                    <p className="font-semibold mb-1">
+                      {isEn ? 'macOS says “damaged” or won’t open?' : 'macOS meldet „beschädigt" oder öffnet nicht?'}
+                    </p>
+                    <p className="mb-2 text-amber-800">
+                      {isEn
+                        ? 'The app is not yet Apple-signed. Move it to “Applications”, then run this once in Terminal:'
+                        : 'Die App ist noch nicht Apple-signiert. Zuerst in „Programme" verschieben, dann einmalig im Terminal ausführen:'}
+                    </p>
+                    <code className="block bg-white border border-amber-200 rounded-lg px-2.5 py-1.5 font-mono text-amber-900 select-all break-all">
+                      xattr -cr /Applications/AutoToDo.app
+                    </code>
+                    <p className="mt-2 text-amber-800">
+                      {isEn
+                        ? 'Alternative: right-click the app → “Open”, then confirm “Open”.'
+                        : 'Alternativ: Rechtsklick auf die App → „Öffnen", dann „Öffnen" bestätigen.'}
+                    </p>
+                  </div>
                 </>
               ) : (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
