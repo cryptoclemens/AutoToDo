@@ -375,3 +375,10 @@ Fehler beim Download - sowohl auf MacOS als auch Windows.
 Bitte verbessern!
 
 ---
+## F-031 | 2026-08-11 08:10:42 | ✨ Feature-Wunsch
+**Workspace:** Vencly
+**Nutzer:** markus.wanzek@plenum.de
+
+Wissensdatenbank für Namen & Schreibweisen
+
+---
