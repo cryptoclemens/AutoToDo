@@ -1,0 +1,71 @@
+name: Feedback → Telegram
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'feedback.md'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Neue Feedback-Einträge erkennen und Telegram-Nachricht senden
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          python3 << 'PYEOF'
+          import os, re, subprocess, urllib.request, json
+
+          token = os.environ['TELEGRAM_BOT_TOKEN']
+          chat_id = os.environ['TELEGRAM_CHAT_ID']
+          repo = os.environ['REPO']
+          sha = os.environ['COMMIT_SHA'][:7]
+
+          result = subprocess.run(
+              ['git', 'diff', 'HEAD~1', 'HEAD', '--', 'feedback.md'],
+              capture_output=True, text=True
+          )
+
+          added = [l[1:] for l in result.stdout.split('\n')
+                   if l.startswith('+') and not l.startswith('+++')]
+
+          # Eintraege gruppieren (beginnen mit '## F-', '## B-', '## G-')
+          entries, current = [], []
+          for line in added:
+              if re.match(r'^## [FBG]-\d+', line):
+                  if current:
+                      entries.append('\n'.join(current))
+                  current = [line]
+              elif current:
+                  current.append(line)
+          if current:
+              entries.append('\n'.join(current))
+
+          if not entries:
+              print('Keine neuen Eintraege – nichts zu senden.')
+              exit(0)
+
+          for entry in entries:
+              preview = entry[:900] + ('…' if len(entry) > 900 else '')
+              # Sonderzeichen fuer HTML escapen
+              for ch, esc in [('&','&amp;'),('<','&lt;'),('>','&gt;')]:
+                  preview = preview.replace(ch, esc)
+              text = f'🔔 <b>Neues Feedback – {repo}</b> ({sha})\n\n<pre>{preview}</pre>'
+              data = json.dumps({'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML'}).encode()
+              req = urllib.request.Request(
+                  f'https://api.telegram.org/bot{token}/sendMessage',
+                  data=data,
+                  headers={'Content-Type': 'application/json'}
+              )
+              with urllib.request.urlopen(req) as resp:
+                  body = json.loads(resp.read())
+                  print('Gesendet:', body.get('result', {}).get('message_id'))
+          PYEOF
