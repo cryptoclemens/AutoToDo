@@ -154,15 +154,16 @@ Stimm-Profile sind **biometrische Daten, Art. 9 DSGVO (besondere Kategorie)**:
 
 ## 9. Phasierung
 
-### Phase 1 — Quick Win (ohne Audio-ML)
-Kalender-Teilnehmerliste als Kandidaten + **bestehende F-024-LLM-Zuordnung darauf einschränken** + Bestätigungs-UI.
-- [ ] Migration 045 (`meeting_calendar_links`)
-- [ ] `.ics`-Upload + `POST …/calendar-link`; E-Mail→`user_id`-Matching
-- [ ] LLM-Prompt in `lib/processTranscript.ts` auf Kandidatenliste constrainen
-- [ ] `speaker_map`-Format auf `{user_id,name,confidence,source}` umstellen
-- [ ] `SpeakerAssignPanel` (manuelle Bestätigung) + `GET/POST …/speakers`
-- [ ] `responsible_user_id` aus bestätigtem Sprecher belegen
-- [ ] Ergebnis: sofort weniger Halluzination, nutzt vorhandene Pipeline
+### Phase 1 — Quick Win (ohne Audio-ML) — ✅ deployed 2026-09-21 (F-031)
+Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschränken** + Bestätigungs-UI.
+- [x] Migration 045 (`meeting_calendar_links`)
+- [x] `.ics`-Upload + `POST/DELETE …/calendar-link`; E-Mail→`user_id`-Matching (`lib/ics.ts`, `lib/speakerCandidates.ts`)
+- [x] LLM-Zuordnung in `lib/processTranscript.ts` hart auf Kandidaten eingeschränkt (`resolveCandidate` verwirft halluzinierte Namen); `matched_user_id` aufgelöst, `source` markiert
+- [x] `SpeakerMapEntry` um `matched_user_id` + `source` erweitert (rückwärtskompatibel; Array-Format beibehalten statt Objekt-Keyed)
+- [x] `SpeakerAssignModal` (Kandidaten-Dropdown, `.ics`-Upload, manuelle Bestätigung) + `GET/POST …/speakers`
+- [ ] `responsible_user_id` aus bestätigtem Sprecher belegen — **bewusst verschoben** (kein sauberes 1:1 Sprecher→LOP-Punkt; Kandidat für Phase 2)
+- [ ] Kalender-**OAuth** (Google/MS) — Phase 1 liefert nur `.ics`/manuell; OAuth später
+- [x] Ergebnis: weniger Halluzination, nutzt vorhandene Pipeline
 
 ### Phase 2 — Echte Diarisierung
 - [ ] Desktop: `sherpa-onnx`-Sidecar (Segmentierung + Embedding + Clustering)
