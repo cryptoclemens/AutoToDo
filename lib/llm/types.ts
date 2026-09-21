@@ -48,7 +48,7 @@ export interface SpeakerMapEntry {
   matched_member: string | null  // matched display_name from workspace members / calendar attendees, or null
   confidence: 'high' | 'medium' | 'low'
   matched_user_id?: string | null // resolved account id (workspace/project member), or null
-  source?: 'llm' | 'manual' | 'calendar' // how the mapping was produced (default 'llm')
+  source?: 'llm' | 'manual' | 'calendar' | 'diarization' // how the mapping was produced (default 'llm')
 }
 
 export interface ProcessTranscriptResult {
