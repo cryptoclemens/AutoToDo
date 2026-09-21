@@ -44,3 +44,6 @@ supabase/.temp/
 .planning/research/
 
 .claude/
+
+# SDD scratch (subagent-driven-development)
+.superpowers/
