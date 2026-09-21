@@ -38,7 +38,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const access = await resolveProjectAccess(supabase, user.id, transcript.project_id)
   if (!access || !access.canEdit) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
 
-  const parsed = schema.safeParse(await req.json())
+  let raw: unknown
+  try {
+    raw = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
+  }
+  const parsed = schema.safeParse(raw)
   if (!parsed.success) return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
   const diar = parsed.data.diarization as DiarSeg[]
 
