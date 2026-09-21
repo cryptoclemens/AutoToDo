@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-031',
+    date: '21.09.2026',
+    title: 'Sprecher im Transkript zuordnen',
+    description: 'Bei fertigen Transkripten kannst du jetzt jedem erkannten Sprecher ein Mitglied zuordnen – die KI-Vorschläge sind auf echte Teilnehmer eingegrenzt, und du kannst eine Kalender-Einladung (.ics) anhängen, damit auch externe Teilnehmer als Auswahl erscheinen.',
+  },
+  {
     id: 'F-029',
     date: '29.06.2026',
     title: 'Aufgaben verschmelzen, verknüpfen und aufteilen',

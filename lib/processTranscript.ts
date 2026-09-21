@@ -1,7 +1,8 @@
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { decrypt } from '@/lib/encryption'
 import { processTranscriptWithLlm } from '@/lib/llm/factory'
-import type { LlmConfig } from '@/lib/llm/types'
+import type { LlmConfig, SpeakerMapEntry } from '@/lib/llm/types'
+import { buildCandidates, resolveCandidate, type CalendarAttendee } from '@/lib/speakerCandidates'
 import { sendPostMeetingTodoEmails } from '@/lib/email/postMeetingNotify'
 
 const CONFIDENCE_AUTO = 0.85
@@ -322,10 +323,32 @@ export async function runTranscriptProcessing(transcriptId: string): Promise<{
       }
     } catch { /* migration 027 not yet deployed */ }
 
-    // Save speaker map (resilient — silently skips if migration not yet deployed)
+    // Save speaker map (resilient — silently skips if migration not yet deployed).
+    // Diarisierung Phase 1: LLM-Zuordnung strikt auf Kandidaten (Mitglieder + Kalender-
+    // Teilnehmer) einschränken, matched_member auf user_id auflösen, source markieren.
     try {
-      const speakerMap = (result.speaker_map ?? []).filter(s => s.speaker_label?.trim())
-      if (speakerMap.length > 0) {
+      const rawSpeakerMap = (result.speaker_map ?? []).filter(s => s.speaker_label?.trim())
+      if (rawSpeakerMap.length > 0) {
+        // Kalender-Teilnehmer (falls verknüpft) als zusätzliche Kandidaten laden
+        let attendees: CalendarAttendee[] = []
+        try {
+          const { data: link } = await supabase
+            .from('meeting_calendar_links').select('attendees')
+            .eq('transcript_id', transcriptId).maybeSingle() as { data: { attendees: CalendarAttendee[] } | null }
+          attendees = link?.attendees ?? []
+        } catch { /* Migration 045 noch nicht deployed */ }
+
+        const candidates = buildCandidates(allMemberRows, attendees)
+        const speakerMap: SpeakerMapEntry[] = rawSpeakerMap.map(s => {
+          const { matched_member, matched_user_id } = resolveCandidate(s.matched_member, candidates)
+          return {
+            speaker_label: s.speaker_label,
+            matched_member,
+            matched_user_id,
+            confidence: s.confidence,
+            source: 'llm' as const,
+          }
+        })
         await supabase.from('transcripts').update({
           speaker_map: speakerMap,
         }).eq('id', transcriptId)

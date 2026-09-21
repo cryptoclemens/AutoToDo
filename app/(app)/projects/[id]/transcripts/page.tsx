@@ -11,6 +11,7 @@ import TranscriptsRefresher from './TranscriptsRefresher'
 import { RetryButton } from './RetryButton'
 import TranscriptTextModal from '@/components/transcripts/TranscriptTextModal'
 import TranscriptChangesModal from '@/components/transcripts/TranscriptChangesModal'
+import SpeakerAssignModal from '@/components/transcripts/SpeakerAssignModal'
 
 interface Props {
   params: { id: string }
@@ -186,6 +187,9 @@ export default async function TranscriptsPage({ params }: Props) {
                           transcriptId={t.id}
                           filename={t.original_filename ?? 'Transkript'}
                         />
+                      )}
+                      {t.processing_status === 'done' && (
+                        <SpeakerAssignModal transcriptId={t.id} />
                       )}
                       {(t.processing_status === 'pending' || t.processing_status === 'processing' || t.processing_status === 'error') && canUpload && (
                         <RetryButton transcriptId={t.id} />
