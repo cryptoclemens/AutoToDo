@@ -14,6 +14,7 @@ import WebhooksSettings from './WebhooksSettings'
 import AuditLog from './AuditLog'
 import BillingTab from './BillingTab'
 import NotionIntegrationForm from './NotionIntegrationForm'
+import CalendarIntegrationForm from './CalendarIntegrationForm'
 import { AudioSettingsTab } from './AudioSettingsTab'
 import { Plan } from '@/lib/plans'
 import { BUNDESLAENDER } from '@/lib/holidays'
@@ -72,6 +73,13 @@ interface Props {
     transcriptsThisMonth: number
   }
   notionInitial: { configured: boolean; connectedAt: string | null }
+  calendarInitial: {
+    connected: boolean
+    provider: string | null
+    account: { email: string | null; name: string | null } | null
+    connectedAt: string | null
+    microsoftAvailable: boolean
+  }
   version?: string
 }
 
@@ -88,7 +96,7 @@ const TAB_IDS: Array<{ id: Tab; adminOnly?: boolean }> = [
   { id: 'audio' },
 ]
 
-export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial, version }: Props) {
+export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pendingInvitations, llmInitial, apiKeys, mollieEnabled, billing, notionInitial, calendarInitial, version }: Props) {
   const [tab, setTab] = useState<Tab>('konto')
   const ts = useTranslations('settings')
 
@@ -452,6 +460,15 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
               Importiere Meeting-Notizen direkt aus Notion in AutoToDo. Die KI extrahiert daraus automatisch LOP-Punkte.
             </p>
             <NotionIntegrationForm initial={notionInitial} />
+          </div>
+
+          <div className="border-t border-gray-100 pt-8">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Kalender (Microsoft 365)</h2>
+            <p className="text-xs text-gray-500 mb-6">
+              Verbinde deinen Kalender, damit AutoToDo beim Zuordnen von Sprechern die echten
+              Meeting-Teilnehmer als Vorschläge nutzt – statt Namen zu raten.
+            </p>
+            <CalendarIntegrationForm initial={calendarInitial} />
           </div>
         </div>
       )}

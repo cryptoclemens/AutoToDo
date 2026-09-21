@@ -17,6 +17,18 @@ interface SpeakersResponse {
   canEdit: boolean
 }
 
+interface CalEvent {
+  id: string
+  subject: string | null
+  starts_at: string | null
+  attendees: { name: string | null; email: string | null }[]
+}
+interface CalEventsResponse {
+  connected: boolean
+  available: boolean
+  events: CalEvent[]
+}
+
 const CONF_BADGE: Record<string, string> = {
   high: 'bg-green-50 text-green-700 border-green-200',
   medium: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -36,6 +48,9 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
   const [icsBusy, setIcsBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [events, setEvents] = useState<CalEvent[]>([])
+  const [calConnected, setCalConnected] = useState(false)
+  const [calBusy, setCalBusy] = useState(false)
   // speaker_label -> ausgewählter Wert (user_id | "n:Name" | "")
   const [sel, setSel] = useState<Record<string, string>>({})
 
@@ -58,7 +73,31 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
     } finally { setLoading(false) }
   }
 
-  function handleOpen() { setOpen(true); if (!data) load() }
+  // Verbundenen Kalender best-effort abrufen (blockiert das Modal nicht).
+  async function loadEvents() {
+    try {
+      const res = await fetch(`/api/transcripts/${transcriptId}/calendar-events`)
+      if (!res.ok) return
+      const d: CalEventsResponse = await res.json()
+      setCalConnected(d.connected)
+      setEvents(d.events ?? [])
+    } catch { /* Kalender optional */ }
+  }
+
+  async function pickEvent(eventId: string) {
+    if (!eventId) return
+    setCalBusy(true); setError('')
+    try {
+      const res = await fetch(`/api/transcripts/${transcriptId}/calendar-link`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id: eventId }),
+      })
+      if (!res.ok) { setError((await res.json()).error ?? 'Meeting konnte nicht verknüpft werden.'); return }
+      await load()
+    } finally { setCalBusy(false) }
+  }
+
+  function handleOpen() { setOpen(true); if (!data) { load(); loadEvents() } }
 
   async function handleIcs(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -139,6 +178,24 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
                       <p className="text-xs text-gray-500">
                         Kein Kalender verknüpft. Teilnehmer aus einer .ics-Datei als Kandidaten hinzufügen:
                       </p>
+                    )}
+                    {data.canEdit && calConnected && events.length > 0 && (
+                      <div className="mt-2">
+                        <select
+                          defaultValue=""
+                          disabled={calBusy}
+                          onChange={ev => pickEvent(ev.target.value)}
+                          className="w-full h-8 text-xs border border-gray-200 rounded-lg px-2 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                        >
+                          <option value="">{calBusy ? 'Wird verknüpft…' : '📅 Meeting aus Microsoft 365 wählen…'}</option>
+                          {events.map(ev => (
+                            <option key={ev.id} value={ev.id}>
+                              {ev.starts_at ? `${new Date(ev.starts_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} · ` : ''}
+                              {ev.subject ?? 'Ohne Titel'} ({ev.attendees.length})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     )}
                     {data.canEdit && (
                       <label className="inline-flex items-center gap-2 mt-2 text-xs text-blue-600 hover:text-blue-700 cursor-pointer">

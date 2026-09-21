@@ -4,6 +4,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { resolveProjectAccess } from '@/lib/projectAccess'
 import { parseIcs } from '@/lib/ics'
+import { getValidAccessToken, fetchEvent } from '@/lib/microsoftCalendar'
 
 function serviceDb() {
   return createServiceClient(
@@ -30,6 +31,7 @@ async function auth(req: NextRequest, transcriptId: string) {
 
 const schema = z.object({
   ics: z.string().max(500_000).optional(),
+  event_id: z.string().max(512).optional(),   // Microsoft-Graph-Event-ID
   title: z.string().max(300).nullable().optional(),
   starts_at: z.string().datetime().nullable().optional(),
   attendees: z.array(z.object({
@@ -50,9 +52,22 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   let starts_at = parsed.data.starts_at ?? null
   let ends_at: string | null = null
   let attendees = (parsed.data.attendees ?? []).map(a => ({ name: a.name ?? null, email: a.email ?? null }))
-  let provider: 'ics' | 'manual' = 'manual'
+  let provider: 'ics' | 'manual' | 'microsoft' = 'manual'
+  let event_id: string | null = null
 
-  if (parsed.data.ics && parsed.data.ics.trim()) {
+  if (parsed.data.event_id) {
+    // Microsoft-365-Event: Teilnehmer live aus Graph laden (Workspace-Kalender).
+    const token = await getValidAccessToken(ctx.supabase, ctx.transcript.workspace_id)
+    if (!token) return NextResponse.json({ error: 'Kalender nicht verbunden.' }, { status: 400 })
+    const ev = await fetchEvent(token, parsed.data.event_id)
+    if (!ev) return NextResponse.json({ error: 'Meeting nicht gefunden.' }, { status: 404 })
+    provider = 'microsoft'
+    event_id = ev.id
+    title = title ?? ev.subject ?? null
+    starts_at = starts_at ?? ev.starts_at ?? null
+    ends_at = ev.ends_at ?? null
+    attendees = ev.attendees.map(a => ({ name: a.name ?? null, email: a.email ?? null }))
+  } else if (parsed.data.ics && parsed.data.ics.trim()) {
     const ev = parseIcs(parsed.data.ics)
     provider = 'ics'
     title = title ?? ev.title ?? null
@@ -70,6 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       transcript_id: ctx.transcript.id,
       workspace_id: ctx.transcript.workspace_id,
       provider,
+      event_id,
       title,
       starts_at,
       ends_at,

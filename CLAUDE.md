@@ -173,6 +173,9 @@ Für LLM-API-Key-Speicherung ist `ENCRYPTION_SECRET` (64-Hex-Zeichen) zwingend e
 openssl rand -hex 32
 ```
 
+### 11b. Kalender-OAuth (Microsoft 365) — optionale Env
+Für die Kalenderanbindung (F-032, `lib/microsoftCalendar.ts`) müssen `MICROSOFT_CLIENT_ID` + `MICROSOFT_CLIENT_SECRET` (optional `MICROSOFT_TENANT`, Default `common`) gesetzt sein. Redirect-URI in der Azure-App: `${NEXT_PUBLIC_APP_URL}/api/settings/integrations/calendar/microsoft/callback`. Fehlen die Variablen, ist die Integration inaktiv (`isMicrosoftConfigured()` → UI zeigt Einrichtungshinweis, keine Fehler). Tokens werden mit `ENCRYPTION_SECRET` verschlüsselt in `workspace_calendar_configs` abgelegt (Service-Role-only, keine RLS-Policy).
+
 ### 12. next-intl – Neue Übersetzungsschlüssel
 Client Components: `useTranslations('namespace')` → `t('key')`
 Server Components: `await getTranslations('namespace')` → `t('key')`

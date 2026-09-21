@@ -60,7 +60,7 @@ Audio ─▶ ASR (Whisper, Wort-Zeitstempel)
 
 ## 5. Datenmodell (neue Migrationen)
 
-Aktueller Stand: höchste Migration = **044**. pgvector ist im `supabase-db` verfügbar, aber noch nicht aktiviert.
+Aktueller Stand: höchste Migration = **046**. 045 (`meeting_calendar_links`) und 046 (`workspace_calendar_configs`, Kalender-OAuth) sind angewendet. pgvector ist im `supabase-db` verfügbar, aber noch nicht aktiviert.
 
 ### 045_meeting_calendar_links.sql
 ```sql
@@ -80,7 +80,7 @@ CREATE INDEX idx_mcl_transcript ON meeting_calendar_links(transcript_id);
 -- RLS analog zu transcripts: Zugriff über Workspace-/Projektmitgliedschaft
 ```
 
-### 046_transcript_diarization.sql
+### 047_transcript_diarization.sql
 ```sql
 ALTER TABLE transcripts
   ADD COLUMN IF NOT EXISTS diarization JSONB DEFAULT NULL;
@@ -97,7 +97,7 @@ COMMENT ON COLUMN transcripts.diarization IS
 //        source ∈ voiceprint | llm | manual | calendar
 ```
 
-### 047_member_voiceprints.sql
+### 048_member_voiceprints.sql
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -162,18 +162,19 @@ Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschrä
 - [x] `SpeakerMapEntry` um `matched_user_id` + `source` erweitert (rückwärtskompatibel; Array-Format beibehalten statt Objekt-Keyed)
 - [x] `SpeakerAssignModal` (Kandidaten-Dropdown, `.ics`-Upload, manuelle Bestätigung) + `GET/POST …/speakers`
 - [x] `responsible_user_id` aus bestätigtem Sprecher belegen — der bestätigte `speaker_map` dient als **autoritative Namen→user_id-Tabelle**; `resolveResponsibleFromConfirmed` überträgt sie auf `lop_items.responsible_user_id` desselben Transkripts (nur eindeutige Voll-/Vornamens-Treffer, kein Raten). Kein 1:1 Sprecher→Punkt angenommen. POST `…/speakers` liefert `responsibleUpdated`, Modal zeigt Rückmeldung.
-- [ ] Kalender-**OAuth** (Google/MS) — Phase 1 liefert `.ics`/manuell; OAuth ist ein **eigener Track** (braucht Google-Cloud-/Azure-App-Registrierung + Client-Secrets, Token-Tabelle, Callback-Flow) und wird separat aufgesetzt, sobald die Credentials vorliegen. Siehe §10.3.
+- [x] Kalender-**OAuth (Microsoft 365)** — voller Authorization-Code-Flow (F-032): Migration `046_workspace_calendar_configs` (verschlüsselte Tokens, Service-Role-only), `lib/microsoftCalendar.ts` (Consent-URL, Code-Austausch, Token-Refresh, Graph-`calendarView`/`events`), Routen `…/calendar/microsoft/connect|callback`, `…/calendar` (Status/Trennen), `…/[id]/calendar-events`; `calendar-link` akzeptiert nun `event_id` (lädt Teilnehmer live aus Graph). UI: „Mit Microsoft 365 verbinden" in den Integrationen + Meeting-Auswahl im `SpeakerAssignModal`. **Server-Setup nötig:** `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, optional `MICROSOFT_TENANT` (Default `common`); Redirect-URI `${NEXT_PUBLIC_APP_URL}/api/settings/integrations/calendar/microsoft/callback`. Ohne diese Env-Variablen ist die Integration inaktiv (UI zeigt Hinweis).
+- [ ] Kalender-**OAuth (Google)** — analog, noch offen (eigener Track).
 - [x] Ergebnis: weniger Halluzination, nutzt vorhandene Pipeline
 
 ### Phase 2 — Echte Diarisierung
 - [ ] Desktop: `sherpa-onnx`-Sidecar (Segmentierung + Embedding + Clustering)
-- [ ] Migration 046 (`transcripts.diarization`)
+- [ ] Migration 047 (`transcripts.diarization`)
 - [ ] `POST …/diarize`; Merge Diarisierung × ASR-Wort-Zeitstempel
 - [ ] Server-Worker-Fallback (`whisperX`/`pyannote.audio`) für Web-Uploads
 - [ ] Farbcodierte Transkript-Ansicht
 
 ### Phase 3 — Voiceprints (Selbstlernen)
-- [ ] Migration 047 (`CREATE EXTENSION vector` + `member_voiceprints`)
+- [ ] Migration 048 (`CREATE EXTENSION vector` + `member_voiceprints`)
 - [ ] Consent-Flow + `/datenschutz`-Text (Art. 9)
 - [ ] pgvector-Kaskade Stufe 1 in `lib/diarization.ts`
 - [ ] Bestätigung speist Voiceprint (running average über `sample_count`)

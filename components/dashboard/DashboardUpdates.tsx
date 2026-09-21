@@ -12,6 +12,12 @@ interface Update {
 // Neueste Features zuerst – bei jedem neuen Feature hier ergänzen
 const UPDATES: Update[] = [
   {
+    id: 'F-032',
+    date: '21.09.2026',
+    title: 'Kalender verbinden (Microsoft 365)',
+    description: 'Admins können in den Einstellungen den Microsoft-365-Kalender verbinden. Beim Zuordnen von Sprechern kannst du dann das passende Meeting direkt auswählen – AutoToDo übernimmt die echten Teilnehmer automatisch als Vorschläge, statt sie aus einer .ics-Datei zu importieren.',
+  },
+  {
     id: 'F-031',
     date: '21.09.2026',
     title: 'Sprecher im Transkript zuordnen',

@@ -5,6 +5,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { resolveWorkspace } from '@/lib/workspace'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { isMollieConfigured } from '@/lib/mollie'
+import { isMicrosoftConfigured } from '@/lib/microsoftCalendar'
 import { APP_VERSION } from '@/lib/version'
 
 export default async function SettingsPage() {
@@ -114,6 +115,33 @@ export default async function SettingsPage() {
     } catch { /* Migration 018 not yet deployed – silently skip */ }
   }
 
+  // Load calendar (Microsoft 365) config (admin only, fallback if table doesn't exist yet)
+  let calendarInitial = {
+    connected: false,
+    provider: null as string | null,
+    account: null as { email: string | null; name: string | null } | null,
+    connectedAt: null as string | null,
+    microsoftAvailable: isMicrosoftConfigured(),
+  }
+  if (isAdmin) {
+    try {
+      const { data: calData } = await supabase
+        .from('workspace_calendar_configs')
+        .select('provider, account_email, account_name, connected_at')
+        .eq('workspace_id', workspace.id)
+        .maybeSingle() as {
+          data: { provider: string; account_email: string | null; account_name: string | null; connected_at: string | null } | null
+        }
+      if (calData) calendarInitial = {
+        connected: true,
+        provider: calData.provider,
+        account: { email: calData.account_email, name: calData.account_name },
+        connectedAt: calData.connected_at,
+        microsoftAvailable: isMicrosoftConfigured(),
+      }
+    } catch { /* Migration 046 not yet deployed – silently skip */ }
+  }
+
   return (
     <SettingsPageClient
       userEmail={user.email ?? ''}
@@ -132,6 +160,7 @@ export default async function SettingsPage() {
         transcriptsThisMonth: (usageData as { transcripts_month?: number } | null)?.transcripts_month ?? 0,
       }}
       notionInitial={notionInitial}
+      calendarInitial={calendarInitial}
       version={APP_VERSION}
     />
   )
