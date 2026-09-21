@@ -168,11 +168,13 @@ Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschrä
 - [x] Ergebnis: weniger Halluzination, nutzt vorhandene Pipeline
 
 ### Phase 2 — Echte Diarisierung
-- [ ] Desktop: `sherpa-onnx`-Sidecar (Segmentierung + Embedding + Clustering)
-- [ ] Migration 047 (`transcripts.diarization`)
-- [ ] `POST …/diarize`; Merge Diarisierung × ASR-Wort-Zeitstempel
-- [ ] Server-Worker-Fallback (`whisperX`/`pyannote.audio`) für Web-Uploads
-- [ ] Farbcodierte Transkript-Ansicht
+> Teil B (Desktop on-device via `sherpa-rs`) code-complete 2026-09-21, Server-/Web-Seite **live deployed**. Umsetzungsplan + Spec im Repo `autotodo-desktop` unter `docs/superpowers/`. Native Aktivierung braucht den lokalen Desktop-Build (whisper-rs/sherpa-rs/onnxruntime, macOS/Metal) + Modell-Download beim ersten Start.
+- [x] Desktop: `sherpa-rs`-Diarisierung (Segmentierung + Embedding + Clustering) in `diarize.rs`; Whisper-Segment-Zeitstempel (`whisper.rs`); Merge über max. zeitliche Überlappung; `stop_recording`/`retranscribe` liefern `diarization` (additiv, degradiert sauber auf Textpfad). Modell-Download bei Erstnutzung (Trigger in `DesktopRecordButton`).
+- [x] Migration 047 (`transcripts.diarization`) — angewendet + live.
+- [x] `POST …/diarize` — speichert Segmente + leitet initiale `speaker_map`-Cluster-Stubs ab (fließt in Phase-1-`SpeakerAssignModal`); live, Auth-Guards verifiziert.
+- [ ] Server-Worker-Fallback (`whisperX`/`pyannote.audio`) für Web-Uploads — offen (eigener Slice).
+- [ ] Farbcodierte Transkript-Ansicht (nutzt `transcripts.diarization`) — offen (eigener Slice).
+- [ ] Nativer Bau + Kalibrierung (User): `sherpa-rs`-0.6-API pinnen, k2-fsa-Modell-URLs, Whisper-`t0/t1` bei `set_no_timestamps(false)`, `CLUSTER_THRESHOLD`, onnxruntime-Bündelung/Notarisierung.
 
 ### Phase 3 — Voiceprints (Selbstlernen)
 - [ ] Migration 048 (`CREATE EXTENSION vector` + `member_voiceprints`)
