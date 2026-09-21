@@ -154,7 +154,8 @@ Stimm-Profile sind **biometrische Daten, Art. 9 DSGVO (besondere Kategorie)**:
 
 ## 9. Phasierung
 
-### Phase 1 — Quick Win (ohne Audio-ML) — ✅ deployed 2026-09-21 (F-031)
+### Phase 1 — Quick Win (ohne Audio-ML) — ✅ vollständig deployed 2026-09-21 (F-031 + F-032)
+> Abgeschlossen: Kandidaten + eingehegtes LLM-Matching + Bestätigungs-UI (F-031), `responsible_user_id`-Propagation aus bestätigtem Sprecher, sowie Microsoft-365-Kalender-OAuth inkl. Meeting-Auswahl (F-032, mit Zugriffs-/Datenschutz-Härtung: Kalenderdaten nur für Workspace-Mitglieder mit Edit-Recht, Konto-Details nur für Admins). Offen bleibt nur Google-OAuth (eigener Track).
 Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschränken** + Bestätigungs-UI.
 - [x] Migration 045 (`meeting_calendar_links`)
 - [x] `.ics`-Upload + `POST/DELETE …/calendar-link`; E-Mail→`user_id`-Matching (`lib/ics.ts`, `lib/speakerCandidates.ts`)
