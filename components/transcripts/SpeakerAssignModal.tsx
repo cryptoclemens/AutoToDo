@@ -35,6 +35,7 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
   const [saving, setSaving] = useState(false)
   const [icsBusy, setIcsBusy] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   // speaker_label -> ausgewählter Wert (user_id | "n:Name" | "")
   const [sel, setSel] = useState<Record<string, string>>({})
 
@@ -76,7 +77,7 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
 
   async function save() {
     if (!data) return
-    setSaving(true); setError('')
+    setSaving(true); setError(''); setNotice('')
     try {
       const assignments = data.speakerMap.map(e => {
         const v = sel[e.speaker_label] ?? ''
@@ -89,7 +90,14 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
         body: JSON.stringify({ assignments }),
       })
       if (!res.ok) { setError((await res.json()).error ?? 'Speichern fehlgeschlagen.'); return }
-      setOpen(false)
+      const body = await res.json().catch(() => ({}))
+      const n = typeof body.responsibleUpdated === 'number' ? body.responsibleUpdated : 0
+      if (n > 0) {
+        setNotice(`Gespeichert · ${n} Verantwortliche${n === 1 ? 'r' : ''} aktualisiert.`)
+        setTimeout(() => setOpen(false), 1400)
+      } else {
+        setOpen(false)
+      }
     } finally { setSaving(false) }
   }
 
@@ -116,6 +124,7 @@ export default function SpeakerAssignModal({ transcriptId }: { transcriptId: str
             <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
               {loading && <p className="text-sm text-gray-400 text-center py-8">Wird geladen…</p>}
               {error && <p className="text-sm text-red-600">{error}</p>}
+              {notice && <p className="text-sm text-green-700">{notice}</p>}
 
               {!loading && data && (
                 <>

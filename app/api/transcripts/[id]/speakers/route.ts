@@ -4,7 +4,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { resolveProjectAccess } from '@/lib/projectAccess'
 import { loadMemberRows } from '@/lib/memberRows'
-import { buildCandidates, type CalendarAttendee, type SpeakerCandidate } from '@/lib/speakerCandidates'
+import { buildCandidates, resolveResponsibleFromConfirmed, type CalendarAttendee, type ConfirmedSpeaker, type SpeakerCandidate } from '@/lib/speakerCandidates'
 import type { SpeakerMapEntry } from '@/lib/llm/types'
 
 function serviceDb() {
@@ -113,5 +113,42 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .eq('id', ctx.transcript.id)
   if (error) return NextResponse.json({ error: 'Speichern fehlgeschlagen.' }, { status: 500 })
 
-  return NextResponse.json({ ok: true, speakerMap })
+  // Propagation: bestätigte Sprecher-Identitäten auf die Verantwortlichen der
+  // LOP-Punkte dieses Transkripts übertragen. Der bestätigte speaker_map dient als
+  // autoritative Namen→user_id-Tabelle — es wird nur die Namensauflösung genutzt,
+  // NICHT angenommen, dass Sprecher == Verantwortlicher.
+  const responsibleUpdated = await propagateResponsible(ctx.supabase, ctx.transcript.id, speakerMap)
+
+  return NextResponse.json({ ok: true, speakerMap, responsibleUpdated })
+}
+
+async function propagateResponsible(
+  supabase: ReturnType<typeof serviceDb>,
+  transcriptId: string,
+  speakerMap: SpeakerMapEntry[],
+): Promise<number> {
+  const confirmed: ConfirmedSpeaker[] = speakerMap
+    .filter(e => e.matched_user_id && e.matched_member)
+    .map(e => ({ name: e.matched_member as string, user_id: e.matched_user_id as string }))
+  if (confirmed.length === 0) return 0
+
+  const { data: items } = await supabase
+    .from('lop_items')
+    .select('id, responsible, responsible_user_id')
+    .eq('transcript_id', transcriptId)
+    .not('responsible', 'is', null) as {
+      data: Array<{ id: string; responsible: string | null; responsible_user_id: string | null }> | null
+    }
+  if (!items || items.length === 0) return 0
+
+  let updated = 0
+  for (const item of items) {
+    const uid = resolveResponsibleFromConfirmed(item.responsible, confirmed)
+    if (!uid || uid === item.responsible_user_id) continue
+    const { error } = await supabase.from('lop_items')
+      .update({ responsible_user_id: uid })
+      .eq('id', item.id)
+    if (!error) updated++
+  }
+  return updated
 }

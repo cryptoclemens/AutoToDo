@@ -83,3 +83,41 @@ export function resolveCandidate(
   if (!c) return { matched_member: null, matched_user_id: null }
   return { matched_member: c.name, matched_user_id: c.user_id }
 }
+
+/** Ein bestätigter Sprecher, der einem echten Account zugeordnet wurde. */
+export interface ConfirmedSpeaker {
+  name: string
+  user_id: string
+}
+
+/**
+ * Propagiert bestätigte Sprecher-Identitäten auf einen (vom LLM als Freitext gelieferten)
+ * Verantwortlichen-Namen. Die manuelle Bestätigung dient hier als autoritative
+ * Namen→user_id-Tabelle – wir raten NICHT, dass Sprecher == Verantwortlicher, sondern
+ * nutzen nur die verlässliche Namensauflösung.
+ *
+ * Voll-Namens-Treffer zählen immer (sofern eindeutig). Ein Vornamens-Treffer zählt nur,
+ * wenn er innerhalb der bestätigten Sprecher auf genau eine user_id zeigt – sonst null
+ * (kein Raten bei gleichen Vornamen).
+ */
+export function resolveResponsibleFromConfirmed(
+  responsibleName: string | null | undefined,
+  confirmed: ConfirmedSpeaker[],
+): string | null {
+  if (!responsibleName || !responsibleName.trim()) return null
+  const n = norm(responsibleName)
+
+  // 1. exakter Voll-Name — nur wenn eindeutig auf eine user_id
+  const full = confirmed.filter(c => norm(c.name) === n)
+  if (full.length > 0) {
+    const uids = new Set(full.map(c => c.user_id))
+    return uids.size === 1 ? full[0].user_id : null
+  }
+
+  // 2. Vornamens-Treffer — nur wenn eindeutig
+  const nFirst = firstToken(responsibleName)
+  const byFirst = confirmed.filter(c => firstToken(c.name) === n || firstToken(c.name) === nFirst)
+  if (byFirst.length === 0) return null
+  const uids = new Set(byFirst.map(c => c.user_id))
+  return uids.size === 1 ? byFirst[0].user_id : null
+}

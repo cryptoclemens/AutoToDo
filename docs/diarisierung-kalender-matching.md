@@ -161,8 +161,8 @@ Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschrä
 - [x] LLM-Zuordnung in `lib/processTranscript.ts` hart auf Kandidaten eingeschränkt (`resolveCandidate` verwirft halluzinierte Namen); `matched_user_id` aufgelöst, `source` markiert
 - [x] `SpeakerMapEntry` um `matched_user_id` + `source` erweitert (rückwärtskompatibel; Array-Format beibehalten statt Objekt-Keyed)
 - [x] `SpeakerAssignModal` (Kandidaten-Dropdown, `.ics`-Upload, manuelle Bestätigung) + `GET/POST …/speakers`
-- [ ] `responsible_user_id` aus bestätigtem Sprecher belegen — **bewusst verschoben** (kein sauberes 1:1 Sprecher→LOP-Punkt; Kandidat für Phase 2)
-- [ ] Kalender-**OAuth** (Google/MS) — Phase 1 liefert nur `.ics`/manuell; OAuth später
+- [x] `responsible_user_id` aus bestätigtem Sprecher belegen — der bestätigte `speaker_map` dient als **autoritative Namen→user_id-Tabelle**; `resolveResponsibleFromConfirmed` überträgt sie auf `lop_items.responsible_user_id` desselben Transkripts (nur eindeutige Voll-/Vornamens-Treffer, kein Raten). Kein 1:1 Sprecher→Punkt angenommen. POST `…/speakers` liefert `responsibleUpdated`, Modal zeigt Rückmeldung.
+- [ ] Kalender-**OAuth** (Google/MS) — Phase 1 liefert `.ics`/manuell; OAuth ist ein **eigener Track** (braucht Google-Cloud-/Azure-App-Registrierung + Client-Secrets, Token-Tabelle, Callback-Flow) und wird separat aufgesetzt, sobald die Credentials vorliegen. Siehe §10.3.
 - [x] Ergebnis: weniger Halluzination, nutzt vorhandene Pipeline
 
 ### Phase 2 — Echte Diarisierung
