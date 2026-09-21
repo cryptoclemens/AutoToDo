@@ -27,6 +27,19 @@ export async function GET() {
     }
   } catch { /* Migration 046 noch nicht deployed */ }
 
+  // Konto-Details (E-Mail/Name des verbundenen Postfachs) sind nur für Admins bestimmt.
+  // Nicht-Admins erhalten lediglich den groben Verbindungsstatus.
+  if (!ctx.isAdmin) {
+    return NextResponse.json({
+      connected,
+      provider: null,
+      account: null,
+      connectedAt: null,
+      microsoftAvailable: isMicrosoftConfigured(),
+      isAdmin: false,
+    })
+  }
+
   return NextResponse.json({
     connected,
     provider,

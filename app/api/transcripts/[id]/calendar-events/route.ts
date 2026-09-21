@@ -26,7 +26,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   if (!transcript) return NextResponse.json({ error: 'Nicht gefunden.' }, { status: 404 })
 
   const access = await resolveProjectAccess(supabase, user.id, transcript.project_id)
-  if (!access) return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  // Der verbundene Kalender ist eine Workspace-Ressource (kompletter Kalender des
+  // verbindenden Kontos). Teilnehmer-E-Mails daraus dürfen NUR Workspace-Mitglieder
+  // mit Edit-Recht sehen — nicht Viewer und nicht workspace-fremde Projektmitglieder.
+  if (!access || !access.canEdit || access.source !== 'workspace') {
+    return NextResponse.json({ error: 'Keine Berechtigung.' }, { status: 403 })
+  }
 
   if (!isMicrosoftConfigured()) {
     return NextResponse.json({ connected: false, available: false, events: [] })

@@ -26,7 +26,7 @@ async function auth(req: NextRequest, transcriptId: string) {
   if (!transcript) return { error: 'Nicht gefunden.', status: 404 as const }
   const access = await resolveProjectAccess(supabase, user.id, transcript.project_id)
   if (!access || !access.canEdit) return { error: 'Keine Berechtigung.', status: 403 as const }
-  return { user, supabase, transcript }
+  return { user, supabase, transcript, access }
 }
 
 const schema = z.object({
@@ -57,6 +57,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   if (parsed.data.event_id) {
     // Microsoft-365-Event: Teilnehmer live aus Graph laden (Workspace-Kalender).
+    // Da der Kalender eine Workspace-Ressource ist und beliebige event_id abgefragt
+    // werden könnten, hier zusätzlich Workspace-Mitgliedschaft verlangen (nicht nur
+    // Projekt-Edit), damit workspace-fremde Projektmitglieder keine Events ziehen.
+    if (ctx.access.source !== 'workspace') {
+      return NextResponse.json({ error: 'Kalenderzugriff nur für Workspace-Mitglieder.' }, { status: 403 })
+    }
     const token = await getValidAccessToken(ctx.supabase, ctx.transcript.workspace_id)
     if (!token) return NextResponse.json({ error: 'Kalender nicht verbunden.' }, { status: 400 })
     const ev = await fetchEvent(token, parsed.data.event_id)
