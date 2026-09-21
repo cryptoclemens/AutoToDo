@@ -18,7 +18,7 @@ interface AutoToDoBridge {
   isPaused: () => boolean
   systemAudioDevice: () => string | null
   setSystemAudioDevice: (name: string | null) => Promise<void>
-  setTranscriptHandler: (fn: (transcript: string) => void) => void
+  setTranscriptHandler: (fn: (transcript: string, diarization?: unknown) => void) => void
   clearTranscriptHandler: () => void
   setStateHandler: (fn: (s: { recording: boolean; paused: boolean }) => void) => void
   clearStateHandler: () => void
@@ -243,7 +243,7 @@ export default function DesktopRecordButton({ projectId }: Props) {
     if (sys) setSelectedSysAudio(sys)
   }, [isMounted])
 
-  const handleTranscript = useCallback(async (transcript: string) => {
+  const handleTranscript = useCallback(async (transcript: string, diarization?: unknown) => {
     setRecordState('transcribing')
     setError(null)
     setResult(null)
@@ -257,6 +257,16 @@ export default function DesktopRecordButton({ projectId }: Props) {
       if (!res.ok) {
         setError(data.error ?? 'Unbekannter Fehler')
       } else {
+        // On-Device-Diarisierung (falls vorhanden) an den neuen Endpoint nachreichen.
+        if (data.id && Array.isArray(diarization) && diarization.length > 0) {
+          try {
+            await fetch(`/api/transcripts/${data.id}/diarize`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ diarization }),
+            })
+          } catch { /* Diarisierung ist additiv – Fehler nicht fatal */ }
+        }
         setResult({ created: data.itemsCreated ?? 0, updated: data.itemsUpdated ?? 0 })
         setTimeout(() => window.location.reload(), 2000)
       }
