@@ -243,6 +243,23 @@ export default function DesktopRecordButton({ projectId }: Props) {
     if (sys) setSelectedSysAudio(sys)
   }, [isMounted])
 
+  // On-Device-Diarisierungsmodelle einmalig best-effort sicherstellen (nicht blockierend).
+  useEffect(() => {
+    const tauri = getTauri()
+    if (!tauri) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const status = await tauri.core.invoke<[boolean, boolean]>('diarization_model_status')
+        if (cancelled) return
+        if (!status?.[0] || !status?.[1]) {
+          await tauri.core.invoke('download_diarization_models')
+        }
+      } catch { /* Diarisierung ist optional – Fehler nicht fatal */ }
+    })()
+    return () => { cancelled = true }
+  }, [])
+
   const handleTranscript = useCallback(async (transcript: string, diarization?: unknown) => {
     setRecordState('transcribing')
     setError(null)
