@@ -16,13 +16,15 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const { data: transcript } = await supabase
     .from('transcripts')
-    .select('id, project_id, storage_path, encrypted_content, original_filename')
+    .select('id, project_id, storage_path, encrypted_content, original_filename, diarization, speaker_map')
     .eq('id', params.id)
     .maybeSingle() as {
       data: {
         id: string; project_id: string
         storage_path: string | null; encrypted_content: string | null
         original_filename: string | null
+        diarization: Array<{ start: number; end: number; speaker_cluster: string; text: string }> | null
+        speaker_map: Array<{ speaker_label: string; matched_member: string | null }> | null
       } | null
     }
 
@@ -45,5 +47,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (!encryptedContent) return NextResponse.json({ error: 'Kein Transkript-Text gefunden.' }, { status: 404 })
 
   const text = decrypt(encryptedContent)
-  return NextResponse.json({ text, filename: transcript.original_filename })
+  return NextResponse.json({
+    text,
+    filename: transcript.original_filename,
+    diarization: transcript.diarization ?? null,
+    speakerMap: transcript.speaker_map ?? null,
+  })
 }
