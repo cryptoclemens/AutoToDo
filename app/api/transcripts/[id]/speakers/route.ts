@@ -6,6 +6,7 @@ import { resolveProjectAccess } from '@/lib/projectAccess'
 import { loadMemberRows } from '@/lib/memberRows'
 import { buildCandidates, resolveResponsibleFromConfirmed, type CalendarAttendee, type ConfirmedSpeaker, type SpeakerCandidate } from '@/lib/speakerCandidates'
 import type { SpeakerMapEntry } from '@/lib/llm/types'
+import { runningAverage, toVectorLiteral, l2normalize } from '@/lib/voiceprints'
 
 function serviceDb() {
   return createServiceClient(
@@ -17,6 +18,7 @@ function serviceDb() {
 type TranscriptRow = {
   id: string; project_id: string; workspace_id: string
   speaker_map: SpeakerMapEntry[] | null
+  cluster_embeddings: Record<string, number[]> | null
 }
 
 async function loadContext(req: NextRequest, transcriptId: string) {
@@ -27,7 +29,7 @@ async function loadContext(req: NextRequest, transcriptId: string) {
   const supabase = serviceDb()
   const { data: transcript } = await supabase
     .from('transcripts')
-    .select('id, project_id, workspace_id, speaker_map')
+    .select('id, project_id, workspace_id, speaker_map, cluster_embeddings')
     .eq('id', transcriptId)
     .maybeSingle() as { data: TranscriptRow | null }
   if (!transcript) return { error: 'Nicht gefunden.', status: 404 as const }
@@ -119,6 +121,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   // NICHT angenommen, dass Sprecher == Verantwortlicher.
   const responsibleUpdated = await propagateResponsible(ctx.supabase, ctx.transcript.id, speakerMap)
 
+  await feedbackVoiceprints(ctx.supabase, ctx.transcript.workspace_id, speakerMap, ctx.transcript.cluster_embeddings)
+
   return NextResponse.json({ ok: true, speakerMap, responsibleUpdated })
 }
 
@@ -151,4 +155,41 @@ async function propagateResponsible(
     if (!error) updated++
   }
   return updated
+}
+
+async function feedbackVoiceprints(
+  supabase: ReturnType<typeof serviceDb>,
+  workspaceId: string,
+  speakerMap: SpeakerMapEntry[],
+  clusterEmbeddings: Record<string, number[]> | null,
+): Promise<void> {
+  if (!clusterEmbeddings) return
+  for (const e of speakerMap) {
+    if (e.source !== 'manual' || !e.matched_user_id) continue
+    const emb = clusterEmbeddings[e.speaker_label]
+    if (!emb || emb.length === 0) continue
+    try {
+      const { data: existing } = await supabase
+        .from('member_voiceprints')
+        .select('embedding, sample_count')
+        .eq('workspace_id', workspaceId).eq('user_id', e.matched_user_id)
+        .maybeSingle() as { data: { embedding: string; sample_count: number } | null }
+      let vec = emb
+      let count = 1
+      if (existing) {
+        const old = JSON.parse(existing.embedding) as number[]  // pgvector liefert "[...]"
+        vec = runningAverage(old, existing.sample_count, emb)
+        count = existing.sample_count + 1
+      } else {
+        vec = l2normalize(emb)
+      }
+      await supabase.from('member_voiceprints').upsert({
+        workspace_id: workspaceId,
+        user_id: e.matched_user_id,
+        embedding: toVectorLiteral(vec),
+        sample_count: count,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'workspace_id,user_id' })
+    } catch { /* Rückspeisung ist additiv – Fehler nicht fatal */ }
+  }
 }
