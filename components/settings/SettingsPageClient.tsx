@@ -10,6 +10,7 @@ import WorkspaceInviteForm from '@/app/(app)/settings/members/WorkspaceInviteFor
 import { LlmSettingsForm } from '@/app/(app)/settings/llm/LlmSettingsForm'
 import ApiKeyList from '@/app/(app)/settings/api/ApiKeyList'
 import { AccountSettings } from './AccountSettings'
+import ForgetVoiceprintButton from './ForgetVoiceprintButton'
 import WebhooksSettings from './WebhooksSettings'
 import AuditLog from './AuditLog'
 import BillingTab from './BillingTab'
@@ -236,7 +237,10 @@ export function SettingsPageClient({ userEmail, isAdmin, workspace, members, pen
 
       {/* Konto */}
       {tab === 'konto' && (
-        <AccountSettings currentEmail={userEmail} />
+        <>
+          <AccountSettings currentEmail={userEmail} />
+          <ForgetVoiceprintButton />
+        </>
       )}
 
       {/* Workspace Branding */}
