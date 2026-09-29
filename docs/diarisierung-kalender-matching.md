@@ -185,8 +185,8 @@ Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschrä
 - [x] Kaskade Stufe 1: `matchVoiceprint` (Cosine via pgvector) in `/diarize` — Auto-Match `source:'voiceprint'` ab Schwelle 0.65 (nur bei leerer `speaker_map`).
 - [x] Bestätigung speist Voiceprint (`runningAverage`, `sample_count`) in `/speakers` POST — nur `source:'manual'`.
 - [x] „Stimmprofil vergessen" — `DELETE /api/settings/voiceprints` + Settings-Button.
-- [ ] **Slice B (Desktop, offen):** pro Cluster ein Embedding aus dem `sherpa-rs`-Diarizer exportieren + als `cluster_embeddings` an `/diarize` senden (Feasibility: ob die API das Embedding herausgibt). Erst dann werden Auto-Match + Rückspeisung real aktiv.
-- [ ] **Vor Slice-B-Aktivierung (aus Final-Review):** idempotente Rückspeisung (gegen `sample_count`-Inflation bei erneutem POST) [Prio], atomares Upsert der Mittelung, Log statt leerem catch, Threshold 0.65 kalibrieren (+ `runningAverage`-Normalisierungsdrift), i18n + Lösch-Bestätigung im Button.
+- [x] **Slice B (Desktop) — code-complete 2026-09-29** (Feasibility geklärt: `sherpa-rs` gibt bei der Diarisierung keine Embeddings heraus → separater `sherpa_rs::speaker_id::EmbeddingExtractor` mit demselben emb-Modell). Umsetzung: `Diarizer.compute_cluster_embeddings` (pro Cluster Segment-Audio → Embedding, Key `SPEAKER_{:02}`), `stop_recording`/`retranscribe` liefern `cluster_embeddings`, `bridge.js` reicht durch, `DesktopRecordButton` sendet sie an `/diarize` (Web live). **Aktivierung nach lokalem nativen Desktop-Build** (Rust/sherpa-rs/onnxruntime); dabei `sherpa-rs`-0.6-API verifizieren (`speaker_id`-Modulpfad, `ExtractorConfig`-Felder ggf. `..Default::default()`, `compute_speaker_embedding`-Signatur).
+- [ ] **Vor Produktiveinsatz (aus Final-Reviews, noch offen):** idempotente Rückspeisung (gegen `sample_count`-Inflation) [Prio], atomares Upsert der Mittelung, Log statt leerem catch, Threshold 0.65 kalibrieren (+ `runningAverage`-Normalisierungsdrift), i18n + Lösch-Bestätigung im Button, leeres `cluster_embeddings {}` desktop-seitig als `None` senden (spart überflüssigen Query).
 
 ## 10. Offene Entscheidungen
 
