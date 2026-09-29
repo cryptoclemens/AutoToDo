@@ -11,6 +11,8 @@ export default function ForgetVoiceprintButton() {
       const res = await fetch('/api/settings/voiceprints', { method: 'DELETE' })
       if (res.ok) toast.success('Stimmprofil gelöscht.')
       else toast.error('Löschen fehlgeschlagen.')
+    } catch {
+      toast.error('Löschen fehlgeschlagen.')
     } finally { setBusy(false) }
   }
   return (
