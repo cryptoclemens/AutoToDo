@@ -20,9 +20,11 @@ const schema = z.object({
     start: z.number(),
     end: z.number(),
     speaker_cluster: z.string().min(1).max(64),
-    text: z.string().max(20_000).optional().default(''),
-  })).max(5000),
-  cluster_embeddings: z.record(z.string(), z.array(z.number()).max(2048)).optional(),
+    text: z.string().max(5000).optional().default(''),
+  })).max(2000),
+  cluster_embeddings: z.record(z.string().min(1).max(64), z.array(z.number()).max(2048))
+    .refine(o => Object.keys(o).length <= 64, { message: 'Zu viele Cluster.' })
+    .optional(),
 })
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
