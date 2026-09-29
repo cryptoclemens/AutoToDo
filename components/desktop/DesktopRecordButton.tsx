@@ -18,7 +18,7 @@ interface AutoToDoBridge {
   isPaused: () => boolean
   systemAudioDevice: () => string | null
   setSystemAudioDevice: (name: string | null) => Promise<void>
-  setTranscriptHandler: (fn: (transcript: string, diarization?: unknown) => void) => void
+  setTranscriptHandler: (fn: (transcript: string, diarization?: unknown, clusterEmbeddings?: unknown) => void) => void
   clearTranscriptHandler: () => void
   setStateHandler: (fn: (s: { recording: boolean; paused: boolean }) => void) => void
   clearStateHandler: () => void
@@ -260,7 +260,7 @@ export default function DesktopRecordButton({ projectId }: Props) {
     return () => { cancelled = true }
   }, [])
 
-  const handleTranscript = useCallback(async (transcript: string, diarization?: unknown) => {
+  const handleTranscript = useCallback(async (transcript: string, diarization?: unknown, clusterEmbeddings?: unknown) => {
     setRecordState('transcribing')
     setError(null)
     setResult(null)
@@ -277,10 +277,14 @@ export default function DesktopRecordButton({ projectId }: Props) {
         // On-Device-Diarisierung (falls vorhanden) an den neuen Endpoint nachreichen.
         if (data.id && Array.isArray(diarization) && diarization.length > 0) {
           try {
+            const body: { diarization: unknown; cluster_embeddings?: unknown } = { diarization }
+            if (clusterEmbeddings && typeof clusterEmbeddings === 'object') {
+              body.cluster_embeddings = clusterEmbeddings
+            }
             await fetch(`/api/transcripts/${data.id}/diarize`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ diarization }),
+              body: JSON.stringify(body),
             })
           } catch { /* Diarisierung ist additiv – Fehler nicht fatal */ }
         }
