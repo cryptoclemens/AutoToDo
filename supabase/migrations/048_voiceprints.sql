@@ -24,3 +24,8 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   ORDER BY mv.embedding <=> p_embedding::vector
   LIMIT 1;
 $$;
+
+-- SECURITY DEFINER umgeht RLS -> nur Service-Role darf aufrufen (nicht anon/authenticated via PostgREST)
+REVOKE ALL ON FUNCTION match_voiceprint(UUID, TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION match_voiceprint(UUID, TEXT) FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION match_voiceprint(UUID, TEXT) TO service_role;
