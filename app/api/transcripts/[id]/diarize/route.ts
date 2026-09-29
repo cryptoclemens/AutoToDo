@@ -5,6 +5,8 @@ import { z } from 'zod'
 import { resolveProjectAccess } from '@/lib/projectAccess'
 import { deriveSpeakerStubs, type DiarSeg } from '@/lib/diarization'
 import type { SpeakerMapEntry } from '@/lib/llm/types'
+import { matchVoiceprint, VOICEPRINT_THRESHOLD } from '@/lib/voiceprints'
+import { loadMemberRows } from '@/lib/memberRows'
 
 function serviceDb() {
   return createServiceClient(
@@ -18,8 +20,9 @@ const schema = z.object({
     start: z.number(),
     end: z.number(),
     speaker_cluster: z.string().min(1).max(64),
-    text: z.string().max(5_000).optional().default(''),
-  })).max(2000),
+    text: z.string().max(20_000).optional().default(''),
+  })).max(5000),
+  cluster_embeddings: z.record(z.string(), z.array(z.number()).max(2048)).optional(),
 })
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -29,9 +32,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const supabase = serviceDb()
   const { data: transcript } = await supabase
-    .from('transcripts').select('id, project_id, speaker_map')
+    .from('transcripts').select('id, project_id, workspace_id, speaker_map')
     .eq('id', params.id).maybeSingle() as {
-      data: { id: string; project_id: string; speaker_map: SpeakerMapEntry[] | null } | null
+      data: { id: string; project_id: string; workspace_id: string; speaker_map: SpeakerMapEntry[] | null } | null
     }
   if (!transcript) return NextResponse.json({ error: 'Nicht gefunden.' }, { status: 404 })
 
@@ -49,9 +52,31 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const diar = parsed.data.diarization as DiarSeg[]
 
   const update: Record<string, unknown> = { diarization: diar }
+  const embeddings = parsed.data.cluster_embeddings ?? null
+  if (embeddings) update.cluster_embeddings = embeddings
+
   // speaker_map nur befüllen, wenn noch nichts zugeordnet wurde (Bestätigungen nicht überschreiben)
   const existing = transcript.speaker_map ?? []
-  if (existing.length === 0) update.speaker_map = deriveSpeakerStubs(diar)
+  if (existing.length === 0) {
+    const stubs = deriveSpeakerStubs(diar)
+    if (embeddings) {
+      // Anzeigenamen der Mitglieder für aufgelöste user_id
+      const members = await loadMemberRows(supabase, transcript.workspace_id, transcript.project_id)
+      const nameByUid = new Map(members.map(m => [m.user_id, m.display_name]))
+      for (const stub of stubs) {
+        const emb = embeddings[stub.speaker_label]
+        if (!emb) continue
+        const match = await matchVoiceprint(supabase, transcript.workspace_id, emb)
+        if (match && match.similarity >= VOICEPRINT_THRESHOLD) {
+          stub.matched_user_id = match.user_id
+          stub.matched_member = nameByUid.get(match.user_id) ?? stub.matched_member
+          stub.source = 'voiceprint'
+          stub.confidence = 'high'
+        }
+      }
+    }
+    update.speaker_map = stubs
+  }
 
   const { error } = await supabase.from('transcripts').update(update).eq('id', transcript.id)
   if (error) return NextResponse.json({ error: 'Speichern fehlgeschlagen.' }, { status: 500 })
