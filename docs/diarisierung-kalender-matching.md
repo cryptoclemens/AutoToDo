@@ -172,8 +172,10 @@ Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschrä
 - [x] Desktop: `sherpa-rs`-Diarisierung (Segmentierung + Embedding + Clustering) in `diarize.rs`; Whisper-Segment-Zeitstempel (`whisper.rs`); Merge über max. zeitliche Überlappung; `stop_recording`/`retranscribe` liefern `diarization` (additiv, degradiert sauber auf Textpfad). Modell-Download bei Erstnutzung (Trigger in `DesktopRecordButton`).
 - [x] Migration 047 (`transcripts.diarization`) — angewendet + live.
 - [x] `POST …/diarize` — speichert Segmente + leitet initiale `speaker_map`-Cluster-Stubs ab (fließt in Phase-1-`SpeakerAssignModal`); live, Auth-Guards verifiziert.
-- [ ] Server-Worker-Fallback (`whisperX`/`pyannote.audio`) für Web-Uploads — offen (eigener Slice).
-- [ ] Farbcodierte Transkript-Ansicht (nutzt `transcripts.diarization`) — offen (eigener Slice).
+- [~] Server-Worker-Fallback (`whisperX`/`pyannote.audio`) für Web-Uploads — **bewusst descoped 2026-09-29**: Desktop-on-device ist der Primärpfad; pompey-server ist CPU-only (pyannote für lange Meetings unpraktikabel) und der Fallback bräuchte serverseitige Audio-Aufbewahrung (zusätzliche DSGVO-Fläche). Reaktivierbar als eigener Slice, falls reine Web-Uploads diarisiert werden sollen.
+- [x] Farbcodierte Transkript-Ansicht (nutzt `transcripts.diarization`) — **live 2026-09-22**: `TranscriptTextModal` rendert Sprecher-Blöcke (Name aus `speaker_map`, sonst Cluster) mit Legende + Umschalter „Nach Sprecher/Nur Text"; `/text` liefert `diarization`+`speaker_map`.
+
+> **Phase-2-Status (2026-09-29):** abgeschlossen im gewählten Umfang. Live: Migration 047, `POST /diarize`, Sprecher-Zuordnung, farbcodierte Ansicht. Desktop-Diarisierung code-complete (Repo `autotodo-desktop`), Aktivierung nach lokalem nativen Build des Nutzers. Dashboard-Eintrag F-033 folgt mit dem Desktop-Release (sonst würde ein noch nicht nutzbares Feature angekündigt). Server-Worker-Fallback descoped (s. o.).
 - [ ] Nativer Bau + Kalibrierung (User): `sherpa-rs`-0.6-API pinnen, k2-fsa-Modell-URLs, Whisper-`t0/t1` bei `set_no_timestamps(false)`, `CLUSTER_THRESHOLD`, onnxruntime-Bündelung/Notarisierung.
 
 ### Phase 3 — Voiceprints (Selbstlernen)
