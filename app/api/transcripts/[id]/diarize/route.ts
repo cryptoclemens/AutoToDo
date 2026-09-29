@@ -65,10 +65,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Anzeigenamen der Mitglieder für aufgelöste user_id
       const members = await loadMemberRows(supabase, transcript.workspace_id, transcript.project_id)
       const nameByUid = new Map(members.map(m => [m.user_id, m.display_name]))
+      const debug = process.env.VOICEPRINT_DEBUG === '1'
       for (const stub of stubs) {
         const emb = embeddings[stub.speaker_label]
         if (!emb) continue
         const match = await matchVoiceprint(supabase, transcript.workspace_id, emb)
+        if (debug) {
+          const sim = match ? match.similarity.toFixed(3) : 'n/a'
+          const who = match ? (nameByUid.get(match.user_id) ?? match.user_id) : '—'
+          const decision = match && match.similarity >= VOICEPRINT_THRESHOLD ? 'AUTO-MATCH' : 'unter Schwelle'
+          console.log(`[voiceprint] transcript=${transcript.id} cluster=${stub.speaker_label} bestSimilarity=${sim} bestMember=${who} threshold=${VOICEPRINT_THRESHOLD} -> ${decision}`)
+        }
         if (match && match.similarity >= VOICEPRINT_THRESHOLD) {
           stub.matched_user_id = match.user_id
           stub.matched_member = nameByUid.get(match.user_id) ?? stub.matched_member
