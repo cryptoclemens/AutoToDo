@@ -179,11 +179,14 @@ Kalender-Teilnehmerliste als Kandidaten + **F-024-LLM-Zuordnung darauf einschrä
 - [ ] Nativer Bau + Kalibrierung (User): `sherpa-rs`-0.6-API pinnen, k2-fsa-Modell-URLs, Whisper-`t0/t1` bei `set_no_timestamps(false)`, `CLUSTER_THRESHOLD`, onnxruntime-Bündelung/Notarisierung.
 
 ### Phase 3 — Voiceprints (Selbstlernen)
-- [ ] Migration 048 (`CREATE EXTENSION vector` + `member_voiceprints`)
-- [ ] Consent-Flow + `/datenschutz`-Text (Art. 9)
-- [ ] pgvector-Kaskade Stufe 1 in `lib/diarization.ts`
-- [ ] Bestätigung speist Voiceprint (running average über `sample_count`)
-- [ ] „Stimmprofil vergessen" (Löschung)
+> **Slice A (Server-Fundament) live deployed 2026-09-29.** Spec+Plan in `docs/superpowers/`. Zuschnitt vom Nutzer: **schlank, OHNE Einwilligungs-Gate** (Betreiber ist DSGVO-Verantwortlicher), mit Löschfunktion. Inert bis Slice B (Desktop liefert Cluster-Embeddings).
+- [x] Migration 048 (`CREATE EXTENSION vector` + `member_voiceprints` dimensionsfrei + `transcripts.cluster_embeddings` + SECURITY-DEFINER `match_voiceprint`, service-role-only) — angewendet + live.
+- [~] Consent-Flow — **bewusst descoped** (Nutzer-Entscheidung); Löschung („Stimmprofil vergessen") stattdessen enthalten.
+- [x] Kaskade Stufe 1: `matchVoiceprint` (Cosine via pgvector) in `/diarize` — Auto-Match `source:'voiceprint'` ab Schwelle 0.65 (nur bei leerer `speaker_map`).
+- [x] Bestätigung speist Voiceprint (`runningAverage`, `sample_count`) in `/speakers` POST — nur `source:'manual'`.
+- [x] „Stimmprofil vergessen" — `DELETE /api/settings/voiceprints` + Settings-Button.
+- [ ] **Slice B (Desktop, offen):** pro Cluster ein Embedding aus dem `sherpa-rs`-Diarizer exportieren + als `cluster_embeddings` an `/diarize` senden (Feasibility: ob die API das Embedding herausgibt). Erst dann werden Auto-Match + Rückspeisung real aktiv.
+- [ ] **Vor Slice-B-Aktivierung (aus Final-Review):** idempotente Rückspeisung (gegen `sample_count`-Inflation bei erneutem POST) [Prio], atomares Upsert der Mittelung, Log statt leerem catch, Threshold 0.65 kalibrieren (+ `runningAverage`-Normalisierungsdrift), i18n + Lösch-Bestätigung im Button.
 
 ## 10. Offene Entscheidungen
 
