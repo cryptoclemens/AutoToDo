@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
 import type { LlmConfig } from './types'
+import { assertAzureEndpoint } from '@/lib/outboundUrl'
 
 export interface TranslateItem {
   id: string
@@ -22,6 +23,7 @@ async function callLlm(config: LlmConfig, prompt: string): Promise<string> {
   }
 
   if (config.provider === 'openai' || config.provider === 'azure_openai' || config.provider === 'perplexity') {
+    if (config.provider === 'azure_openai' && config.endpoint) await assertAzureEndpoint(config.endpoint)
     const baseURL =
       config.provider === 'azure_openai' ? config.endpoint :
       config.provider === 'perplexity' ? 'https://api.perplexity.ai' :

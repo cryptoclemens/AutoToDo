@@ -1,4 +1,5 @@
 import type { LlmConfig } from './types'
+import { assertAzureEndpoint } from '@/lib/outboundUrl'
 
 interface LopItemForSummary {
   title: string
@@ -40,6 +41,7 @@ async function callOpenAICompatibleRaw(config: LlmConfig, prompt: string): Promi
   const OpenAI = (await import('openai')).default
   const opts: ConstructorParameters<typeof OpenAI>[0] = { apiKey: config.apiKey }
   if (config.provider === 'azure_openai' && config.endpoint) {
+    await assertAzureEndpoint(config.endpoint)
     opts.baseURL = config.endpoint
   } else if (config.provider === 'deepseek') {
     opts.baseURL = 'https://api.deepseek.com/v1'

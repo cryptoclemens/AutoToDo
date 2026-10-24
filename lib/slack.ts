@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js'
+import { CHAT_WEBHOOK_SUFFIXES, checkHostSuffix } from '@/lib/outboundUrl'
 
 const STATUS_LABELS: Record<string, string> = {
   offen: 'Offen',
@@ -18,6 +19,8 @@ function isTeamsUrl(url: string): boolean {
 
 export async function sendSlackNotification(webhookUrl: string, text: string): Promise<void> {
   try {
+    // Nur Slack-/Teams-Hosts — die URL trägt ein Workspace-Admin selbst ein.
+    if (await checkHostSuffix(webhookUrl, CHAT_WEBHOOK_SUFFIXES)) return
     const body = isTeamsUrl(webhookUrl)
       ? JSON.stringify({ text }) // Teams also accepts simple { text }
       : JSON.stringify({ text })
@@ -25,6 +28,7 @@ export async function sendSlackNotification(webhookUrl: string, text: string): P
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
+      redirect: 'manual',
     })
   } catch {
     // fire-and-forget — never throw

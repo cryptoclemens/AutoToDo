@@ -1,6 +1,7 @@
 import { AzureOpenAI } from 'openai'
 import type { LlmConfig, ProcessTranscriptResult, ExistingLopItem, WorkspaceMemberContext } from './types'
 import { buildSystemPrompt, buildUserPrompt } from './prompt'
+import { assertAzureEndpoint } from '@/lib/outboundUrl'
 
 export async function processWithAzureOpenAI(
   config: LlmConfig,
@@ -11,6 +12,7 @@ export async function processWithAzureOpenAI(
   submitterName?: string,
 ): Promise<ProcessTranscriptResult> {
   if (!config.endpoint) throw new Error('Azure Endpoint-URL ist erforderlich.')
+  await assertAzureEndpoint(config.endpoint)
 
   const client = new AzureOpenAI({
     apiKey: config.apiKey,

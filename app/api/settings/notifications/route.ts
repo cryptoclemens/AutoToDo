@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 import { resolveWorkspace } from '@/lib/workspace'
+import { CHAT_WEBHOOK_SUFFIXES, checkHostSuffix } from '@/lib/outboundUrl'
 
 const patchSchema = z.object({
   digest_enabled: z.boolean().optional(),
@@ -66,7 +67,14 @@ export async function PATCH(request: NextRequest) {
     updates.digest_frequency = parsed.data.digest_frequency
     updates.digest_enabled = parsed.data.digest_frequency !== 'disabled'
   }
-  if ('slack_webhook_url' in parsed.data) updates.slack_webhook_url = parsed.data.slack_webhook_url
+  if ('slack_webhook_url' in parsed.data) {
+    const url = parsed.data.slack_webhook_url
+    if (url) {
+      const urlProblem = await checkHostSuffix(url, CHAT_WEBHOOK_SUFFIXES)
+      if (urlProblem) return NextResponse.json({ error: `Slack/Teams-URL: ${urlProblem}` }, { status: 400 })
+    }
+    updates.slack_webhook_url = url
+  }
   if ('bundesland' in parsed.data) updates.bundesland = parsed.data.bundesland
 
   const { error } = await ctx.supabase

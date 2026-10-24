@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { fetchUserUrl } from '@/lib/outboundUrl'
 
 export type WebhookEvent =
   | 'lop.item.created'
@@ -21,7 +22,7 @@ function sign(secret: string, body: string): string {
 async function deliverWithRetry(endpoint: WebhookEndpoint, payload: string, attempt = 1): Promise<void> {
   const sig = sign(endpoint.secret, payload)
   try {
-    const res = await fetch(endpoint.url, {
+    const res = await fetchUserUrl(endpoint.url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

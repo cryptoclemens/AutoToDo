@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { encrypt, decrypt } from '@/lib/encryption'
+import { AZURE_OPENAI_SUFFIXES, checkHostSuffix } from '@/lib/outboundUrl'
 import { resolveWorkspace } from '@/lib/workspace'
 
 type Role = 'extraction' | 'transcription'
@@ -83,6 +84,12 @@ export async function POST(req: NextRequest) {
   if (body.provider === 'azure_openai' && !body.endpoint) {
     return NextResponse.json({ error: 'Endpoint-URL ist für Azure OpenAI erforderlich.' }, { status: 400 })
   }
+  if (body.provider === 'azure_openai' && body.endpoint) {
+    const urlProblem = await checkHostSuffix(body.endpoint, AZURE_OPENAI_SUFFIXES)
+    if (urlProblem) return NextResponse.json({ error: `Azure-Endpunkt: ${urlProblem}` }, { status: 400 })
+  }
+  // Ein Endpunkt gehört nur zu Azure; bei anderen Anbietern nicht speichern.
+  if (body.provider !== 'azure_openai') body.endpoint = undefined
 
   const encrypted = encrypt(body.apiKey)
   const supabase = supabaseAdmin()

@@ -5,6 +5,7 @@ import { resolveWorkspace } from '@/lib/workspace'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 import { z } from 'zod'
+import { checkPublicHttpsUrl } from '@/lib/outboundUrl'
 
 const createSchema = z.object({
   url: z.string().url(),
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const parsed = createSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Ungültige Eingabe.' }, { status: 400 })
+  const urlProblem = await checkPublicHttpsUrl(parsed.data.url)
+  if (urlProblem) return NextResponse.json({ error: urlProblem }, { status: 400 })
 
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
