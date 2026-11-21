@@ -1,4 +1,4 @@
-name: Deploy to Hetzner
+name: Deploy (pompey, netcup)
 
 on:
   push:
@@ -14,4 +14,4 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: /root/deploy/autotodo/deployatd.sh
+          script: /root/deploy/autotodo/deploy-autotodo.sh
